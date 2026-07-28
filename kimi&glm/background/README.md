@@ -69,6 +69,11 @@ GLM5.2 和 Kimi K3 都在继续扩大模型规模和上下文长度，但推理�
 - [Attention Residuals](https://arxiv.org/abs/2603.15031)
 - TPU Roofline 与 SGLang-JAX 实际 profile、benchmark 资料（后续补充）
 
+## 已整理材料
+
+- [Kimi K3 架构讲义](../architecture/kimi-k3.md)
+- [Kimi K3 原始资料索引](../sources/kimi-k3/README.md)
+
 ## 后续文档建议
 
 ```text
