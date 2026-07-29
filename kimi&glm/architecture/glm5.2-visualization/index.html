@@ -2866,23 +2866,54 @@
 
     .kimi-map-stage {
       display: grid;
-      grid-template-rows: 72px minmax(0, 1fr) 50px;
+      grid-template-rows: 86px minmax(0, 1fr) 50px;
       gap: 16px;
       padding: 48px 42px 36px;
     }
 
     .agent-trace {
       display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 7px;
+      padding: 8px 12px 10px;
       border: 1px solid var(--line);
       background: rgba(255, 255, 255, 0.66);
     }
 
+    .trace-scale {
+      display: grid;
+      grid-template-columns: auto minmax(80px, 1fr) auto;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 7px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .trace-scale i {
+      height: 4px;
+      background: linear-gradient(90deg, rgba(20, 125, 117, 0.14), rgba(20, 125, 117, 0.82));
+      clip-path: polygon(0 25%, 96% 25%, 96% 0, 100% 50%, 96% 100%, 96% 75%, 0 75%);
+    }
+
+    .trace-scale strong {
+      color: var(--accent);
+      font-size: 8px;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .trace-events {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      align-items: center;
+      gap: 8px;
+    }
+
     .trace-chip {
-      min-height: 36px;
+      min-height: 34px;
       display: grid;
       place-items: center;
       padding: 5px 7px;
@@ -2962,8 +2993,25 @@
       align-content: center;
       gap: 10px;
       color: var(--muted);
-      font-size: 11px;
+      font-size: 10px;
       line-height: 1.5;
+    }
+
+    .axis-card-body p {
+      margin: 0;
+    }
+
+    .axis-card-body b {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .axis-card-body small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted-2);
+      font-size: 8px;
+      line-height: 1.45;
     }
 
     .axis-mini-flow {
@@ -2990,7 +3038,7 @@
       background: color-mix(in srgb, currentColor 48%, transparent);
     }
 
-    .axis-mechanism {
+    .axis-pressure {
       padding: 8px 10px;
       border: 1px solid color-mix(in srgb, currentColor 32%, transparent);
       color: currentColor;
@@ -3279,14 +3327,9 @@
 
     .global-history span {
       height: 54px;
-      border: 1px solid var(--line);
-      background: var(--surface-2);
-    }
-
-    .global-history span.hit {
-      border-color: rgba(201, 107, 29, 0.52);
-      background: var(--key-soft);
-      box-shadow: inset 0 -5px 0 var(--key);
+      border: 1px solid rgba(201, 107, 29, 0.32);
+      background: rgba(201, 107, 29, var(--attn, 0.1));
+      box-shadow: inset 0 -4px 0 rgba(201, 107, 29, var(--attn, 0.1));
     }
 
     .hybrid-cadence {
@@ -4248,7 +4291,7 @@
         padding: 44px 14px 28px;
       }
 
-      .agent-trace {
+      .trace-events {
         grid-template-columns: repeat(2, 1fr);
       }
 
@@ -4802,61 +4845,64 @@
       </div>
     </section>
 
-    <section class="chapter" id="chapter-9" data-title="Kimi K3: redesign three information paths" data-steps="4">
+    <section class="chapter" id="chapter-9" data-title="Kimi K3: what breaks when an agent trace keeps growing" data-steps="4">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 09 / Kimi K3 thesis</p>
-            <h2>Kimi K3: 重新设计三条信息通道</h2>
+            <p class="eyebrow">Chapter 09 / The scaling problem</p>
+            <h2>Agent 越跑越久，信息为什么越来越难 Scale？</h2>
           </div>
-          <p class="chapter-lead">理解 K3 不需要先看配置表。只要追踪当前 token 怎样读取长历史、重新使用早期表示，并选择更合适的专长计算。</p>
+          <p class="chapter-lead">同一条 agent trace 从 128K 走向 1M：历史要存、每步要读，深层表示要保留有效贡献，模型容量还要扩大而不能让每个 token 都付全价。</p>
         </div>
 
         <div class="stage kimi-map-stage">
           <span class="stage-label">One long-running agent trace</span>
-          <span class="stage-counter">token · depth · channel</span>
+          <span class="stage-counter">context keeps accumulating</span>
 
           <div class="agent-trace step-reveal" data-show-at="0" data-focus-at="0" aria-label="长程 agent 任务中的信息轨迹">
-            <span class="trace-chip">读取需求</span>
-            <span class="trace-chip">浏览代码</span>
-            <span class="trace-chip">执行工具</span>
-            <span class="trace-chip">观察画面</span>
-            <span class="trace-chip">定位错误</span>
-            <span class="trace-chip">修改实现</span>
-            <span class="trace-chip current">当前 token</span>
+            <div class="trace-scale"><span>context accumulates</span><i></i><strong>128K → 1M</strong></div>
+            <div class="trace-events">
+              <span class="trace-chip">读取需求</span>
+              <span class="trace-chip">浏览代码</span>
+              <span class="trace-chip">执行工具</span>
+              <span class="trace-chip">观察画面</span>
+              <span class="trace-chip">定位错误</span>
+              <span class="trace-chip">修改实现</span>
+              <span class="trace-chip current">当前 token</span>
+            </div>
           </div>
 
           <div class="kimi-axis-grid">
             <article class="kimi-axis-card history step-reveal" data-show-at="1" data-focus-at="1">
-              <div class="axis-card-header"><strong>跨 Token</strong><span>history access</span></div>
+              <div class="axis-card-header"><strong>跨 Token</strong><span>long context</span></div>
               <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>t₁</span><i></i><span>…</span><i></i><span>t<sub>now</sub></span></div>
-                <p>长历史怎样保留？当前 token 怎样拿到很早以前的信息？</p>
+                <div class="axis-mini-flow"><span>128K</span><i></i><span>KV</span><i></i><span>1M</span></div>
+                <p><b>KV 状态随 context 增长。</b>Decode 每生成一个 token，都要搬运并读取更长的历史。</p>
               </div>
-              <div class="axis-mechanism">KDA + Gated MLA</div>
+              <div class="axis-pressure">KV 容量 ↑ · HBM 读取 ↑ · 延迟 ↑</div>
             </article>
 
             <article class="kimi-axis-card depth step-reveal" data-show-at="2" data-focus-at="2">
-              <div class="axis-card-header"><strong>跨 Depth</strong><span>representation access</span></div>
+              <div class="axis-card-header"><strong>跨 Depth</strong><span>deep network</span></div>
               <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>B₀</span><i></i><span>B₁</span><i></i><span>B<sub>now</sub></span></div>
-                <p>当前层怎样重新读取早期 block，而不是只接住上一层的累计结果？</p>
+                <div class="axis-mini-flow"><span>h₁</span><i></i><span>+1</span><i></i><span>h<sub>L</sub></span></div>
+                <p><b>Residual 固定 +1 累加。</b>Hidden state 随深度增长，单层的相对贡献逐渐被稀释。</p>
               </div>
-              <div class="axis-mechanism">Attention Residuals</div>
+              <div class="axis-pressure">固定累加 · 早期表示难以单独找回</div>
             </article>
 
             <article class="kimi-axis-card channel step-reveal" data-show-at="3" data-focus-at="3">
-              <div class="axis-card-header"><strong>跨 Channel</strong><span>specialized compute</span></div>
+              <div class="axis-card-header"><strong>跨 Channel</strong><span>capacity scaling</span></div>
               <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>x</span><i></i><span>E<sub>A</sub></span><i></i><span>y</span></div>
-                <p>不同 token 怎样进入不同专长路径，而不是全部执行同一套 dense FFN？</p>
+                <div class="axis-mini-flow"><span>Dense</span><i></i><span>width ↑</span><i></i><span>FLOPs ↑</span></div>
+                <p><b>容量与单 token 成本被绑在一起。</b>Dense FFN 扩大多少，每个 token 就要多执行多少。<small>更细一层：不同记忆 channel 也需要不同的保留与遗忘节奏。</small></p>
               </div>
-              <div class="axis-mechanism">Stable LatentMoE</div>
+              <div class="axis-pressure">容量 ↑ · 权重读取 ↑ · 每 token 计算 ↑</div>
             </article>
           </div>
 
           <div class="kimi-thesis-line step-reveal hard-reveal" data-show-at="3">
-            <span>K3：信息沿</span><strong>token / depth / channel</strong><span>三条轴选择性流动</span>
+            <span>真正的挑战：</span><strong>让有效信息留下来</strong><span>，状态 / 访存 / 计算不能一起失控</span>
           </div>
         </div>
       </div>
@@ -4869,7 +4915,7 @@
             <p class="eyebrow">Chapter 10 / Kimi Delta Attention</p>
             <h2>KDA: 从完整档案变成持续更新的工作记忆</h2>
           </div>
-          <p class="chapter-lead">Full Attention 为每个历史 token 保存 K/V；KDA 让历史持续更新同一份 recurrent state，状态不再随序列长度逐 token 增长。</p>
+          <p class="chapter-lead">第一个回答：KDA 不再为每个 token 新增 K/V，而是持续更新固定尺寸 recurrent state；历史变长，state shape 不再增长。</p>
         </div>
 
         <div class="stage kda-stage">
@@ -4910,7 +4956,7 @@
           </div>
 
           <div class="kda-rule-band">
-            <div class="kda-rule step-reveal" data-show-at="2" data-focus-at="2"><strong>Retain</strong><span>保留仍有用的旧信息</span></div>
+            <div class="kda-rule step-reveal" data-show-at="2" data-focus-at="2"><strong>Retain per channel</strong><span>每个 key channel 有自己的遗忘节奏</span></div>
             <div class="kda-rule step-reveal" data-show-at="2"><strong>Correct</strong><span>修正与新内容冲突的方向</span></div>
             <div class="kda-rule step-reveal" data-show-at="2"><strong>Write</strong><span>写入当前 token 带来的信息</span></div>
             <div class="kda-readout step-reveal" data-show-at="3" data-focus-at="3"><strong>Query reads state</strong><span>效率来自压缩历史，不是无损保存全部 token。</span></div>
@@ -4926,7 +4972,7 @@
             <p class="eyebrow">Chapter 11 / Hybrid Attention</p>
             <h2>Hybrid Attention: 工作记忆加周期性全局查阅</h2>
           </div>
-          <p class="chapter-lead">KDA 擅长高频更新有限状态，但压缩会概括细节；Gated MLA 周期性恢复对任意历史位置的直接访问。</p>
+          <p class="chapter-lead">KDA 擅长高频更新有限状态，但压缩会概括细节；Gated MLA 周期性执行全局 attention，再用输出 gate 调节进入下一层的通道。</p>
         </div>
 
         <div class="stage kimi-hybrid-stage">
@@ -4960,9 +5006,9 @@
               <h3>Gated MLA · 低频全局查阅</h3>
               <div class="global-scan" aria-label="全局 query 访问历史中的精确位置">
                 <div class="global-query">global<br>query</div>
-                <div class="global-history"><span></span><span></span><span></span><span></span><span></span><span class="hit"></span><span></span><span></span></div>
+                <div class="global-history"><span style="--attn:.12"></span><span style="--attn:.2"></span><span style="--attn:.08"></span><span style="--attn:.32"></span><span style="--attn:.16"></span><span style="--attn:.88"></span><span style="--attn:.24"></span><span style="--attn:.1"></span></div>
               </div>
-              <p>摘要不够时，global attention 仍可直接访问某个历史 token。</p>
+              <p>所有历史位置都参与 attention；softmax 聚焦相关内容，output gate 再选择输出通道。</p>
             </article>
           </div>
 
@@ -4984,7 +5030,7 @@
             <p class="eyebrow">Chapter 12 / Attention Residuals</p>
             <h2>AttnRes: 让当前层沿网络深度选择信息</h2>
           </div>
-          <p class="chapter-lead">普通 residual 以固定方式累加此前输出；Block AttnRes 保留分块表示，让当前 token 对不同 depth source 分配内容相关权重。</p>
+          <p class="chapter-lead">第二个回答：把固定 +1 的逐层累加改成 depth attention，让当前层按内容选择此前 block，避免单层贡献被持续稀释。</p>
         </div>
 
         <div class="stage attnres-stage">
@@ -5026,7 +5072,7 @@
             <p class="eyebrow">Chapter 13 / Stable LatentMoE</p>
             <h2>LatentMoE: Router 看完整 token，专家处理更窄 payload</h2>
           </div>
-          <p class="chapter-lead">公共能力保留 full-width shared path；专长路径先压缩 expert payload，再做稀疏 dispatch，从而解耦专家容量与完整宽度搬运。</p>
+          <p class="chapter-lead">第三个回答：让每个 token 只激活少量专家；公共能力走 full-width shared path，专长路径处理更窄 latent payload。</p>
         </div>
 
         <div class="stage latent-moe-stage">
@@ -5179,6 +5225,7 @@
             <a href="https://arxiv.org/abs/2607.24653" target="_blank" rel="noreferrer">Kimi K3</a>
             <a href="https://arxiv.org/abs/2510.26692" target="_blank" rel="noreferrer">Kimi Linear</a>
             <a href="https://arxiv.org/abs/2603.15031" target="_blank" rel="noreferrer">AttnRes</a>
+            <a href="https://www.spaces.ac.cn/archives/11664" target="_blank" rel="noreferrer">AttnRes 解读</a>
             <a href="https://arxiv.org/abs/2601.18089" target="_blank" rel="noreferrer">LatentMoE</a>
           </div>
         </div>
@@ -5256,24 +5303,24 @@
           "<strong>Combined advantage</strong>：缓存更紧、核心读取更少、跨层索引复用、FFN 稀疏激活，共同提升长上下文效率。"
         ],
         [
-          "<strong>先追踪任务，不先看配置</strong>：长程 agent 的当前 token 需要重新利用此前读过的文档、代码、工具结果与视觉反馈。",
-          "<strong>Across tokens</strong>：KDA 与 Gated MLA 共同决定长历史怎样保存、更新和被重新访问。",
-          "<strong>Across depth</strong>：Attention Residuals 让当前层选择此前 block 的表示，而不是只接受固定累计流。",
-          "<strong>Across channels</strong>：Stable LatentMoE 让不同 token 进入不同专长路径；三者共同构成 K3 的信息流主线。"
+          "<strong>上下文持续累积</strong>：一条 agent trace 从需求、代码、工具结果一路走到当前 token，context 可能从 128K 延伸到 1M。",
+          "<strong>Token 轴的瓶颈</strong>：逐 token KV 状态随长度增长；decode 每一步读取更长历史，容量与 HBM 流量同时上升。",
+          "<strong>Depth 轴的瓶颈</strong>：PreNorm residual 以固定 +1 权重累加此前输出，hidden magnitude 随深度增长，单层相对贡献被稀释。",
+          "<strong>Channel 轴的瓶颈</strong>：Dense 容量扩张会同步抬高每 token 计算；不同记忆 channel 也需要各自的保留节奏。下一页开始逐一回答。"
         ],
         [
           "<strong>完整档案</strong>：Full Attention 为每个历史 token 新增一份 K/V，未来 query 可以直接访问任意记录。",
           "<strong>工作记忆</strong>：KDA 将历史持续写入同一份 recurrent state，状态 shape 不随 token 数继续增长。",
-          "<strong>Delta update</strong>：每一步保留仍有用的信息、修正冲突方向，再写入当前 token 带来的新内容。",
+          "<strong>Channel-wise delta update</strong>：每个 key channel 独立控制保留程度，再修正冲突方向并写入当前 token。",
           "<strong>读取边界</strong>：query 直接读取有限 state；效率来自压缩，因此它不是对完整历史的无损替代。"
         ],
         [
           "<strong>KDA</strong>：多数层高频更新有限工作记忆，避免每一步都重新扫描全部历史。",
-          "<strong>Gated MLA</strong>：压缩可能丢失精确细节，因此模型仍周期性保留全局 token-to-token 查阅能力。",
-          "<strong>Hybrid role</strong>：KDA 负责可扩展的状态更新，global attention 负责低频但精确的历史检索。"
+          "<strong>Gated MLA</strong>：周期性执行全局 token-to-token attention；它不是 Top-K sparse read，选择性来自 softmax 与 channel-wise output gate。",
+          "<strong>Hybrid role</strong>：KDA 负责可扩展的状态更新，global attention 负责低频的全局内容交互。"
         ],
         [
-          "<strong>普通 residual</strong>：此前输出以固定方式累加进同一条 hidden stream，早期表示逐渐混在一起。",
+          "<strong>普通 residual</strong>：此前输出以固定 +1 权重累加进同一条 hidden stream，越深时单层相对贡献越容易被稀释。",
           "<strong>Block AttnRes</strong>：网络保留分块表示，把 model depth 变成一组可被重新读取的 sources。",
           "<strong>Content-dependent weights</strong>：当前 token 对不同 depth source 分配 softmax 权重。",
           "<strong>Depth mixture</strong>：当前层接收按内容重新组合的 block representations，而不是固定的逐层累加。"
