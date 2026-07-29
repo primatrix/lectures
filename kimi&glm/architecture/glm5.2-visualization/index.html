@@ -3304,6 +3304,253 @@
       text-align: left;
     }
 
+    .kimi-map-stage.answer-map-stage {
+      grid-template-rows: 72px minmax(0, 1fr) 42px;
+      gap: 10px;
+      padding-top: 44px;
+      padding-bottom: 30px;
+    }
+
+    .answer-map-stage .problem-axis-row {
+      grid-template-columns: 126px minmax(0, 0.94fr) minmax(460px, 1.12fr);
+    }
+
+    .answer-map-stage .problem-axis-sketch {
+      height: 96px;
+    }
+
+    .answer-principle.answer-principle-line {
+      justify-content: flex-start;
+      padding: 10px 0;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background: transparent;
+      text-align: left;
+    }
+
+    .token-answer-sketch {
+      display: grid;
+      grid-template-columns: minmax(82px, 0.72fr) 26px 92px 26px minmax(168px, 1.18fr);
+      align-items: center;
+      gap: 8px;
+    }
+
+    .token-history-line {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 50px;
+      padding-top: 14px;
+    }
+
+    .token-history-line::before {
+      content: "LONG HISTORY";
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: var(--muted-2);
+      font-size: 7px;
+      letter-spacing: 0.08em;
+    }
+
+    .token-history-line span {
+      min-width: 24px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-bottom: 2px solid currentColor;
+      color: var(--muted);
+      background: color-mix(in srgb, currentColor 6%, white);
+      font-size: 7px;
+    }
+
+    .token-history-line span:nth-last-child(2) {
+      border-bottom-color: var(--line-strong);
+      background: transparent;
+    }
+
+    .token-history-line span:last-child {
+      color: currentColor;
+    }
+
+    .kda-state-node {
+      position: relative;
+      width: 86px;
+      height: 66px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 2px;
+      padding: 17px 11px 9px;
+      border: 1px solid currentColor;
+      background: var(--query-soft);
+    }
+
+    .kda-state-node::before {
+      content: "KDA · Sₜ";
+      position: absolute;
+      top: 4px;
+      left: 8px;
+      color: currentColor;
+      font-size: 8px;
+      font-weight: 750;
+    }
+
+    .kda-state-node::after {
+      content: "↻";
+      position: absolute;
+      top: 18px;
+      right: -15px;
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      border-left-color: transparent;
+      border-radius: 50%;
+      color: currentColor;
+      background: var(--surface);
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .kda-state-node i {
+      border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+      background: color-mix(in srgb, currentColor 10%, white);
+    }
+
+    .hybrid-cadence-mini {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(32px, 0.68fr)) minmax(76px, 1.45fr);
+      align-items: stretch;
+      gap: 4px;
+      padding-top: 20px;
+    }
+
+    .hybrid-cadence-mini::before {
+      content: "fixed state ×3  ·  periodic latent KV";
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: var(--muted-2);
+      font-size: 7px;
+      letter-spacing: 0.04em;
+    }
+
+    .hybrid-cadence-mini span {
+      min-height: 42px;
+      display: grid;
+      place-items: center;
+      border-top: 2px solid currentColor;
+      color: currentColor;
+      background: color-mix(in srgb, currentColor 7%, white);
+      font-size: 7px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .hybrid-cadence-mini span:last-child {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .attnres-answer-svg,
+    .latent-moe-answer-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .attnres-answer-svg .source,
+    .attnres-answer-svg .target {
+      fill: color-mix(in srgb, var(--score) 7%, white);
+      stroke: color-mix(in srgb, var(--score) 52%, var(--line));
+      stroke-width: 1;
+    }
+
+    .attnres-answer-svg .query {
+      fill: var(--surface);
+      stroke: var(--score);
+      stroke-width: 1.4;
+    }
+
+    .attnres-answer-svg .mix-line {
+      fill: none;
+      stroke: color-mix(in srgb, var(--score) 70%, transparent);
+      stroke-width: 1.15;
+    }
+
+    .attnres-answer-svg .output-line {
+      fill: none;
+      stroke: var(--score);
+      stroke-width: 1.5;
+    }
+
+    .attnres-answer-svg text,
+    .latent-moe-answer-svg text {
+      fill: var(--muted);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-anchor: middle;
+    }
+
+    .attnres-answer-svg .strong,
+    .latent-moe-answer-svg .strong {
+      fill: currentColor;
+      font-weight: 750;
+    }
+
+    .attnres-answer-svg .micro,
+    .latent-moe-answer-svg .micro {
+      fill: var(--muted-2);
+      font-size: 7px;
+    }
+
+    .latent-moe-answer-svg .shared-node {
+      fill: color-mix(in srgb, var(--accent) 8%, white);
+      stroke: color-mix(in srgb, var(--accent) 54%, var(--line));
+      stroke-width: 1;
+    }
+
+    .latent-moe-answer-svg .routed-node,
+    .latent-moe-answer-svg .expert-node {
+      fill: color-mix(in srgb, var(--value) 8%, white);
+      stroke: color-mix(in srgb, var(--value) 54%, var(--line));
+      stroke-width: 1;
+    }
+
+    .latent-moe-answer-svg .path-line {
+      fill: none;
+      stroke: color-mix(in srgb, var(--value) 68%, transparent);
+      stroke-width: 1.2;
+    }
+
+    .latent-moe-answer-svg .shared-line {
+      fill: none;
+      stroke: color-mix(in srgb, var(--accent) 66%, transparent);
+      stroke-width: 1.2;
+    }
+
+    .latent-moe-answer-svg .qb-line {
+      fill: none;
+      stroke: var(--value);
+      stroke-width: 1;
+      stroke-dasharray: 3 3;
+    }
+
+    .answer-map-stage .kimi-thesis-line {
+      justify-content: flex-start;
+      padding: 8px 0 0;
+      border: 0;
+      border-top: 1px solid var(--line);
+      background: transparent;
+      text-align: left;
+    }
+
     .kimi-axis-grid {
       min-height: 0;
       display: grid;
@@ -4522,6 +4769,10 @@
         gap: 14px;
       }
 
+      .answer-map-stage .problem-axis-row {
+        grid-template-columns: 108px minmax(0, 0.88fr) minmax(390px, 1.12fr);
+      }
+
       .problem-axis-copy {
         font-size: 12px;
       }
@@ -4721,9 +4972,21 @@
         padding: 16px 0;
       }
 
+      .answer-map-stage .problem-axis-row {
+        grid-template-columns: 1fr;
+      }
+
       .problem-axis-sketch {
         width: 100%;
         height: 96px;
+      }
+
+      .answer-map-stage .problem-axis-sketch {
+        height: 104px;
+      }
+
+      .token-answer-sketch {
+        grid-template-columns: minmax(86px, 0.72fr) 24px 92px 24px minmax(180px, 1.2fr);
       }
 
       .kimi-axis-grid,
@@ -5369,56 +5632,133 @@
         <div class="chapter-heading">
           <div>
             <p class="eyebrow">Chapter 10 / Kimi K3 answers</p>
-            <h2>K3 的回答：让信息沿三条轴按需流动</h2>
+            <h2>K3 的回答：固定状态、按层重读、低维路由</h2>
           </div>
-          <p class="chapter-lead">三个问题对应三种选择：长历史先压缩再补充全局交互，深度方向重新选择表示，宽度方向只激活当前 token 需要的计算。</p>
+          <p class="chapter-lead">第 9 页提出的三个 scaling 问题，在 K3 里分别落到 token、depth、channel 三条信息流；每一条都避免“规模变大就全量付费”。</p>
         </div>
 
-        <div class="stage kimi-map-stage">
-          <span class="stage-label">Three questions → three architectural answers</span>
-          <span class="stage-counter">compress · select · route</span>
+        <div class="stage kimi-map-stage answer-map-stage">
+          <span class="stage-label">Three problems → three mechanisms</span>
+          <span class="stage-counter">state · depth attention · latent experts</span>
 
-          <div class="answer-principle step-reveal" data-show-at="0" data-focus-at="0">
-            <span>Scale 不能让每一层、每一步都全量搬运历史、层表示和模型参数</span>
+          <div class="answer-principle answer-principle-line step-reveal" data-show-at="0" data-focus-at="0">
+            <span>问题页问：历史、深层表示、模型容量扩大后，怎样不让每个 token 全量付费？</span>
             <i>→</i>
-            <strong>压缩长期状态，选择真正需要的信息与计算</strong>
+            <strong>K3 的共同回答是：先压缩，再按内容选择</strong>
           </div>
 
-          <div class="kimi-axis-grid">
-            <article class="kimi-axis-card history step-reveal" data-show-at="1" data-focus-at="1">
-              <div class="axis-card-header"><strong>跨 Token</strong><span>compress + global</span></div>
-              <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>history</span><i></i><span>state</span><i></i><span>global</span></div>
-                <p><b>KDA</b> 用固定尺寸 state 承担高频记忆；<b>Gated MLA</b> 周期性补充全局 token-to-token 交互。</p>
-              </div>
-              <div class="axis-answer">KDA + Gated MLA</div>
-            </article>
-
-            <article class="kimi-axis-card depth step-reveal" data-show-at="2" data-focus-at="2">
-              <div class="axis-card-header"><strong>跨 Depth</strong><span>select representations</span></div>
-              <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>早期块</span><i></i><span>选择</span><i></i><span>当前层</span></div>
-                <p><b>AttnRes</b> 把此前 block 变成可寻址 sources，由当前层分配权重并重新组合。</p>
-              </div>
-              <div class="axis-answer">Attention Residuals</div>
-            </article>
-
-            <article class="kimi-axis-card channel step-reveal" data-show-at="3" data-focus-at="3">
-              <div class="axis-card-header"><strong>跨 Channel</strong><span>sparse capacity</span></div>
-              <div class="axis-card-body">
-                <div class="axis-line-stack" aria-label="MoE 的稀疏执行过程">
-                  <div class="axis-line"><strong>读取 token</strong><span>Router 判断当前表示需要什么能力</span></div>
-                  <div class="axis-line"><strong>选择专家</strong><span>只路由到少量相关专家</span></div>
-                  <div class="axis-line"><strong>稀疏执行</strong><span>未选专家不参与本次计算</span></div>
+          <div class="problem-axis-list">
+            <article class="problem-axis-row history step-reveal" data-show-at="1" data-focus-at="1">
+              <h3 class="problem-axis-label">跨 Token：</h3>
+              <p class="problem-axis-copy"><b>KDA 把长历史持续写进固定尺寸 state。</b>主干按 3× KDA + 1× Gated MLA 交替：高频路径不再保存逐 token KV，周期性的全局注意力保留紧凑 latent KV。</p>
+              <div class="problem-axis-sketch token-answer-sketch" role="img" aria-label="长 token 历史被 KDA 压缩进固定尺寸循环状态，并周期性经过 Gated MLA 全局注意力">
+                <div class="token-history-line"><span>t₁</span><span>t₂</span><span>…</span><span>t</span></div>
+                <span class="sketch-arrow"></span>
+                <div class="kda-state-node" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
                 </div>
-                <p><b>Stable LatentMoE</b> 让总参数继续扩大，而每个 token 的激活量保持稀疏。</p>
+                <span class="sketch-arrow"></span>
+                <div class="hybrid-cadence-mini" aria-hidden="true">
+                  <span>KDA</span><span>KDA</span><span>KDA</span><span>Gated MLA</span>
+                </div>
               </div>
-              <div class="axis-plain-result">Stable LatentMoE · 只激活选中的专家</div>
+            </article>
+
+            <article class="problem-axis-row depth step-reveal" data-show-at="2" data-focus-at="2">
+              <h3 class="problem-axis-label">跨 Depth：</h3>
+              <p class="problem-axis-copy"><b>Block AttnRes 把不同深度的表示变成可寻址 sources。</b>当前层用 learned query <b>w</b> 生成权重 α，按内容重读 embedding、前序 blocks 与当前 partial sum。</p>
+              <div class="problem-axis-sketch" role="img" aria-label="Embedding、前序 block 和当前 partial sum 扇入 Attention Residual 权重节点，再送入当前层">
+                <svg class="attnres-answer-svg" viewBox="0 0 560 96" aria-hidden="true">
+                  <defs>
+                    <marker id="attnres-arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M0,0 L6,3 L0,6 Z" fill="var(--score)"></path>
+                    </marker>
+                  </defs>
+                  <text class="micro" x="177" y="12">DEPTH SOURCES</text>
+                  <rect class="source" x="4" y="58" width="78" height="25"></rect>
+                  <rect class="source" x="94" y="58" width="78" height="25"></rect>
+                  <rect class="source" x="184" y="58" width="78" height="25"></rect>
+                  <rect class="source" x="274" y="58" width="90" height="25"></rect>
+                  <text x="43" y="74">Embedding</text>
+                  <text x="133" y="74">Block n−2</text>
+                  <text x="223" y="74">Block n−1</text>
+                  <text x="319" y="74">partial sum</text>
+                  <path class="mix-line" d="M43 58 L408 38"></path>
+                  <path class="mix-line" d="M133 58 L408 38"></path>
+                  <path class="mix-line" d="M223 58 L408 38"></path>
+                  <path class="mix-line" d="M319 58 L408 38"></path>
+                  <rect class="query" x="382" y="2" width="52" height="18"></rect>
+                  <text class="strong" x="408" y="14">learned w</text>
+                  <path class="mix-line" d="M408 20 L408 29"></path>
+                  <circle class="query" cx="408" cy="38" r="13"></circle>
+                  <text class="strong" x="408" y="41">α</text>
+                  <path class="output-line" d="M421 38 L472 38" marker-end="url(#attnres-arrow)"></path>
+                  <rect class="target" x="478" y="24" width="76" height="28"></rect>
+                  <text class="strong" x="516" y="41">Current layer</text>
+                  <text class="micro" x="408" y="92">softmax over depth</text>
+                </svg>
+              </div>
+            </article>
+
+            <article class="problem-axis-row channel step-reveal" data-show-at="3" data-focus-at="3">
+              <h3 class="problem-axis-label">跨 Channel：</h3>
+              <p class="problem-axis-copy"><b>Stable LatentMoE 只把 routed 分支压到 latent width ℓ。</b>专家计算与 All-to-All 都搬更窄的 activation；RMSNorm / SiTU-GLU 保持稳定，Quantile Balancing 用 routing bias 对齐专家目标负载。</p>
+              <div class="problem-axis-sketch" role="img" aria-label="Token 分成全宽 shared expert 分支和先降维再路由的 latent expert 分支，Quantile Balancing 平衡 routed experts">
+                <svg class="latent-moe-answer-svg" viewBox="0 0 590 100" aria-hidden="true">
+                  <defs>
+                    <marker id="latent-arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M0,0 L6,3 L0,6 Z" fill="var(--value)"></path>
+                    </marker>
+                    <marker id="shared-arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                      <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"></path>
+                    </marker>
+                  </defs>
+                  <rect class="routed-node" x="4" y="37" width="50" height="26"></rect>
+                  <text class="strong" x="29" y="53">x [d]</text>
+                  <circle class="routed-node" cx="76" cy="50" r="4"></circle>
+                  <path class="shared-line" d="M54 50 L76 50 L76 18 L125 18" marker-end="url(#shared-arrow)"></path>
+                  <rect class="shared-node" x="130" y="5" width="105" height="26"></rect>
+                  <text class="strong" x="182" y="17">Shared experts</text>
+                  <text class="micro" x="182" y="26">full width d</text>
+                  <path class="shared-line" d="M235 18 L548 18 L548 45" marker-end="url(#shared-arrow)"></path>
+
+                  <path class="path-line" d="M76 50 L105 50" marker-end="url(#latent-arrow)"></path>
+                  <rect class="routed-node" x="111" y="37" width="62" height="26"></rect>
+                  <text class="strong" x="142" y="49">W↓</text>
+                  <text class="micro" x="142" y="58">d → ℓ</text>
+                  <path class="path-line" d="M173 50 L191 50" marker-end="url(#latent-arrow)"></path>
+                  <rect class="routed-node" x="197" y="37" width="58" height="26"></rect>
+                  <text class="strong" x="226" y="53">Router</text>
+                  <path class="path-line" d="M255 50 L273 50" marker-end="url(#latent-arrow)"></path>
+
+                  <rect class="expert-node" x="279" y="28" width="34" height="18"></rect>
+                  <rect class="expert-node" x="317" y="28" width="34" height="18"></rect>
+                  <rect class="expert-node" x="279" y="53" width="34" height="18"></rect>
+                  <rect class="expert-node" x="317" y="53" width="34" height="18"></rect>
+                  <text x="296" y="40">E1</text><text x="334" y="40">E2</text>
+                  <text x="296" y="65">E3</text><text x="334" y="65">E4</text>
+                  <path class="qb-line" d="M278 82 L352 82"></path>
+                  <text class="strong" x="315" y="94">QB · target load</text>
+
+                  <path class="path-line" d="M351 50 L369 50" marker-end="url(#latent-arrow)"></path>
+                  <rect class="routed-node" x="375" y="37" width="76" height="26"></rect>
+                  <text class="strong" x="413" y="49">RMSNorm</text>
+                  <text class="micro" x="413" y="58">stable combine</text>
+                  <path class="path-line" d="M451 50 L469 50" marker-end="url(#latent-arrow)"></path>
+                  <rect class="routed-node" x="475" y="37" width="56" height="26"></rect>
+                  <text class="strong" x="503" y="49">W↑</text>
+                  <text class="micro" x="503" y="58">ℓ → d</text>
+                  <path class="path-line" d="M531 50 L541 50" marker-end="url(#latent-arrow)"></path>
+                  <circle class="routed-node" cx="550" cy="50" r="10"></circle>
+                  <text class="strong" x="550" y="53">+</text>
+                  <path class="path-line" d="M560 50 L582 50" marker-end="url(#latent-arrow)"></path>
+                </svg>
+              </div>
             </article>
           </div>
 
-          <div class="kimi-thesis-line step-reveal hard-reveal" data-show-at="3">
-            <span>共同原则：</span><strong>减少全量路径</strong><span>，改用压缩、选择、路由</span>
+          <div class="kimi-thesis-line problem-thesis step-reveal hard-reveal" data-show-at="3">
+            <span>一一对应：</span><strong>逐 token KV → 固定状态</strong><span>·</span><strong>等权残差 → 按深度注意</strong><span>·</span><strong>全宽专家 → 低维稀疏路由</strong>
           </div>
         </div>
       </div>
@@ -5825,10 +6165,10 @@
           "<strong>问题三 · Channel</strong>：Dense 扩容会抬高每 token 成本；能否用 Router 只激活与当前 token 相关的少数专家？"
         ],
         [
-          "<strong>共同原则</strong>：K3 避免每一层、每一步都全量搬运历史、层表示和模型参数，把主要信息流改造成压缩、选择与路由。",
-          "<strong>回答一 · Token</strong>：KDA 维护固定尺寸 state，Gated MLA 周期性提供全局 token-to-token 交互。",
-          "<strong>回答二 · Depth</strong>：Attention Residuals 把此前 block 变成可寻址 sources，由当前层重新分配权重。",
-          "<strong>回答三 · Channel</strong>：Stable LatentMoE 通过路由只激活少量专家，使总容量扩张而单 token 激活保持稀疏。"
+          "<strong>共同原则</strong>：K3 不让规模增长直接变成每个 token 的全量状态、全量读取和全量计算，而是先压缩，再按内容选择。",
+          "<strong>回答一 · Token</strong>：KDA 把历史压进固定尺寸 recurrent state；周期性的 Gated MLA 保留全局 token-to-token 交互和紧凑 latent KV。",
+          "<strong>回答二 · Depth</strong>：Block AttnRes 用 learned query 生成 α，从 embedding、前序 blocks 与当前 partial sum 中按内容重读。",
+          "<strong>回答三 · Channel</strong>：Stable LatentMoE 在 latent width 完成 routed expert 计算与通信；Quantile Balancing 让专家负载对齐目标值。"
         ],
         [
           "<strong>完整档案</strong>：Full Attention 为每个历史 token 新增一份 K/V，未来 query 可以直接访问任意记录。",
