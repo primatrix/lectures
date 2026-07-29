@@ -2932,6 +2932,30 @@
       font-weight: 700;
     }
 
+    .answer-principle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 12px 18px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.66);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .answer-principle i {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-style: normal;
+    }
+
+    .answer-principle strong {
+      color: var(--accent);
+      font-size: 12px;
+    }
+
     .trace-arrow {
       display: none;
     }
@@ -3038,7 +3062,8 @@
       background: color-mix(in srgb, currentColor 48%, transparent);
     }
 
-    .axis-pressure {
+    .axis-pressure,
+    .axis-answer {
       padding: 8px 10px;
       border: 1px solid color-mix(in srgb, currentColor 32%, transparent);
       color: currentColor;
@@ -3046,6 +3071,10 @@
       font-family: var(--mono);
       font-size: 9px;
       text-align: center;
+    }
+
+    .axis-answer {
+      font-weight: 700;
     }
 
     .kimi-thesis-line {
@@ -4360,6 +4389,10 @@
         white-space: normal;
       }
 
+      .answer-principle {
+        flex-wrap: wrap;
+      }
+
       .legend {
         display: none;
       }
@@ -4402,13 +4435,14 @@
     <button class="rail-button" type="button" data-target="chapter-6" aria-label="第六章 MLA"><span class="rail-label">06 / MLA</span></button>
     <button class="rail-button" type="button" data-target="chapter-7" aria-label="第七章 DSA"><span class="rail-label">07 / DSA</span></button>
     <button class="rail-button" type="button" data-target="chapter-8" aria-label="第八章 GLM-5.2"><span class="rail-label">08 / GLM-5.2</span></button>
-    <button class="rail-button" type="button" data-target="chapter-9" aria-label="第九章 Kimi K3 信息流"><span class="rail-label">09 / K3 信息流</span></button>
-    <button class="rail-button" type="button" data-target="chapter-10" aria-label="第十章 KDA"><span class="rail-label">10 / KDA</span></button>
-    <button class="rail-button" type="button" data-target="chapter-11" aria-label="第十一章 Hybrid Attention"><span class="rail-label">11 / Hybrid</span></button>
-    <button class="rail-button" type="button" data-target="chapter-12" aria-label="第十二章 Attention Residuals"><span class="rail-label">12 / AttnRes</span></button>
-    <button class="rail-button" type="button" data-target="chapter-13" aria-label="第十三章 Stable LatentMoE"><span class="rail-label">13 / LatentMoE</span></button>
-    <button class="rail-button" type="button" data-target="chapter-14" aria-label="第十四章 Native Vision"><span class="rail-label">14 / Native Vision</span></button>
-    <button class="rail-button" type="button" data-target="chapter-15" aria-label="第十五章 架构总结"><span class="rail-label">15 / 总结</span></button>
+    <button class="rail-button" type="button" data-target="chapter-9" aria-label="第九章 长程 Agent 的三个问题"><span class="rail-label">09 / 三个问题</span></button>
+    <button class="rail-button" type="button" data-target="chapter-10" aria-label="第十章 Kimi K3 的三个回答"><span class="rail-label">10 / 三个回答</span></button>
+    <button class="rail-button" type="button" data-target="chapter-11" aria-label="第十一章 KDA"><span class="rail-label">11 / KDA</span></button>
+    <button class="rail-button" type="button" data-target="chapter-12" aria-label="第十二章 Hybrid Attention"><span class="rail-label">12 / Hybrid</span></button>
+    <button class="rail-button" type="button" data-target="chapter-13" aria-label="第十三章 Attention Residuals"><span class="rail-label">13 / AttnRes</span></button>
+    <button class="rail-button" type="button" data-target="chapter-14" aria-label="第十四章 Stable LatentMoE"><span class="rail-label">14 / LatentMoE</span></button>
+    <button class="rail-button" type="button" data-target="chapter-15" aria-label="第十五章 Native Vision"><span class="rail-label">15 / Native Vision</span></button>
+    <button class="rail-button" type="button" data-target="chapter-16" aria-label="第十六章 架构总结"><span class="rail-label">16 / 总结</span></button>
   </nav>
 
   <main>
@@ -4850,9 +4884,9 @@
         <div class="chapter-heading">
           <div>
             <p class="eyebrow">Chapter 09 / The scaling problem</p>
-            <h2>Agent 越跑越久，信息为什么越来越难 Scale？</h2>
+            <h2>当 Agent trace 从 128K 走向 1M，会遇到什么问题？</h2>
           </div>
-          <p class="chapter-lead">同一条 agent trace 从 128K 走向 1M：历史要存、每步要读，深层表示要保留有效贡献，模型容量还要扩大而不能让每个 token 都付全价。</p>
+          <p class="chapter-lead">先不看 K3 用了哪些模块，只追问三件事：长历史如何承担、深层表示如何保留贡献、模型容量如何增长而不让每个 token 付全价？</p>
         </div>
 
         <div class="stage kimi-map-stage">
@@ -4877,7 +4911,7 @@
               <div class="axis-card-header"><strong>跨 Token</strong><span>long context</span></div>
               <div class="axis-card-body">
                 <div class="axis-mini-flow"><span>128K</span><i></i><span>KV</span><i></i><span>1M</span></div>
-                <p><b>KV 状态随 context 增长。</b>Decode 每生成一个 token，都要搬运并读取更长的历史。</p>
+                <p><b>Context 越长，KV 状态越大。</b>怎样避免 decode 每一步都搬运、读取越来越长的历史？</p>
               </div>
               <div class="axis-pressure">KV 容量 ↑ · HBM 读取 ↑ · 延迟 ↑</div>
             </article>
@@ -4886,7 +4920,7 @@
               <div class="axis-card-header"><strong>跨 Depth</strong><span>deep network</span></div>
               <div class="axis-card-body">
                 <div class="axis-mini-flow"><span>h₁</span><i></i><span>+1</span><i></i><span>h<sub>L</sub></span></div>
-                <p><b>Residual 固定 +1 累加。</b>Hidden state 随深度增长，单层的相对贡献逐渐被稀释。</p>
+                <p><b>Residual 一直固定 +1 累加。</b>怎样让深层网络重新找到真正有用的早期表示？</p>
               </div>
               <div class="axis-pressure">固定累加 · 早期表示难以单独找回</div>
             </article>
@@ -4895,24 +4929,80 @@
               <div class="axis-card-header"><strong>跨 Channel</strong><span>capacity scaling</span></div>
               <div class="axis-card-body">
                 <div class="axis-mini-flow"><span>Dense</span><i></i><span>width ↑</span><i></i><span>FLOPs ↑</span></div>
-                <p><b>容量与单 token 成本被绑在一起。</b>Dense FFN 扩大多少，每个 token 就要多执行多少。<small>更细一层：不同记忆 channel 也需要不同的保留与遗忘节奏。</small></p>
+                <p><b>Dense 容量与单 token 成本绑在一起。</b>怎样扩大能力，却不让每个 token 都执行全部参数？<small>不同记忆 channel 是否也该拥有不同的保留节奏？</small></p>
               </div>
               <div class="axis-pressure">容量 ↑ · 权重读取 ↑ · 每 token 计算 ↑</div>
             </article>
           </div>
 
           <div class="kimi-thesis-line step-reveal hard-reveal" data-show-at="3">
-            <span>真正的挑战：</span><strong>让有效信息留下来</strong><span>，状态 / 访存 / 计算不能一起失控</span>
+            <span>核心问题：</span><strong>怎样让有效信息留下来</strong><span>，又不让状态 / 访存 / 计算随 scale 一起失控？</span>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="chapter" id="chapter-10" data-title="KDA: replace growing token history with recurrent state" data-steps="4">
+    <section class="chapter" id="chapter-10" data-title="Kimi K3: three answers to the scaling problem" data-steps="4">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 10 / Kimi Delta Attention</p>
+            <p class="eyebrow">Chapter 10 / Kimi K3 answers</p>
+            <h2>K3 的回答：让信息沿三条轴按需流动</h2>
+          </div>
+          <p class="chapter-lead">三个问题对应三种选择：长历史先压缩再补充全局交互，深度方向重新选择表示，宽度方向只激活当前 token 需要的计算。</p>
+        </div>
+
+        <div class="stage kimi-map-stage">
+          <span class="stage-label">Three questions → three architectural answers</span>
+          <span class="stage-counter">compress · select · route</span>
+
+          <div class="answer-principle step-reveal" data-show-at="0" data-focus-at="0">
+            <span>Scale 不能让每一层、每一步都全量搬运历史、层表示和模型参数</span>
+            <i>→</i>
+            <strong>压缩长期状态，选择真正需要的信息与计算</strong>
+          </div>
+
+          <div class="kimi-axis-grid">
+            <article class="kimi-axis-card history step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="axis-card-header"><strong>跨 Token</strong><span>compress + global</span></div>
+              <div class="axis-card-body">
+                <div class="axis-mini-flow"><span>history</span><i></i><span>state</span><i></i><span>global</span></div>
+                <p><b>KDA</b> 用固定尺寸 state 承担高频记忆；<b>Gated MLA</b> 周期性补充全局 token-to-token 交互。</p>
+              </div>
+              <div class="axis-answer">KDA + Gated MLA</div>
+            </article>
+
+            <article class="kimi-axis-card depth step-reveal" data-show-at="2" data-focus-at="2">
+              <div class="axis-card-header"><strong>跨 Depth</strong><span>select representations</span></div>
+              <div class="axis-card-body">
+                <div class="axis-mini-flow"><span>blocks</span><i></i><span>α</span><i></i><span>h<sub>L</sub></span></div>
+                <p><b>AttnRes</b> 把此前 block 变成可寻址 sources，由当前层分配权重并重新组合。</p>
+              </div>
+              <div class="axis-answer">Attention Residuals</div>
+            </article>
+
+            <article class="kimi-axis-card channel step-reveal" data-show-at="3" data-focus-at="3">
+              <div class="axis-card-header"><strong>跨 Channel</strong><span>route compute</span></div>
+              <div class="axis-card-body">
+                <div class="axis-mini-flow"><span>token</span><i></i><span>router</span><i></i><span>experts</span></div>
+                <p><b>MoE</b> 只激活选中的专家；KDA 的 <b>channel-wise gate</b> 让不同记忆通道独立保留或遗忘。</p>
+              </div>
+              <div class="axis-answer">Stable LatentMoE + channel-wise gates</div>
+            </article>
+          </div>
+
+          <div class="kimi-thesis-line step-reveal hard-reveal" data-show-at="3">
+            <span>共同原则：</span><strong>减少全量路径</strong><span>，改用压缩、选择、路由</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-11" data-title="KDA: replace growing token history with recurrent state" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 11 / Kimi Delta Attention</p>
             <h2>KDA: 从完整档案变成持续更新的工作记忆</h2>
           </div>
           <p class="chapter-lead">第一个回答：KDA 不再为每个 token 新增 K/V，而是持续更新固定尺寸 recurrent state；历史变长，state shape 不再增长。</p>
@@ -4965,11 +5055,11 @@
       </div>
     </section>
 
-    <section class="chapter" id="chapter-11" data-title="Hybrid Attention: working memory plus global lookup" data-steps="3">
+    <section class="chapter" id="chapter-12" data-title="Hybrid Attention: working memory plus global lookup" data-steps="3">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 11 / Hybrid Attention</p>
+            <p class="eyebrow">Chapter 12 / Hybrid Attention</p>
             <h2>Hybrid Attention: 工作记忆加周期性全局查阅</h2>
           </div>
           <p class="chapter-lead">KDA 擅长高频更新有限状态，但压缩会概括细节；Gated MLA 周期性执行全局 attention，再用输出 gate 调节进入下一层的通道。</p>
@@ -5023,11 +5113,11 @@
       </div>
     </section>
 
-    <section class="chapter" id="chapter-12" data-title="AttnRes: attend over model depth" data-steps="4">
+    <section class="chapter" id="chapter-13" data-title="AttnRes: attend over model depth" data-steps="4">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 12 / Attention Residuals</p>
+            <p class="eyebrow">Chapter 13 / Attention Residuals</p>
             <h2>AttnRes: 让当前层沿网络深度选择信息</h2>
           </div>
           <p class="chapter-lead">第二个回答：把固定 +1 的逐层累加改成 depth attention，让当前层按内容选择此前 block，避免单层贡献被持续稀释。</p>
@@ -5065,11 +5155,11 @@
       </div>
     </section>
 
-    <section class="chapter" id="chapter-13" data-title="Stable LatentMoE: route full tokens, dispatch latent payloads" data-steps="4">
+    <section class="chapter" id="chapter-14" data-title="Stable LatentMoE: route full tokens, dispatch latent payloads" data-steps="4">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 13 / Stable LatentMoE</p>
+            <p class="eyebrow">Chapter 14 / Stable LatentMoE</p>
             <h2>LatentMoE: Router 看完整 token，专家处理更窄 payload</h2>
           </div>
           <p class="chapter-lead">第三个回答：让每个 token 只激活少量专家；公共能力走 full-width shared path，专长路径处理更窄 latent payload。</p>
@@ -5123,11 +5213,11 @@
       </div>
     </section>
 
-    <section class="chapter" id="chapter-14" data-title="Native Vision: visual tokens enter the same backbone" data-steps="4">
+    <section class="chapter" id="chapter-15" data-title="Native Vision: visual tokens enter the same backbone" data-steps="4">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 14 / Native multimodality</p>
+            <p class="eyebrow">Chapter 15 / Native multimodality</p>
             <h2>Native Vision: 视觉 token 进入同一个 K3 backbone</h2>
           </div>
           <p class="chapter-lead">图像和视频先由 MoonViT-V2 编码，再投影到文本 backbone 的 embedding space；视觉与文字随后共享同一条主干信息流。</p>
@@ -5175,11 +5265,11 @@
       </div>
     </section>
 
-    <section class="chapter" id="chapter-15" data-title="GLM-5.2 and Kimi K3: architecture becomes a systems contract" data-steps="3">
+    <section class="chapter" id="chapter-16" data-title="GLM-5.2 and Kimi K3: architecture becomes a systems contract" data-steps="3">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 15 / Architecture → systems</p>
+            <p class="eyebrow">Chapter 16 / Architecture → systems</p>
             <h2>两种长上下文路线，一条系统分析主线</h2>
           </div>
           <p class="chapter-lead">架构没有消灭成本，而是把 dense cost 重组为 cache、state、selection、routing 与通信；这些新成本需要在 Prefill 和 Decode 中分别分析。</p>
@@ -5304,9 +5394,15 @@
         ],
         [
           "<strong>上下文持续累积</strong>：一条 agent trace 从需求、代码、工具结果一路走到当前 token，context 可能从 128K 延伸到 1M。",
-          "<strong>Token 轴的瓶颈</strong>：逐 token KV 状态随长度增长；decode 每一步读取更长历史，容量与 HBM 流量同时上升。",
-          "<strong>Depth 轴的瓶颈</strong>：PreNorm residual 以固定 +1 权重累加此前输出，hidden magnitude 随深度增长，单层相对贡献被稀释。",
-          "<strong>Channel 轴的瓶颈</strong>：Dense 容量扩张会同步抬高每 token 计算；不同记忆 channel 也需要各自的保留节奏。下一页开始逐一回答。"
+          "<strong>问题一 · Token</strong>：逐 token KV 状态随长度增长；怎样避免 decode 每一步都读取更长的历史？",
+          "<strong>问题二 · Depth</strong>：固定 residual 把此前输出混进单一累计流；当前层怎样重新找到真正有用的早期表示？",
+          "<strong>问题三 · Channel</strong>：怎样扩大模型容量，却不让每个 token 执行全部参数？不同记忆 channel 又该如何独立保留信息？"
+        ],
+        [
+          "<strong>共同原则</strong>：K3 避免每一层、每一步都全量搬运历史、层表示和模型参数，把主要信息流改造成压缩、选择与路由。",
+          "<strong>回答一 · Token</strong>：KDA 维护固定尺寸 state，Gated MLA 周期性提供全局 token-to-token 交互。",
+          "<strong>回答二 · Depth</strong>：Attention Residuals 把此前 block 变成可寻址 sources，由当前层重新分配权重。",
+          "<strong>回答三 · Channel</strong>：Stable LatentMoE 只激活选中的专家；KDA 的 channel-wise gate 让不同记忆通道独立遗忘。"
         ],
         [
           "<strong>完整档案</strong>：Full Attention 为每个历史 token 新增一份 K/V，未来 query 可以直接访问任意记录。",

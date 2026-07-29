@@ -72,7 +72,7 @@ glm5.2-visualization/
 ## 提交前检查
 
 1. 使用本地静态服务器打开页面。
-2. 从 Chapter 01 逐步播放到 Chapter 15。
+2. 从 Chapter 01 逐步播放到 Chapter 16。
 3. 确认所有 tensor 的 token 数、shape 标签和视觉行列一致。
 4. 确认左右方向键、上下方向键、空格和导航按钮均能正常工作。
 5. 确认浏览器控制台没有 JavaScript 错误。
