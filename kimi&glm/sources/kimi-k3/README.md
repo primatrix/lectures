@@ -16,6 +16,8 @@ MoonshotAI/MoonEP:               0f385f038fc33bec22e3bcf5a07a8a22693e754c
 
 ## 1. 第一优先级：Kimi K3 本体
 
+完整的参数、公式和实现核对保留在[架构研究笔记](architecture-reference.md)中；面向观众的主讲内容见[架构讲义](../../architecture/kimi-k3.md)与 [HTML 演示](../../architecture/kimi-k3-visualization/index.html)。
+
 ### 官方技术报告
 
 - 报告页：[arXiv:2607.24653](https://arxiv.org/abs/2607.24653)

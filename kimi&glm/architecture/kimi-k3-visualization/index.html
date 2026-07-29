@@ -1,0 +1,2480 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="面向大模型从业者的 Kimi K3 架构交互式讲解：KDA、Hybrid Attention、Attention Residuals、LatentMoE 与 Native Vision。">
+  <meta name="theme-color" content="#071019">
+  <title>Kimi K3 · Information Flow</title>
+  <style>
+    :root {
+      --bg: #071019;
+      --bg-soft: #0b1723;
+      --panel: rgba(15, 29, 43, 0.88);
+      --panel-strong: #102235;
+      --line: rgba(171, 205, 230, 0.16);
+      --line-strong: rgba(171, 205, 230, 0.32);
+      --text: #f4f8fb;
+      --muted: #9db0c0;
+      --cyan: #63e6d5;
+      --cyan-soft: rgba(99, 230, 213, 0.14);
+      --violet: #a58cff;
+      --violet-soft: rgba(165, 140, 255, 0.14);
+      --amber: #ffca6b;
+      --amber-soft: rgba(255, 202, 107, 0.14);
+      --rose: #ff8da1;
+      --rose-soft: rgba(255, 141, 161, 0.14);
+      --blue: #73b7ff;
+      --blue-soft: rgba(115, 183, 255, 0.14);
+      --header-h: 66px;
+      --footer-h: 92px;
+      --rail-w: 92px;
+      --radius: 18px;
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+      --ease: cubic-bezier(.2, .75, .2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      color-scheme: dark;
+      scroll-behavior: smooth;
+      scroll-snap-type: y mandatory;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 14% 20%, rgba(99, 230, 213, 0.08), transparent 26rem),
+        radial-gradient(circle at 82% 72%, rgba(165, 140, 255, 0.08), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .grid-noise {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.34;
+      background-image:
+        linear-gradient(rgba(158, 193, 219, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(158, 193, 219, 0.035) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: linear-gradient(to bottom, black, transparent 92%);
+    }
+
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 40;
+      height: var(--header-h);
+      display: grid;
+      grid-template-columns: minmax(220px, 0.8fr) minmax(260px, 1.5fr) minmax(220px, 0.8fr);
+      align-items: center;
+      gap: 22px;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(7, 16, 25, 0.88);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      color: #dce9f2;
+      font-size: 12px;
+      font-weight: 750;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      width: 29px;
+      height: 29px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(99, 230, 213, 0.52);
+      border-radius: 9px;
+      background: var(--cyan-soft);
+      color: var(--cyan);
+      font-weight: 850;
+      letter-spacing: 0;
+      box-shadow: inset 0 0 18px rgba(99, 230, 213, 0.08);
+    }
+
+    .chapter-title {
+      overflow: hidden;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      text-align: center;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .top-progress {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 12px;
+      color: #c3d1dc;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .progress-track {
+      width: min(15vw, 170px);
+      height: 3px;
+      overflow: hidden;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .progress-fill {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--violet));
+      transition: width 360ms var(--ease);
+    }
+
+    .chapter-rail {
+      position: fixed;
+      top: var(--header-h);
+      bottom: var(--footer-h);
+      left: 0;
+      z-index: 35;
+      width: var(--rail-w);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      border-right: 1px solid var(--line);
+      background: rgba(7, 16, 25, 0.7);
+      backdrop-filter: blur(14px);
+    }
+
+    .rail-button {
+      position: relative;
+      width: 12px;
+      height: 12px;
+      padding: 0;
+      border: 1px solid rgba(157, 176, 192, 0.4);
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      transition: all 220ms var(--ease);
+    }
+
+    .rail-button::after {
+      position: absolute;
+      inset: 3px;
+      content: "";
+      border-radius: inherit;
+      background: transparent;
+      transition: all 220ms var(--ease);
+    }
+
+    .rail-button:hover,
+    .rail-button[aria-current="true"] {
+      border-color: var(--cyan);
+      transform: scale(1.18);
+    }
+
+    .rail-button[aria-current="true"]::after {
+      background: var(--cyan);
+      box-shadow: 0 0 18px rgba(99, 230, 213, 0.52);
+    }
+
+    .rail-label {
+      position: absolute;
+      top: 50%;
+      left: 24px;
+      width: max-content;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(10, 23, 34, 0.96);
+      color: #dce7ef;
+      font-size: 11px;
+      font-weight: 650;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-6px, -50%);
+      transition: 180ms var(--ease);
+      white-space: nowrap;
+    }
+
+    .rail-button:hover .rail-label,
+    .rail-button:focus-visible .rail-label {
+      opacity: 1;
+      transform: translate(0, -50%);
+    }
+
+    main {
+      margin-left: var(--rail-w);
+    }
+
+    .chapter {
+      min-height: 100svh;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: grid;
+      align-items: center;
+      padding: calc(var(--header-h) + 28px) 34px calc(var(--footer-h) + 30px);
+    }
+
+    .chapter-shell {
+      width: min(1380px, 100%);
+      margin: 0 auto;
+    }
+
+    .chapter-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(280px, 0.7fr);
+      align-items: end;
+      gap: clamp(32px, 5vw, 84px);
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      margin: 0 0 9px;
+      color: var(--cyan);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      font-weight: 750;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      max-width: 900px;
+      font-size: clamp(34px, 4.2vw, 64px);
+      line-height: 1.06;
+      letter-spacing: -0.04em;
+      text-wrap: balance;
+    }
+
+    h2 {
+      font-size: clamp(31px, 3.7vw, 56px);
+    }
+
+    .chapter-lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(14px, 1.2vw, 18px);
+      line-height: 1.62;
+      text-wrap: pretty;
+    }
+
+    .stage {
+      position: relative;
+      min-height: min(64vh, 650px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background:
+        linear-gradient(145deg, rgba(17, 34, 50, 0.9), rgba(8, 19, 29, 0.88)),
+        var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .stage::before {
+      position: absolute;
+      inset: 0;
+      content: "";
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, transparent 49.9%, rgba(255,255,255,0.025) 50%, transparent 50.1%),
+        linear-gradient(transparent 49.9%, rgba(255,255,255,0.025) 50%, transparent 50.1%);
+      background-size: 90px 90px;
+      mask-image: linear-gradient(to bottom right, rgba(0,0,0,.55), transparent 75%);
+    }
+
+    .stage-label,
+    .stage-counter {
+      position: absolute;
+      top: 18px;
+      z-index: 4;
+      color: #849bad;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .stage-label {
+      left: 21px;
+    }
+
+    .stage-counter {
+      right: 21px;
+      text-align: right;
+    }
+
+    .step-reveal {
+      opacity: 0;
+      transform: translateY(12px) scale(0.985);
+      transition:
+        opacity 420ms var(--ease),
+        transform 420ms var(--ease),
+        border-color 260ms var(--ease),
+        background 260ms var(--ease),
+        filter 260ms var(--ease);
+    }
+
+    .step-reveal.is-visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    .step-reveal.is-visible:not(.is-current).soft-dim {
+      opacity: 0.56;
+      filter: saturate(0.65);
+    }
+
+    .is-current {
+      border-color: rgba(99, 230, 213, 0.62) !important;
+      box-shadow: 0 0 0 1px rgba(99, 230, 213, 0.08), 0 16px 42px rgba(0, 0, 0, 0.22);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 25px;
+      padding: 0 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.03);
+      color: #bdd0de;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .takeaway {
+      padding: 15px 18px;
+      border: 1px solid rgba(99, 230, 213, 0.26);
+      border-radius: 14px;
+      background: var(--cyan-soft);
+      color: #dffcf7;
+      font-size: clamp(14px, 1.15vw, 17px);
+      font-weight: 650;
+      line-height: 1.5;
+    }
+
+    .control-dock {
+      position: fixed;
+      inset: auto 0 0 0;
+      z-index: 45;
+      min-height: var(--footer-h);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 22px;
+      padding: 13px 26px 13px calc(var(--rail-w) + 26px);
+      border-top: 1px solid var(--line);
+      background: rgba(7, 16, 25, 0.9);
+      backdrop-filter: blur(18px);
+    }
+
+    .step-caption {
+      min-width: 0;
+      color: #b9c9d5;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .step-caption strong {
+      color: var(--text);
+    }
+
+    .dock-actions {
+      display: flex;
+      gap: 9px;
+    }
+
+    .nav-button {
+      min-width: 94px;
+      height: 40px;
+      padding: 0 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: 11px;
+      background: rgba(255,255,255,.035);
+      cursor: pointer;
+      transition: 180ms var(--ease);
+    }
+
+    .nav-button:hover:not(:disabled) {
+      border-color: rgba(99, 230, 213, 0.5);
+      background: rgba(99, 230, 213, 0.08);
+    }
+
+    .nav-button.primary {
+      border-color: rgba(99, 230, 213, 0.44);
+      background: var(--cyan-soft);
+      color: #e7fffb;
+    }
+
+    .keyboard-hint {
+      color: #72899b;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 9px;
+      line-height: 1.45;
+      text-align: right;
+      text-transform: uppercase;
+    }
+
+    /* Chapter 01 */
+    .thesis-stage {
+      display: grid;
+      place-items: center;
+      padding: 58px 7% 38px;
+    }
+
+    .thesis-question {
+      position: relative;
+      z-index: 2;
+      max-width: 880px;
+      text-align: center;
+    }
+
+    .thesis-question .kicker {
+      display: block;
+      margin-bottom: 17px;
+      color: var(--amber);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .thesis-question strong {
+      display: block;
+      font-size: clamp(29px, 3.5vw, 54px);
+      line-height: 1.13;
+      letter-spacing: -0.035em;
+      text-wrap: balance;
+    }
+
+    .axis-triad {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      margin-top: 34px;
+    }
+
+    .axis-card {
+      min-height: 154px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(7, 18, 28, 0.72);
+    }
+
+    .axis-card .axis-number {
+      display: grid;
+      width: 31px;
+      height: 31px;
+      place-items: center;
+      margin-bottom: 15px;
+      border-radius: 9px;
+      background: rgba(255,255,255,.05);
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+    }
+
+    .axis-card h3 {
+      margin: 0 0 7px;
+      font-size: 18px;
+    }
+
+    .axis-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .axis-card.token h3 { color: var(--cyan); }
+    .axis-card.depth h3 { color: var(--violet); }
+    .axis-card.channel h3 { color: var(--amber); }
+
+    .thesis-answer {
+      width: 100%;
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .answer-chip {
+      padding: 12px 16px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255,255,255,.025);
+      text-align: center;
+      font-weight: 720;
+    }
+
+    .answer-chip:nth-child(1) { color: var(--cyan); }
+    .answer-chip:nth-child(2) { color: var(--violet); }
+    .answer-chip:nth-child(3) { color: var(--amber); }
+
+    /* Chapter 02 */
+    .axes-stage {
+      display: grid;
+      grid-template-columns: 0.9fr 1.25fr;
+      gap: 38px;
+      align-items: center;
+      padding: 58px 6%;
+    }
+
+    .baseline-block {
+      position: relative;
+      min-height: 455px;
+      display: grid;
+      place-items: center;
+    }
+
+    .transformer-core {
+      position: relative;
+      z-index: 2;
+      width: min(310px, 90%);
+      padding: 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: 22px;
+      background: rgba(12, 29, 43, 0.92);
+      box-shadow: 0 25px 55px rgba(0,0,0,.28);
+    }
+
+    .core-title {
+      margin-bottom: 12px;
+      color: #dce8f0;
+      font-size: 13px;
+      font-weight: 750;
+      letter-spacing: 0.08em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .core-module {
+      margin-top: 9px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255,255,255,.025);
+      text-align: center;
+    }
+
+    .core-module strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
+
+    .core-module span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .axis-arrow {
+      position: absolute;
+      z-index: 1;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 10px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .axis-arrow::before {
+      display: block;
+      content: "";
+      background: currentColor;
+      opacity: .42;
+    }
+
+    .axis-arrow.tokens {
+      top: 50%;
+      left: 0;
+      color: var(--cyan);
+      transform: translateY(-50%);
+    }
+
+    .axis-arrow.tokens::before {
+      width: 95px;
+      height: 1px;
+      margin-bottom: 8px;
+    }
+
+    .axis-arrow.layers {
+      top: 10px;
+      right: 12%;
+      color: var(--violet);
+    }
+
+    .axis-arrow.layers::before {
+      width: 1px;
+      height: 88px;
+      margin: 0 auto 8px;
+    }
+
+    .axis-arrow.channels {
+      right: 0;
+      bottom: 12%;
+      color: var(--amber);
+    }
+
+    .axis-arrow.channels::before {
+      width: 95px;
+      height: 1px;
+      margin-bottom: 8px;
+    }
+
+    .pressure-list {
+      display: grid;
+      gap: 13px;
+    }
+
+    .pressure-card {
+      display: grid;
+      grid-template-columns: 44px 1fr auto;
+      align-items: center;
+      gap: 15px;
+      min-height: 102px;
+      padding: 16px 17px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(7, 18, 28, 0.66);
+    }
+
+    .pressure-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      font-size: 18px;
+    }
+
+    .pressure-card strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
+
+    .pressure-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .pressure-card.token strong { color: var(--cyan); }
+    .pressure-card.depth strong { color: var(--violet); }
+    .pressure-card.channel strong { color: var(--amber); }
+
+    /* Chapter 03 */
+    .memory-stage {
+      display: grid;
+      grid-template-columns: 1fr 68px 1fr;
+      align-items: center;
+      gap: 20px;
+      padding: 58px 5% 42px;
+    }
+
+    .memory-side {
+      min-height: 448px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(7, 18, 28, 0.68);
+    }
+
+    .memory-side h3 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .memory-side > p {
+      margin: 7px 0 18px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .history-ledger {
+      display: grid;
+      gap: 8px;
+    }
+
+    .token-record {
+      display: grid;
+      grid-template-columns: 38px 1fr 1fr;
+      gap: 8px;
+      align-items: center;
+      min-height: 46px;
+      padding: 7px 9px;
+      border: 1px solid rgba(115, 183, 255, 0.18);
+      border-radius: 11px;
+      background: var(--blue-soft);
+    }
+
+    .token-record b {
+      color: var(--blue);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+    }
+
+    .feature-strip {
+      height: 12px;
+      border-radius: 4px;
+      background: repeating-linear-gradient(90deg, rgba(115,183,255,.76) 0 7px, rgba(115,183,255,.22) 7px 10px);
+    }
+
+    .feature-strip.value {
+      background: repeating-linear-gradient(90deg, rgba(165,140,255,.72) 0 7px, rgba(165,140,255,.2) 7px 10px);
+    }
+
+    .memory-bridge {
+      color: var(--cyan);
+      font-size: 32px;
+      text-align: center;
+    }
+
+    .memory-bridge small {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 9px;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
+    .state-wrap {
+      display: grid;
+      place-items: center;
+      margin: 22px 0 18px;
+    }
+
+    .state-matrix {
+      width: min(270px, 80%);
+      aspect-ratio: 1.32;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 5px;
+      padding: 14px;
+      border: 1px solid rgba(99, 230, 213, 0.36);
+      border-radius: 17px;
+      background: rgba(99, 230, 213, 0.07);
+      box-shadow: inset 0 0 42px rgba(99,230,213,.05);
+    }
+
+    .state-cell {
+      border-radius: 5px;
+      background: rgba(99, 230, 213, var(--cell-alpha, .18));
+      transition: 360ms var(--ease);
+    }
+
+    .is-current .state-cell:nth-child(3n+1) {
+      --cell-alpha: .72;
+      box-shadow: 0 0 12px rgba(99,230,213,.22);
+    }
+
+    .memory-rule {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .rule-part {
+      padding: 11px 8px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,255,255,.025);
+      text-align: center;
+    }
+
+    .rule-part strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 12px;
+    }
+
+    .rule-part span {
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .fixed-footnote {
+      margin-top: 14px;
+      color: #cceee9;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    /* Chapter 04 */
+    .hybrid-stage {
+      padding: 62px 5% 42px;
+    }
+
+    .archive-strip {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 7px;
+      margin: 24px 0 34px;
+    }
+
+    .archive-token {
+      min-height: 52px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(115, 183, 255, 0.16);
+      border-radius: 10px;
+      background: rgba(115, 183, 255, 0.08);
+      color: #9ecbfa;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 10px;
+      transition: 280ms var(--ease);
+    }
+
+    .archive-token.is-hit {
+      border-color: var(--amber);
+      background: var(--amber-soft);
+      color: var(--amber);
+      box-shadow: 0 0 22px rgba(255,202,107,.16);
+    }
+
+    .hybrid-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .hybrid-card {
+      min-height: 305px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(7,18,28,.7);
+    }
+
+    .hybrid-card h3 {
+      margin: 0 0 7px;
+      font-size: 18px;
+    }
+
+    .hybrid-card > p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .working-memory {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .working-memory span {
+      aspect-ratio: 1;
+      border-radius: 9px;
+      background: rgba(99,230,213,var(--a,.17));
+    }
+
+    .global-lens {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      display: grid;
+      place-items: center;
+      margin: 28px auto 0;
+      border: 1px solid rgba(255,202,107,.46);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,202,107,.18), rgba(255,202,107,.04) 60%, transparent 61%);
+      color: var(--amber);
+      font-weight: 780;
+      text-align: center;
+      box-shadow: 0 0 48px rgba(255,202,107,.1);
+    }
+
+    .global-lens::before,
+    .global-lens::after {
+      position: absolute;
+      content: "";
+      border: 1px solid rgba(255,202,107,.18);
+      border-radius: 50%;
+    }
+
+    .global-lens::before { inset: 15px; }
+    .global-lens::after { inset: 31px; }
+
+    .hybrid-rhythm {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      margin-top: 18px;
+    }
+
+    .rhythm-block {
+      min-width: 102px;
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,255,255,.025);
+      text-align: center;
+      font-size: 11px;
+    }
+
+    .rhythm-block.kda {
+      border-color: rgba(99,230,213,.24);
+      color: var(--cyan);
+    }
+
+    .rhythm-block.mla {
+      border-color: rgba(255,202,107,.3);
+      color: var(--amber);
+    }
+
+    .rhythm-dots {
+      color: var(--muted);
+      letter-spacing: .18em;
+    }
+
+    /* Chapter 05 */
+    .depth-stage {
+      display: grid;
+      grid-template-columns: 0.86fr 1.14fr;
+      gap: 22px;
+      padding: 62px 5% 42px;
+    }
+
+    .depth-panel {
+      min-height: 440px;
+      padding: 21px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(7,18,28,.68);
+    }
+
+    .depth-panel h3 {
+      margin: 0 0 7px;
+      font-size: 17px;
+    }
+
+    .depth-panel > p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .relay-chain {
+      display: grid;
+      gap: 10px;
+      margin: 30px auto 0;
+      width: min(320px, 95%);
+    }
+
+    .relay-node {
+      position: relative;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.025);
+      text-align: center;
+      font-size: 12px;
+    }
+
+    .relay-node:not(:last-child)::after {
+      position: absolute;
+      left: 50%;
+      bottom: -11px;
+      width: 1px;
+      height: 11px;
+      content: "";
+      background: var(--line-strong);
+    }
+
+    .relay-node.faded {
+      opacity: .42;
+    }
+
+    .shelf-layout {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      gap: 20px;
+      align-items: center;
+      margin-top: 23px;
+    }
+
+    .representation-shelf {
+      display: grid;
+      gap: 10px;
+    }
+
+    .source-repr {
+      position: relative;
+      padding: 13px 15px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.025);
+      transition: 260ms var(--ease);
+    }
+
+    .source-repr strong {
+      display: block;
+      margin-bottom: 3px;
+      font-size: 12px;
+    }
+
+    .source-repr span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .source-repr.selected {
+      border-color: rgba(165,140,255,.6);
+      background: var(--violet-soft);
+      color: #dcd3ff;
+      transform: translateX(8px);
+    }
+
+    .depth-query {
+      width: 112px;
+      height: 112px;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      border: 1px solid rgba(165,140,255,.54);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(165,140,255,.18), rgba(165,140,255,.04));
+      color: var(--violet);
+      font-size: 12px;
+      font-weight: 760;
+      text-align: center;
+    }
+
+    .depth-examples {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 17px;
+    }
+
+    .depth-example {
+      padding: 11px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,255,255,.022);
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .depth-example strong {
+      color: var(--text);
+    }
+
+    /* Chapter 06 */
+    .moe-stage {
+      padding: 62px 4.5% 42px;
+    }
+
+    .moe-flow {
+      display: grid;
+      grid-template-columns: 150px 1fr 160px;
+      gap: 22px;
+      align-items: center;
+      min-height: 430px;
+    }
+
+    .wide-token,
+    .combined-token {
+      padding: 16px;
+      border: 1px solid rgba(255,202,107,.38);
+      border-radius: 14px;
+      background: var(--amber-soft);
+      color: #ffe8b8;
+      text-align: center;
+      font-weight: 720;
+    }
+
+    .wide-token .wide-bars,
+    .combined-token .wide-bars {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 3px;
+      margin-top: 10px;
+    }
+
+    .wide-bars i {
+      height: 16px;
+      border-radius: 3px;
+      background: rgba(255,202,107,.36);
+    }
+
+    .moe-center {
+      display: grid;
+      gap: 14px;
+    }
+
+    .shared-lane,
+    .routed-lane {
+      position: relative;
+      min-height: 160px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(7,18,28,.68);
+    }
+
+    .lane-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 13px;
+    }
+
+    .lane-title strong {
+      font-size: 13px;
+    }
+
+    .shared-box {
+      min-height: 86px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(115,183,255,.26);
+      border-radius: 12px;
+      background: var(--blue-soft);
+      color: #cde7ff;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .compress-route {
+      display: grid;
+      grid-template-columns: 126px 1fr;
+      gap: 13px;
+      align-items: center;
+    }
+
+    .latent-neck {
+      padding: 13px 9px;
+      border: 1px solid rgba(255,202,107,.32);
+      border-radius: 12px;
+      background: var(--amber-soft);
+      text-align: center;
+    }
+
+    .latent-neck strong {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--amber);
+      font-size: 12px;
+    }
+
+    .narrow-bars {
+      width: 58%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 3px;
+      margin: 0 auto;
+    }
+
+    .narrow-bars i {
+      height: 15px;
+      border-radius: 3px;
+      background: rgba(255,202,107,.42);
+    }
+
+    .expert-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .expert {
+      min-height: 68px;
+      display: grid;
+      place-items: center;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,255,255,.02);
+      color: #7f95a6;
+      font-size: 10px;
+      text-align: center;
+      transition: 260ms var(--ease);
+    }
+
+    .expert.selected {
+      border-color: rgba(99,230,213,.5);
+      background: var(--cyan-soft);
+      color: #dffffa;
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0,0,0,.2);
+    }
+
+    .stability-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .stability-card {
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.02);
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .stability-card strong {
+      display: block;
+      color: #dbe6ee;
+      font-size: 10px;
+    }
+
+    /* Chapter 07 */
+    .vision-stage {
+      padding: 62px 4.5% 42px;
+    }
+
+    .vision-pipeline {
+      display: grid;
+      grid-template-columns: 1.05fr 52px 0.8fr 52px 1fr;
+      gap: 14px;
+      align-items: center;
+      min-height: 380px;
+    }
+
+    .visual-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .image-frame,
+    .video-frame {
+      position: relative;
+      min-height: 180px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background:
+        linear-gradient(150deg, rgba(115,183,255,.2), rgba(165,140,255,.08)),
+        #0d2233;
+    }
+
+    .image-frame::before {
+      position: absolute;
+      right: 16%;
+      bottom: 18%;
+      width: 70px;
+      height: 70px;
+      content: "";
+      border-radius: 50%;
+      background: rgba(255,202,107,.5);
+      box-shadow: -90px 44px 0 20px rgba(99,230,213,.22);
+    }
+
+    .image-frame::after {
+      position: absolute;
+      right: -15%;
+      bottom: -32%;
+      width: 120%;
+      height: 70%;
+      content: "";
+      border-radius: 50% 50% 0 0;
+      background: rgba(99,230,213,.18);
+      transform: rotate(-8deg);
+    }
+
+    .video-frame {
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(90deg, transparent 49%, rgba(255,255,255,.08) 50%, transparent 51%),
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px),
+        #132131;
+      background-size: 100% 100%, 26px 26px, 26px 26px, 100% 100%;
+    }
+
+    .play-mark {
+      position: relative;
+      z-index: 2;
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      background: rgba(7,16,25,.56);
+      font-size: 20px;
+    }
+
+    .frame-label {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2;
+      padding: 5px 7px;
+      border-radius: 7px;
+      background: rgba(7,16,25,.68);
+      color: #dbe8f0;
+      font-size: 9px;
+      text-transform: uppercase;
+    }
+
+    .pipeline-arrow {
+      color: var(--muted);
+      font-size: 28px;
+      text-align: center;
+    }
+
+    .patch-projector {
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+    }
+
+    .patch-grid {
+      width: 150px;
+      aspect-ratio: 1;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 4px;
+      padding: 10px;
+      border: 1px solid rgba(115,183,255,.3);
+      border-radius: 16px;
+      background: var(--blue-soft);
+    }
+
+    .patch-grid i {
+      border-radius: 4px;
+      background: rgba(115,183,255,var(--pa,.22));
+    }
+
+    .projector-chip {
+      padding: 9px 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.025);
+      color: var(--muted);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .unified-stream {
+      min-height: 250px;
+      padding: 17px;
+      border: 1px solid rgba(165,140,255,.3);
+      border-radius: 18px;
+      background: var(--violet-soft);
+    }
+
+    .unified-stream h3 {
+      margin: 0 0 14px;
+      font-size: 15px;
+    }
+
+    .token-stream {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .stream-token {
+      min-width: 38px;
+      min-height: 34px;
+      display: grid;
+      place-items: center;
+      padding: 5px 8px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: rgba(7,16,25,.52);
+      color: #b4c6d4;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 9px;
+    }
+
+    .stream-token.visual {
+      border-color: rgba(115,183,255,.34);
+      color: var(--blue);
+    }
+
+    .stream-token.text {
+      border-color: rgba(99,230,213,.3);
+      color: var(--cyan);
+    }
+
+    .shared-backbone {
+      margin-top: 17px;
+      padding: 13px;
+      border: 1px solid rgba(165,140,255,.34);
+      border-radius: 12px;
+      background: rgba(7,16,25,.48);
+      color: #ded7ff;
+      font-size: 11px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .vision-loop {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 9px;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .loop-chip {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255,255,255,.02);
+      color: var(--muted);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .loop-arrow {
+      color: var(--cyan);
+      font-size: 14px;
+    }
+
+    /* Chapter 08 */
+    .summary-stage {
+      padding: 62px 4.5% 42px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .summary-card {
+      min-height: 330px;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(7,18,28,.68);
+    }
+
+    .summary-card .summary-axis {
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .summary-card h3 {
+      margin: 12px 0 7px;
+      font-size: 21px;
+    }
+
+    .summary-card.token h3 { color: var(--cyan); }
+    .summary-card.depth h3 { color: var(--violet); }
+    .summary-card.channel h3 { color: var(--amber); }
+
+    .summary-card > p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .summary-mechanism {
+      margin: 20px 0 auto;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.025);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .cost-shift {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      color: #8fa5b5;
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .final-thesis {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    .final-thesis .takeaway {
+      font-size: clamp(15px, 1.4vw, 19px);
+    }
+
+    .source-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 7px;
+    }
+
+    .source-links a {
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--muted);
+      font-size: 9px;
+      text-decoration: none;
+      transition: 180ms var(--ease);
+    }
+
+    .source-links a:hover {
+      border-color: rgba(99,230,213,.4);
+      color: var(--cyan);
+    }
+
+    @media (max-width: 1050px) {
+      :root {
+        --rail-w: 64px;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .chapter-title {
+        display: none;
+      }
+
+      .chapter-heading {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .stage {
+        min-height: 660px;
+      }
+
+      .axes-stage,
+      .depth-stage {
+        grid-template-columns: 1fr;
+      }
+
+      .baseline-block {
+        min-height: 260px;
+      }
+
+      .pressure-list {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .pressure-card {
+        grid-template-columns: 34px 1fr;
+      }
+
+      .pressure-card .tag {
+        display: none;
+      }
+
+      .memory-stage {
+        grid-template-columns: 1fr;
+      }
+
+      .memory-bridge {
+        transform: rotate(90deg);
+      }
+
+      .memory-side {
+        min-height: auto;
+      }
+
+      .moe-flow {
+        grid-template-columns: 1fr;
+      }
+
+      .vision-pipeline {
+        grid-template-columns: 1fr;
+      }
+
+      .pipeline-arrow {
+        transform: rotate(90deg);
+      }
+    }
+
+    @media (max-width: 760px) {
+      :root {
+        --header-h: 58px;
+        --footer-h: 118px;
+        --rail-w: 0px;
+      }
+
+      html {
+        scroll-snap-type: none;
+      }
+
+      .topbar {
+        padding: 0 16px;
+      }
+
+      .brand {
+        font-size: 10px;
+      }
+
+      .progress-track {
+        display: none;
+      }
+
+      .chapter-rail {
+        display: none;
+      }
+
+      main {
+        margin-left: 0;
+      }
+
+      .chapter {
+        min-height: auto;
+        padding: calc(var(--header-h) + 24px) 14px calc(var(--footer-h) + 24px);
+      }
+
+      .chapter-heading {
+        margin-bottom: 16px;
+      }
+
+      h1,
+      h2 {
+        font-size: 33px;
+      }
+
+      .stage {
+        min-height: 720px;
+        border-radius: 18px;
+      }
+
+      .stage-counter {
+        display: none;
+      }
+
+      .axis-triad,
+      .thesis-answer,
+      .hybrid-grid,
+      .summary-grid,
+      .pressure-list {
+        grid-template-columns: 1fr;
+      }
+
+      .axis-card {
+        min-height: auto;
+      }
+
+      .archive-strip {
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      .hybrid-rhythm {
+        flex-wrap: wrap;
+      }
+
+      .shelf-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .depth-query {
+        margin: 0 auto;
+      }
+
+      .compress-route,
+      .depth-examples,
+      .stability-row,
+      .visual-inputs {
+        grid-template-columns: 1fr;
+      }
+
+      .expert-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .final-thesis {
+        grid-template-columns: 1fr;
+      }
+
+      .source-links {
+        justify-content: flex-start;
+      }
+
+      .control-dock {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 10px 14px;
+      }
+
+      .step-caption {
+        font-size: 11px;
+      }
+
+      .dock-actions {
+        justify-content: space-between;
+      }
+
+      .nav-button {
+        min-width: 46%;
+      }
+
+      .keyboard-hint {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-noise" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">K3</span>
+      Kimi K3 / Information Flow
+    </div>
+    <div class="chapter-title" id="chapter-title">01 · Kimi K3 重新设计信息如何流动</div>
+    <div class="top-progress">
+      <span id="progress-text">01 / 08</span>
+      <span class="progress-track" aria-hidden="true"><span class="progress-fill" id="progress-fill"></span></span>
+    </div>
+  </header>
+
+  <nav class="chapter-rail" aria-label="章节导航">
+    <button class="rail-button" type="button" data-target="chapter-1" aria-label="第一章 核心问题" aria-current="true"><span class="rail-label">01 / 核心问题</span></button>
+    <button class="rail-button" type="button" data-target="chapter-2" aria-label="第二章 三条信息通道"><span class="rail-label">02 / 三条通道</span></button>
+    <button class="rail-button" type="button" data-target="chapter-3" aria-label="第三章 KDA 工作记忆"><span class="rail-label">03 / KDA</span></button>
+    <button class="rail-button" type="button" data-target="chapter-4" aria-label="第四章 Hybrid Attention"><span class="rail-label">04 / Hybrid</span></button>
+    <button class="rail-button" type="button" data-target="chapter-5" aria-label="第五章 Attention Residuals"><span class="rail-label">05 / AttnRes</span></button>
+    <button class="rail-button" type="button" data-target="chapter-6" aria-label="第六章 LatentMoE"><span class="rail-label">06 / LatentMoE</span></button>
+    <button class="rail-button" type="button" data-target="chapter-7" aria-label="第七章 Native Vision"><span class="rail-label">07 / Native Vision</span></button>
+    <button class="rail-button" type="button" data-target="chapter-8" aria-label="第八章 架构总结"><span class="rail-label">08 / 总结</span></button>
+  </nav>
+
+  <main>
+    <section class="chapter" id="chapter-1" data-title="Kimi K3 重新设计信息如何流动" data-steps="3">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 01 / The thesis</p>
+            <h1>Kimi K3 重新设计的，是信息如何流动</h1>
+          </div>
+          <p class="chapter-lead">先不看参数和层数。理解 K3，只需要追踪一件事：一个 token 如何从更长的历史、更早的层和更合适的专家那里获得信息。</p>
+        </div>
+
+        <div class="stage thesis-stage">
+          <span class="stage-label">The architecture question</span>
+          <span class="stage-counter">distance · depth · specialization</span>
+
+          <div class="thesis-question step-reveal" data-show-at="0" data-focus-at="0">
+            <span class="kicker">Long-horizon intelligence</span>
+            <strong>怎样让信息走得更远，<br>又不在每一步都支付完整成本？</strong>
+          </div>
+
+          <div class="axis-triad">
+            <article class="axis-card token step-reveal soft-dim" data-show-at="1" data-focus-at="1">
+              <span class="axis-number">01</span>
+              <h3>跨 Token</h3>
+              <p>长历史怎样保留？当前 token 怎样找到很久以前的信息？</p>
+            </article>
+            <article class="axis-card depth step-reveal soft-dim" data-show-at="1" data-focus-at="1">
+              <span class="axis-number">02</span>
+              <h3>跨 Depth</h3>
+              <p>深层网络怎样重新读取早期表示，而不是只接住上一层输出？</p>
+            </article>
+            <article class="axis-card channel step-reveal soft-dim" data-show-at="1" data-focus-at="1">
+              <span class="axis-number">03</span>
+              <h3>跨 Channel</h3>
+              <p>不同 token 怎样进入不同专长路径，而不是都做同一套 dense 计算？</p>
+            </article>
+          </div>
+
+          <div class="thesis-answer step-reveal" data-show-at="2" data-focus-at="2">
+            <div class="answer-chip">KDA + Global Attention</div>
+            <div class="answer-chip">Attention Residuals</div>
+            <div class="answer-chip">LatentMoE</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-2" data-title="普通 Transformer 的三条信息通道" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 02 / Where information gets stuck</p>
+            <h2>一个 Transformer，三条信息通道</h2>
+          </div>
+          <p class="chapter-lead">Attention、Residual、FFN 分别承担 token mixing、depth mixing 和 channel mixing。K3 的三个核心模块，正好逐一改造这三条通道。</p>
+        </div>
+
+        <div class="stage axes-stage">
+          <span class="stage-label">Conventional Transformer block</span>
+          <span class="stage-counter">follow the information</span>
+
+          <div class="baseline-block step-reveal" data-show-at="0" data-focus-at="0">
+            <span class="axis-arrow tokens">across tokens</span>
+            <span class="axis-arrow layers">across depth</span>
+            <span class="axis-arrow channels">across channels</span>
+            <div class="transformer-core">
+              <div class="core-title">Hidden State</div>
+              <div class="core-module"><strong>Self Attention</strong><span>mix information across token positions</span></div>
+              <div class="core-module"><strong>Residual Stream</strong><span>carry information through model depth</span></div>
+              <div class="core-module"><strong>Dense FFN</strong><span>transform channels for every token</span></div>
+            </div>
+          </div>
+
+          <div class="pressure-list">
+            <article class="pressure-card token step-reveal soft-dim" data-show-at="1" data-focus-at="1">
+              <span class="pressure-icon">↔</span>
+              <div><strong>历史越来越长</strong><p>完整 attention 需要持续保存并读取每个历史 token 的状态。</p></div>
+              <span class="tag">token axis</span>
+            </article>
+            <article class="pressure-card depth step-reveal soft-dim" data-show-at="2" data-focus-at="2">
+              <span class="pressure-icon">↕</span>
+              <div><strong>深度只有一条接力棒</strong><p>普通 residual 把此前信息不断累加进同一条 hidden stream。</p></div>
+              <span class="tag">depth axis</span>
+            </article>
+            <article class="pressure-card channel step-reveal soft-dim" data-show-at="3" data-focus-at="3">
+              <span class="pressure-icon">⇥</span>
+              <div><strong>每个 token 做同一套 FFN</strong><p>dense 计算稳定直接，但无法把容量分配给不同专长。</p></div>
+              <span class="tag">channel axis</span>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-3" data-title="KDA：把完整档案变成工作记忆" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 03 / Kimi Delta Attention</p>
+            <h2>KDA：把完整档案变成会更新的工作记忆</h2>
+          </div>
+          <p class="chapter-lead">Full Attention 保存每个 token 的 K/V；KDA 让历史持续写入固定大小的状态。它不试图逐字保存，而是维护一份能被当前 query 读取的记忆摘要。</p>
+        </div>
+
+        <div class="stage memory-stage">
+          <span class="stage-label">Full history vs recurrent memory</span>
+          <span class="stage-counter">same stream · different state</span>
+
+          <article class="memory-side step-reveal soft-dim" data-show-at="0" data-focus-at="0">
+            <h3>Full Attention · 完整档案</h3>
+            <p>每来一个 token，就新增一份可被未来 query 访问的 K/V 记录。</p>
+            <div class="history-ledger">
+              <div class="token-record"><b>t₁</b><span class="feature-strip"></span><span class="feature-strip value"></span></div>
+              <div class="token-record"><b>t₂</b><span class="feature-strip"></span><span class="feature-strip value"></span></div>
+              <div class="token-record"><b>t₃</b><span class="feature-strip"></span><span class="feature-strip value"></span></div>
+              <div class="token-record"><b>t₄</b><span class="feature-strip"></span><span class="feature-strip value"></span></div>
+              <div class="token-record"><b>t₅</b><span class="feature-strip"></span><span class="feature-strip value"></span></div>
+              <div class="token-record"><b>t₆</b><span class="feature-strip"></span><span class="feature-strip value"></span></div>
+            </div>
+          </article>
+
+          <div class="memory-bridge step-reveal" data-show-at="1">→<small>compress<br>over time</small></div>
+
+          <article class="memory-side step-reveal soft-dim" data-show-at="1" data-focus-at="1">
+            <h3>KDA · 工作记忆</h3>
+            <p>每个 token 更新同一份 recurrent state；状态大小不随历史长度继续增长。</p>
+            <div class="state-wrap">
+              <div class="state-matrix step-reveal" data-show-at="1" data-focus-at="2" aria-label="KDA 固定大小状态矩阵">
+                <i class="state-cell" style="--cell-alpha:.16"></i><i class="state-cell" style="--cell-alpha:.35"></i><i class="state-cell" style="--cell-alpha:.11"></i><i class="state-cell" style="--cell-alpha:.42"></i><i class="state-cell" style="--cell-alpha:.18"></i><i class="state-cell" style="--cell-alpha:.31"></i>
+                <i class="state-cell" style="--cell-alpha:.39"></i><i class="state-cell" style="--cell-alpha:.14"></i><i class="state-cell" style="--cell-alpha:.28"></i><i class="state-cell" style="--cell-alpha:.12"></i><i class="state-cell" style="--cell-alpha:.48"></i><i class="state-cell" style="--cell-alpha:.21"></i>
+                <i class="state-cell" style="--cell-alpha:.19"></i><i class="state-cell" style="--cell-alpha:.46"></i><i class="state-cell" style="--cell-alpha:.13"></i><i class="state-cell" style="--cell-alpha:.32"></i><i class="state-cell" style="--cell-alpha:.17"></i><i class="state-cell" style="--cell-alpha:.38"></i>
+                <i class="state-cell" style="--cell-alpha:.44"></i><i class="state-cell" style="--cell-alpha:.22"></i><i class="state-cell" style="--cell-alpha:.34"></i><i class="state-cell" style="--cell-alpha:.15"></i><i class="state-cell" style="--cell-alpha:.29"></i><i class="state-cell" style="--cell-alpha:.41"></i>
+              </div>
+            </div>
+            <div class="memory-rule step-reveal" data-show-at="2" data-focus-at="2">
+              <div class="rule-part"><strong>Retain</strong><span>保留仍有用的旧记忆</span></div>
+              <div class="rule-part"><strong>Correct</strong><span>擦除与新事实冲突的方向</span></div>
+              <div class="rule-part"><strong>Write</strong><span>写入当前 token 带来的新信息</span></div>
+            </div>
+            <div class="fixed-footnote step-reveal" data-show-at="3" data-focus-at="3">当前 query 直接从这份状态中读取答案。</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-4" data-title="Hybrid Attention：工作记忆加全局查阅" data-steps="3">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 04 / Hybrid Attention</p>
+            <h2>工作记忆高效，但仍需要偶尔翻阅完整档案</h2>
+          </div>
+          <p class="chapter-lead">KDA 把历史压缩进固定状态，代价是信息会被概括。K3 周期性保留全局 MLA，让模型重新访问任意历史 token，而不是永远依赖摘要。</p>
+        </div>
+
+        <div class="stage hybrid-stage">
+          <span class="stage-label">Working memory + global lookup</span>
+          <span class="stage-counter">efficient most of the time · exact when needed</span>
+
+          <div class="archive-strip step-reveal" data-show-at="0" data-focus-at="0" aria-label="完整历史 token 档案">
+            <span class="archive-token">开头</span>
+            <span class="archive-token">定义</span>
+            <span class="archive-token">约束</span>
+            <span class="archive-token">代码</span>
+            <span class="archive-token">图像</span>
+            <span class="archive-token">工具</span>
+            <span class="archive-token">反馈</span>
+            <span class="archive-token is-hit">关键细节</span>
+            <span class="archive-token">修改</span>
+            <span class="archive-token">现在</span>
+          </div>
+
+          <div class="hybrid-grid">
+            <article class="hybrid-card step-reveal soft-dim" data-show-at="0" data-focus-at="0">
+              <h3 style="color:var(--cyan)">KDA · 维护工作记忆</h3>
+              <p>多数时候，模型只需要持续更新“目前最重要的状态”，无需反复扫描全部历史。</p>
+              <div class="working-memory" aria-label="KDA 工作记忆">
+                <span style="--a:.18"></span><span style="--a:.35"></span><span style="--a:.12"></span><span style="--a:.46"></span>
+                <span style="--a:.31"></span><span style="--a:.15"></span><span style="--a:.42"></span><span style="--a:.24"></span>
+                <span style="--a:.14"></span><span style="--a:.39"></span><span style="--a:.21"></span><span style="--a:.32"></span>
+              </div>
+            </article>
+
+            <article class="hybrid-card step-reveal soft-dim" data-show-at="1" data-focus-at="1">
+              <h3 style="color:var(--amber)">Gated MLA · 全局查阅</h3>
+              <p>当摘要不够时，全局 attention 仍可直接检索历史中的某个精确位置。</p>
+              <div class="global-lens">Global<br>Lookup</div>
+            </article>
+          </div>
+
+          <div class="hybrid-rhythm step-reveal" data-show-at="2" data-focus-at="2">
+            <span class="rhythm-block kda">KDA layers<br>持续更新摘要</span>
+            <span class="rhythm-dots">···</span>
+            <span class="rhythm-block mla">Global MLA<br>重新查阅历史</span>
+            <span class="rhythm-dots">···</span>
+            <span class="rhythm-block kda">KDA layers<br>继续向前推理</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-5" data-title="AttnRes：对网络深度做 Attention" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 05 / Attention Residuals</p>
+            <h2>AttnRes：当前层可以回看更早的“思考草稿”</h2>
+          </div>
+          <p class="chapter-lead">普通 residual 像一根不断传递的接力棒；AttnRes 把此前 block 的表示保留下来，让当前 token 按内容选择要重新读取哪一份。</p>
+        </div>
+
+        <div class="stage depth-stage">
+          <span class="stage-label">Attention over model depth</span>
+          <span class="stage-counter">same token · different representations</span>
+
+          <article class="depth-panel step-reveal soft-dim" data-show-at="0" data-focus-at="0">
+            <h3>普通 Residual · 单一接力流</h3>
+            <p>每层只接住累计到当前的 hidden state；早期信息已经混进同一条表示。</p>
+            <div class="relay-chain">
+              <div class="relay-node faded">Embedding · 原始输入</div>
+              <div class="relay-node faded">Early feature · 局部结构</div>
+              <div class="relay-node">Mid feature · 组合语义</div>
+              <div class="relay-node">Current hidden · 累计结果</div>
+            </div>
+          </article>
+
+          <article class="depth-panel step-reveal soft-dim" data-show-at="1" data-focus-at="1">
+            <h3>Attention Residuals · 深度检索</h3>
+            <p>此前 block 像书架上的不同草稿；当前层对 depth source 做一次轻量 attention。</p>
+            <div class="shelf-layout">
+              <div class="representation-shelf">
+                <div class="source-repr step-reveal" data-show-at="1" data-select-at="2"><strong>Embedding</strong><span>原始 token / patch 信息</span></div>
+                <div class="source-repr step-reveal" data-show-at="1"><strong>Early block</strong><span>局部形式、边缘、语法</span></div>
+                <div class="source-repr selected step-reveal" data-show-at="1" data-select-at="2"><strong>Middle block</strong><span>组合关系与上下文语义</span></div>
+                <div class="source-repr step-reveal" data-show-at="1"><strong>Recent block</strong><span>当前高层推理状态</span></div>
+              </div>
+              <div class="depth-query step-reveal" data-show-at="2" data-focus-at="2">Current layer<br>asks depth</div>
+            </div>
+            <div class="depth-examples step-reveal" data-show-at="3" data-focus-at="3">
+              <div class="depth-example"><strong>代码 token</strong><br>可能重新读取早期的语法与变量表示。</div>
+              <div class="depth-example"><strong>视觉 token</strong><br>可能重新读取较浅层的空间与边缘特征。</div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-6" data-title="LatentMoE：让专家处理更窄的 payload" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 06 / Stable LatentMoE</p>
+            <h2>LatentMoE：让专家处理更窄的“工作副本”</h2>
+          </div>
+          <p class="chapter-lead">Router 仍从完整 token 判断该找谁；真正 dispatch 给 expert 的 payload 会先压到较窄的 latent space，让专长容量不再与 full-width 搬运紧紧绑定。</p>
+        </div>
+
+        <div class="stage moe-stage">
+          <span class="stage-label">Shared knowledge + specialized latent path</span>
+          <span class="stage-counter">compress · route · normalize · combine</span>
+
+          <div class="moe-flow">
+            <div class="wide-token step-reveal" data-show-at="0" data-focus-at="0">
+              Full-width token
+              <span class="wide-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            </div>
+
+            <div class="moe-center">
+              <div class="shared-lane step-reveal soft-dim" data-show-at="0" data-focus-at="0">
+                <div class="lane-title"><strong style="color:var(--blue)">Shared path</strong><span class="tag">common knowledge</span></div>
+                <div class="shared-box">每个 token 都经过的公共变换<br>保留 full-width 表达</div>
+              </div>
+
+              <div class="routed-lane step-reveal soft-dim" data-show-at="1" data-focus-at="1">
+                <div class="lane-title"><strong style="color:var(--amber)">Specialist path</strong><span class="tag">router sees full token</span></div>
+                <div class="compress-route">
+                  <div class="latent-neck">
+                    <strong>Latent payload</strong>
+                    <span class="narrow-bars"><i></i><i></i><i></i><i></i></span>
+                  </div>
+                  <div class="expert-grid">
+                    <div class="expert selected step-reveal" data-show-at="2">Expert<br>A</div>
+                    <div class="expert step-reveal" data-show-at="2">Expert<br>B</div>
+                    <div class="expert selected step-reveal" data-show-at="2">Expert<br>C</div>
+                    <div class="expert step-reveal" data-show-at="2">Expert<br>D</div>
+                  </div>
+                </div>
+                <div class="stability-row step-reveal" data-show-at="3" data-focus-at="3">
+                  <div class="stability-card"><strong>Normalize</strong>聚合后控制 routed branch 尺度</div>
+                  <div class="stability-card"><strong>Soft-cap</strong>抑制极端 activation outlier</div>
+                  <div class="stability-card"><strong>Balance</strong>避免少数 expert 过热或闲置</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="combined-token step-reveal" data-show-at="3" data-focus-at="3">
+              Combined output
+              <span class="wide-bars"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-7" data-title="Native Vision：视觉进入同一条信息流" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 07 / Native multimodality</p>
+            <h2>Native Vision：图像和视频进入同一条信息流</h2>
+          </div>
+          <p class="chapter-lead">MoonViT-V2 把视觉输入转成 visual tokens，再投影到与文本相同的 embedding space。之后没有跨模型接力：同一个 K3 backbone 同时处理文字、画面和动作反馈。</p>
+        </div>
+
+        <div class="stage vision-stage">
+          <span class="stage-label">Vision encoder → unified token stream</span>
+          <span class="stage-counter">one backbone · multiple modalities</span>
+
+          <div class="vision-pipeline">
+            <div class="visual-inputs step-reveal" data-show-at="0" data-focus-at="0">
+              <div class="image-frame"><span class="frame-label">image</span></div>
+              <div class="video-frame"><span class="frame-label">video</span><span class="play-mark">▶</span></div>
+            </div>
+
+            <div class="pipeline-arrow step-reveal" data-show-at="1">→</div>
+
+            <div class="patch-projector step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="patch-grid" aria-label="视觉 patch tokens">
+                <i style="--pa:.15"></i><i style="--pa:.25"></i><i style="--pa:.42"></i><i style="--pa:.2"></i><i style="--pa:.34"></i>
+                <i style="--pa:.3"></i><i style="--pa:.58"></i><i style="--pa:.22"></i><i style="--pa:.46"></i><i style="--pa:.18"></i>
+                <i style="--pa:.14"></i><i style="--pa:.36"></i><i style="--pa:.64"></i><i style="--pa:.28"></i><i style="--pa:.4"></i>
+                <i style="--pa:.48"></i><i style="--pa:.21"></i><i style="--pa:.32"></i><i style="--pa:.55"></i><i style="--pa:.17"></i>
+                <i style="--pa:.24"></i><i style="--pa:.43"></i><i style="--pa:.19"></i><i style="--pa:.37"></i><i style="--pa:.5"></i>
+              </div>
+              <div class="projector-chip">MoonViT-V2<br>merge + projector</div>
+            </div>
+
+            <div class="pipeline-arrow step-reveal" data-show-at="2">→</div>
+
+            <div class="unified-stream step-reveal" data-show-at="2" data-focus-at="2">
+              <h3>Unified token stream</h3>
+              <div class="token-stream">
+                <span class="stream-token text">请</span>
+                <span class="stream-token text">修复</span>
+                <span class="stream-token visual">v₁</span>
+                <span class="stream-token visual">v₂</span>
+                <span class="stream-token visual">v₃</span>
+                <span class="stream-token text">这个</span>
+                <span class="stream-token text">界面</span>
+              </div>
+              <div class="shared-backbone">Shared KDA · AttnRes · LatentMoE backbone</div>
+              <div class="vision-loop step-reveal" data-show-at="3" data-focus-at="3">
+                <span class="loop-chip">生成代码</span><span class="loop-arrow">→</span>
+                <span class="loop-chip">观察画面</span><span class="loop-arrow">→</span>
+                <span class="loop-chip">继续修改</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-8" data-title="K3 没有消灭成本，而是重新安排成本" data-steps="3">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 08 / Architecture → systems</p>
+            <h2>K3 没有消灭成本，而是把成本变得更可控</h2>
+          </div>
+          <p class="chapter-lead">每个模块都把一种难以扩展的 dense cost，换成更结构化的 state、selection 或 routing。理解这些新成本，正是后续 Prefill/Decode、Roofline 和 MoE 优化的起点。</p>
+        </div>
+
+        <div class="stage summary-stage">
+          <span class="stage-label">Three axes · three cost shifts</span>
+          <span class="stage-counter">architecture is a systems contract</span>
+
+          <div class="summary-grid">
+            <article class="summary-card token step-reveal soft-dim" data-show-at="0" data-focus-at="0">
+              <span class="summary-axis">Across tokens</span>
+              <h3>记得更久</h3>
+              <p>大多数层维护固定工作记忆，必要时仍能全局查阅历史。</p>
+              <div class="summary-mechanism">KDA + Gated MLA</div>
+              <div class="cost-shift"><strong>新成本：</strong>recurrent-state 更新、偶发全局 attention 与两类 cache 的协同。</div>
+            </article>
+
+            <article class="summary-card depth step-reveal soft-dim" data-show-at="1" data-focus-at="1">
+              <span class="summary-axis">Across depth</span>
+              <h3>回看更早</h3>
+              <p>当前层按内容选择此前 block 的表示，减少单一 residual stream 的信息瓶颈。</p>
+              <div class="summary-mechanism">Attention Residuals</div>
+              <div class="cost-shift"><strong>新成本：</strong>block representation 的保存、读取与 depth reduction。</div>
+            </article>
+
+            <article class="summary-card channel step-reveal soft-dim" data-show-at="2" data-focus-at="2">
+              <span class="summary-axis">Across channels</span>
+              <h3>更会分工</h3>
+              <p>公共知识走 shared path，专长计算在较窄 latent space 中稀疏激活。</p>
+              <div class="summary-mechanism">Stable LatentMoE</div>
+              <div class="cost-shift"><strong>新成本：</strong>routing、dispatch/combine、专家负载与低精度 weight streaming。</div>
+            </article>
+          </div>
+
+          <div class="final-thesis step-reveal" data-show-at="2">
+            <div class="takeaway">一句话记住 Kimi K3：<strong>让信息沿 token、depth、channel 三个方向选择性流动，而不是处处做完整 dense 计算。</strong></div>
+            <div class="source-links" aria-label="主要资料">
+              <a href="https://github.com/MoonshotAI/Kimi-K3/raw/main/k3_tech_report.pdf" target="_blank" rel="noreferrer">K3 Report</a>
+              <a href="https://arxiv.org/abs/2510.26692" target="_blank" rel="noreferrer">Kimi Linear</a>
+              <a href="https://arxiv.org/abs/2603.15031" target="_blank" rel="noreferrer">AttnRes</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="control-dock" aria-label="演示控制">
+    <div class="step-caption" id="step-caption" aria-live="polite"></div>
+    <div class="dock-actions">
+      <button class="nav-button" id="prev-button" type="button">← 上一步</button>
+      <button class="nav-button primary" id="next-button" type="button">下一步 →</button>
+    </div>
+    <div class="keyboard-hint">SPACE / ← → 分步<br>↑ ↓ 切换章节</div>
+  </footer>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const chapters = Array.from(document.querySelectorAll(".chapter"));
+      const railButtons = Array.from(document.querySelectorAll(".rail-button"));
+      const titleElement = document.getElementById("chapter-title");
+      const progressText = document.getElementById("progress-text");
+      const progressFill = document.getElementById("progress-fill");
+      const captionElement = document.getElementById("step-caption");
+      const prevButton = document.getElementById("prev-button");
+      const nextButton = document.getElementById("next-button");
+
+      const captions = [
+        [
+          "<strong>先不看数字：</strong>K3 的核心问题是，长程任务中信息怎样走得更远，却不要求每一步都读取和计算全部内容。",
+          "<strong>三条信息通道：</strong>跨 token 负责历史，跨 depth 负责中间表示，跨 channel 负责不同专长。",
+          "<strong>三个架构答案：</strong>KDA/MLA、Attention Residuals 和 LatentMoE 分别改造这三条通道。"
+        ],
+        [
+          "<strong>熟悉的 Transformer：</strong>Attention 混合 token，Residual 传递深度信息，FFN 混合 channel。",
+          "<strong>Token bottleneck：</strong>上下文越长，需要保存和读取的历史状态越多。",
+          "<strong>Depth bottleneck：</strong>普通 residual 把此前信息压进一条不断累加的 hidden stream。",
+          "<strong>Channel bottleneck：</strong>dense FFN 为每个 token 执行同一套完整变换，容量与计算绑定。"
+        ],
+        [
+          "<strong>完整档案：</strong>Full Attention 为每个历史 token 保留一份可被未来 query 直接读取的 K/V。",
+          "<strong>工作记忆：</strong>KDA 让所有历史持续更新同一份 recurrent state，状态不再随序列长度逐 token 增长。",
+          "<strong>Delta update：</strong>先保留仍有用的旧信息，再修正冲突方向，最后写入当前 token 带来的新信息。",
+          "<strong>读取：</strong>当前 query 从这份固定大小的状态中取回结果；效率来自压缩，而不是免费保存全部历史。"
+        ],
+        [
+          "<strong>KDA：</strong>多数时候持续维护工作记忆，适合长序列中的高频更新。",
+          "<strong>Global MLA：</strong>摘要可能遗漏精确细节，因此模型仍周期性保留全局 token-to-token 查阅能力。",
+          "<strong>Hybrid：</strong>不是在线性与全局 attention 中二选一，而是让两者承担不同角色。"
+        ],
+        [
+          "<strong>普通 residual：</strong>网络越深，早期信息越被混入同一条累计表示，当前层无法直接选择某份旧表示。",
+          "<strong>AttnRes：</strong>保留此前 block 的表示，把网络深度变成一个可检索的 source 维度。",
+          "<strong>Content-dependent：</strong>同一个 token 在当前层可以给不同 depth source 分配不同权重。",
+          "<strong>为什么有用：</strong>代码、视觉、推理 token 可能需要回看完全不同深度的特征。"
+        ],
+        [
+          "<strong>Shared path：</strong>所有 token 都经过公共 full-width 变换，承载通用知识。",
+          "<strong>Latent routed path：</strong>router 从 full-width token 做选择；送往专家的 payload 先压到较窄空间，减少 specialization 带来的搬运压力。",
+          "<strong>Selective experts：</strong>每个 token 只点亮少量专家；A/B/C/D 只是示意，实际分工由训练形成。",
+          "<strong>Stable：</strong>归一化聚合结果、限制极端 activation、平衡 expert 负载，才能把高稀疏 MoE 真正训练起来。"
+        ],
+        [
+          "<strong>视觉输入：</strong>图像和视频先被视觉编码器切分、编码为 visual tokens。",
+          "<strong>Projector：</strong>视觉表示被映射到与文本相同的 embedding space。",
+          "<strong>统一主干：</strong>文字和视觉 token 进入同一个 KDA、AttnRes、LatentMoE backbone。",
+          "<strong>Vision in the loop：</strong>模型可以生成代码、观察渲染结果，再把视觉反馈带回下一轮推理。"
+        ],
+        [
+          "<strong>Token axis：</strong>KDA/MLA 把不断增长的全局读取，重组为工作记忆更新与周期性全局查阅。",
+          "<strong>Depth axis：</strong>AttnRes 用 block representation 的保存和读取，换取选择性跨层信息流。",
+          "<strong>Channel axis：</strong>LatentMoE 用 routing 与通信，换取更大、更专门化的稀疏容量。下一步就是分别分析这些代价在 Prefill 和 Decode 中落在哪条 Roofline 上。"
+        ]
+      ];
+
+      const state = chapters.map(() => 0);
+      let currentChapter = 0;
+      let observerLock = false;
+      let touchStartX = 0;
+      let touchStartY = 0;
+
+      const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+      const pad = (value) => String(value).padStart(2, "0");
+
+      function maxStep(index) {
+        return Number(chapters[index].dataset.steps) - 1;
+      }
+
+      function renderChapter(index) {
+        const chapter = chapters[index];
+        const step = state[index];
+
+        chapter.querySelectorAll("[data-show-at]").forEach((element) => {
+          const visible = step >= Number(element.dataset.showAt);
+          element.classList.toggle("is-visible", visible);
+          element.setAttribute("aria-hidden", String(!visible));
+        });
+
+        chapter.querySelectorAll("[data-focus-at]").forEach((element) => {
+          element.classList.toggle("is-current", step === Number(element.dataset.focusAt));
+        });
+
+        chapter.querySelectorAll("[data-select-at]").forEach((element) => {
+          element.classList.toggle("selected", step >= Number(element.dataset.selectAt));
+        });
+
+        if (index === currentChapter) updateChrome();
+      }
+
+      function updateChrome() {
+        const step = state[currentChapter];
+        const totalSteps = maxStep(currentChapter) + 1;
+        const chapterNumber = currentChapter + 1;
+        const overall = ((currentChapter + (step + 1) / totalSteps) / chapters.length) * 100;
+
+        titleElement.textContent = `${pad(chapterNumber)} · ${chapters[currentChapter].dataset.title}`;
+        progressText.textContent = `${pad(chapterNumber)} / ${pad(chapters.length)} · STEP ${step + 1}/${totalSteps}`;
+        progressFill.style.width = `${overall}%`;
+        captionElement.innerHTML = captions[currentChapter][step];
+
+        railButtons.forEach((button, index) => {
+          button.setAttribute("aria-current", String(index === currentChapter));
+        });
+
+        prevButton.disabled = currentChapter === 0 && step === 0;
+        prevButton.style.opacity = prevButton.disabled ? "0.38" : "1";
+        nextButton.textContent = currentChapter === chapters.length - 1 && step === maxStep(currentChapter)
+          ? "回到开头 ↺"
+          : "下一步 →";
+      }
+
+      function setCurrentChapter(index, shouldScroll = false) {
+        currentChapter = clamp(index, 0, chapters.length - 1);
+        renderChapter(currentChapter);
+
+        if (shouldScroll) {
+          observerLock = true;
+          chapters[currentChapter].scrollIntoView({ behavior: "smooth", block: "start" });
+          window.setTimeout(() => {
+            observerLock = false;
+          }, 650);
+        }
+      }
+
+      function next() {
+        const lastStep = maxStep(currentChapter);
+        if (state[currentChapter] < lastStep) {
+          state[currentChapter] += 1;
+          renderChapter(currentChapter);
+          return;
+        }
+
+        if (currentChapter < chapters.length - 1) {
+          setCurrentChapter(currentChapter + 1, true);
+          return;
+        }
+
+        state.fill(0);
+        chapters.forEach((_, index) => renderChapter(index));
+        setCurrentChapter(0, true);
+      }
+
+      function previous() {
+        if (state[currentChapter] > 0) {
+          state[currentChapter] -= 1;
+          renderChapter(currentChapter);
+          return;
+        }
+
+        if (currentChapter > 0) {
+          const previousIndex = currentChapter - 1;
+          state[previousIndex] = maxStep(previousIndex);
+          renderChapter(previousIndex);
+          setCurrentChapter(previousIndex, true);
+        }
+      }
+
+      function goToChapter(index) {
+        setCurrentChapter(index, true);
+      }
+
+      prevButton.addEventListener("click", previous);
+      nextButton.addEventListener("click", next);
+      railButtons.forEach((button, index) => {
+        button.addEventListener("click", () => goToChapter(index));
+      });
+
+      document.addEventListener("keydown", (event) => {
+        const target = event.target;
+        if (target instanceof HTMLElement && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+
+        if (event.key === " " || event.key === "ArrowRight") {
+          event.preventDefault();
+          next();
+        } else if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          previous();
+        } else if (event.key === "ArrowDown" || event.key === "PageDown") {
+          event.preventDefault();
+          goToChapter(currentChapter + 1);
+        } else if (event.key === "ArrowUp" || event.key === "PageUp") {
+          event.preventDefault();
+          goToChapter(currentChapter - 1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          goToChapter(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          goToChapter(chapters.length - 1);
+        }
+      });
+
+      document.addEventListener("touchstart", (event) => {
+        const touch = event.changedTouches[0];
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+      }, { passive: true });
+
+      document.addEventListener("touchend", (event) => {
+        const touch = event.changedTouches[0];
+        const dx = touch.clientX - touchStartX;
+        const dy = touch.clientY - touchStartY;
+        if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy)) return;
+        if (dx < 0) next();
+        else previous();
+      }, { passive: true });
+
+      const observer = new IntersectionObserver((entries) => {
+        if (observerLock) return;
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        const index = chapters.indexOf(visible.target);
+        if (index !== -1 && index !== currentChapter) {
+          currentChapter = index;
+          renderChapter(currentChapter);
+        }
+      }, { threshold: [0.5, 0.65, 0.8] });
+
+      chapters.forEach((chapter, index) => {
+        renderChapter(index);
+        observer.observe(chapter);
+      });
+      updateChrome();
+    })();
+  </script>
+</body>
+</html>
