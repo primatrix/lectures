@@ -5091,7 +5091,7 @@
           </div>
 
           <div class="kda-rule-band">
-            <div class="kda-rule step-reveal" data-show-at="2" data-focus-at="2"><strong>Retain per channel</strong><span>每个 key channel 有自己的遗忘节奏</span></div>
+            <div class="kda-rule step-reveal" data-show-at="2" data-focus-at="2"><strong>Decay</strong><span>先衰减旧状态，为新信息腾出空间</span></div>
             <div class="kda-rule step-reveal" data-show-at="2"><strong>Correct</strong><span>修正与新内容冲突的方向</span></div>
             <div class="kda-rule step-reveal" data-show-at="2"><strong>Write</strong><span>写入当前 token 带来的信息</span></div>
             <div class="kda-readout step-reveal" data-show-at="3" data-focus-at="3"><strong>Query reads state</strong><span>效率来自压缩历史，不是无损保存全部 token。</span></div>
@@ -5107,7 +5107,7 @@
             <p class="eyebrow">Chapter 12 / Hybrid Attention</p>
             <h2>Hybrid Attention: 工作记忆加周期性全局查阅</h2>
           </div>
-          <p class="chapter-lead">KDA 擅长高频更新有限状态，但压缩会概括细节；Gated MLA 周期性执行全局 attention，再用输出 gate 调节进入下一层的通道。</p>
+          <p class="chapter-lead">KDA 擅长高频更新有限状态，但压缩会概括细节；Gated MLA 周期性执行全局 attention，再用输出 gate 控制有多少结果进入下一层。</p>
         </div>
 
         <div class="stage kimi-hybrid-stage">
@@ -5452,12 +5452,12 @@
         [
           "<strong>完整档案</strong>：Full Attention 为每个历史 token 新增一份 K/V，未来 query 可以直接访问任意记录。",
           "<strong>工作记忆</strong>：KDA 将历史持续写入同一份 recurrent state，状态 shape 不随 token 数继续增长。",
-          "<strong>Channel-wise delta update</strong>：每个 key channel 独立控制保留程度，再修正冲突方向并写入当前 token。",
+          "<strong>Delta update</strong>：先衰减旧状态，再修正冲突方向并写入当前 token。",
           "<strong>读取边界</strong>：query 直接读取有限 state；效率来自压缩，因此它不是对完整历史的无损替代。"
         ],
         [
           "<strong>KDA</strong>：多数层高频更新有限工作记忆，避免每一步都重新扫描全部历史。",
-          "<strong>Gated MLA</strong>：周期性执行全局 token-to-token attention；它不是 Top-K sparse read，选择性来自 softmax 与 channel-wise output gate。",
+          "<strong>Gated MLA</strong>：周期性执行全局 token-to-token attention；它不是 Top-K sparse read，选择性来自 softmax 与输出 gate。",
           "<strong>Hybrid role</strong>：KDA 负责可扩展的状态更新，global attention 负责低频的全局内容交互。"
         ],
         [
