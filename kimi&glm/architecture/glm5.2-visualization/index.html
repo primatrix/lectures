@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
-  <title>GLM-5.2 Attention Architecture</title>
+  <meta name="description" content="GLM-5.2 与 Kimi K3 架构交互式讲解：从 Attention 基础到长上下文、跨层信息流、LatentMoE 与 Native Vision。">
+  <title>GLM-5.2 & Kimi K3 Architecture</title>
   <style>
     :root {
       --bg: #f4f8f7;
@@ -2855,6 +2856,1096 @@
       text-align: center;
     }
 
+    /* Chapters 9–15 · Kimi K3 in the same visual system */
+    .compact-arrow {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .kimi-map-stage {
+      display: grid;
+      grid-template-rows: 72px minmax(0, 1fr) 50px;
+      gap: 16px;
+      padding: 48px 42px 36px;
+    }
+
+    .agent-trace {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.66);
+    }
+
+    .trace-chip {
+      min-height: 36px;
+      display: grid;
+      place-items: center;
+      padding: 5px 7px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .trace-chip.current {
+      color: var(--accent);
+      border-color: rgba(20, 125, 117, 0.42);
+      background: var(--accent-soft);
+      font-weight: 700;
+    }
+
+    .trace-arrow {
+      display: none;
+    }
+
+    .kimi-axis-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .kimi-axis-card {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .kimi-axis-card.history {
+      color: var(--query);
+      border-top: 3px solid var(--query);
+    }
+
+    .kimi-axis-card.depth {
+      color: var(--score);
+      border-top: 3px solid var(--score);
+    }
+
+    .kimi-axis-card.channel {
+      color: var(--value);
+      border-top: 3px solid var(--value);
+    }
+
+    .axis-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .axis-card-header strong {
+      color: currentColor;
+      font-size: 15px;
+    }
+
+    .axis-card-header span {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 8px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .axis-card-body {
+      display: grid;
+      align-content: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .axis-mini-flow {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: center;
+      gap: 5px;
+    }
+
+    .axis-mini-flow span {
+      min-height: 34px;
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, currentColor 36%, transparent);
+      color: currentColor;
+      background: color-mix(in srgb, currentColor 9%, white);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .axis-mini-flow i {
+      height: 1px;
+      background: color-mix(in srgb, currentColor 48%, transparent);
+    }
+
+    .axis-mechanism {
+      padding: 8px 10px;
+      border: 1px solid color-mix(in srgb, currentColor 32%, transparent);
+      color: currentColor;
+      background: color-mix(in srgb, currentColor 8%, white);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .kimi-thesis-line {
+      display: grid;
+      place-items: center;
+      padding: 9px 14px;
+      border: 1px solid var(--line);
+      color: var(--text);
+      background: var(--surface-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .kimi-thesis-line strong {
+      color: var(--accent);
+    }
+
+    .kda-stage {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 14px;
+      padding: 50px 42px 38px;
+    }
+
+    .kda-comparison {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1fr);
+      align-items: stretch;
+      gap: 14px;
+    }
+
+    .kda-card {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .kda-card h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .kda-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.45;
+    }
+
+    .history-log {
+      display: grid;
+      align-content: center;
+      gap: 6px;
+    }
+
+    .history-entry {
+      display: grid;
+      grid-template-columns: 28px 1fr 1fr;
+      align-items: center;
+      gap: 6px;
+      min-height: 32px;
+      padding: 5px 7px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 8px;
+    }
+
+    .history-entry b {
+      color: var(--muted);
+    }
+
+    .history-entry .k,
+    .history-entry .v {
+      min-height: 20px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+    }
+
+    .history-entry .k {
+      color: var(--key);
+      background: var(--key-soft);
+    }
+
+    .history-entry .v {
+      color: var(--value);
+      background: var(--value-soft);
+    }
+
+    .state-shell {
+      display: grid;
+      place-items: center;
+    }
+
+    .kda-state-grid {
+      width: min(250px, 78%);
+      aspect-ratio: 1.55;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 4px;
+      padding: 12px;
+      border: 1px solid rgba(20, 125, 117, 0.42);
+      background: var(--accent-soft);
+    }
+
+    .kda-state-grid i {
+      border: 1px solid rgba(20, 125, 117, 0.28);
+      background: rgba(20, 125, 117, var(--state-alpha, 0.18));
+    }
+
+    .kda-transform {
+      align-self: center;
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 8px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .kda-transform strong {
+      color: var(--accent);
+      font-size: 10px;
+    }
+
+    .kda-rule-band {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr) minmax(170px, 1.2fr);
+      gap: 8px;
+    }
+
+    .kda-rule,
+    .kda-readout {
+      min-height: 52px;
+      display: grid;
+      align-content: center;
+      gap: 3px;
+      padding: 9px 11px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 9px;
+      line-height: 1.4;
+    }
+
+    .kda-rule strong,
+    .kda-readout strong {
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .kda-readout {
+      color: var(--text);
+      border-color: rgba(20, 125, 117, 0.36);
+      background: var(--accent-soft);
+    }
+
+    .kimi-hybrid-stage {
+      display: grid;
+      grid-template-rows: 62px minmax(0, 1fr) 72px;
+      gap: 14px;
+      padding: 48px 42px 36px;
+    }
+
+    .archive-strip {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: 5px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.66);
+    }
+
+    .archive-token {
+      min-height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .archive-token.highlight {
+      color: var(--key);
+      border-color: rgba(201, 107, 29, 0.42);
+      background: var(--key-soft);
+    }
+
+    .hybrid-role-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .hybrid-role-card {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .hybrid-role-card h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .hybrid-role-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .memory-core {
+      width: min(290px, 72%);
+      align-self: center;
+      justify-self: center;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 4px;
+      padding: 12px;
+      border: 1px solid rgba(20, 125, 117, 0.38);
+      background: var(--accent-soft);
+    }
+
+    .memory-core span {
+      height: 22px;
+      border: 1px solid rgba(20, 125, 117, 0.28);
+      background: rgba(20, 125, 117, var(--memory-alpha, 0.18));
+    }
+
+    .global-scan {
+      align-self: center;
+      display: grid;
+      grid-template-columns: 78px 1fr;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .global-query {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(201, 107, 29, 0.42);
+      color: var(--key);
+      background: var(--key-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .global-history {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+    }
+
+    .global-history span {
+      height: 54px;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+    }
+
+    .global-history span.hit {
+      border-color: rgba(201, 107, 29, 0.52);
+      background: var(--key-soft);
+      box-shadow: inset 0 -5px 0 var(--key);
+    }
+
+    .hybrid-cadence {
+      display: grid;
+      grid-template-columns: 1fr 34px 1fr 34px 1fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cadence-block {
+      min-height: 54px;
+      display: grid;
+      place-items: center;
+      padding: 7px;
+      border: 1px solid rgba(20, 125, 117, 0.34);
+      color: var(--accent);
+      background: var(--accent-soft);
+      font-family: var(--mono);
+      font-size: 8px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .cadence-block.global {
+      color: var(--key);
+      border-color: rgba(201, 107, 29, 0.38);
+      background: var(--key-soft);
+    }
+
+    .cadence-dots {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      text-align: center;
+    }
+
+    .attnres-stage {
+      display: grid;
+      grid-template-columns: 0.82fr 1.18fr;
+      gap: 18px;
+      padding: 50px 42px 38px;
+    }
+
+    .residual-card {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .residual-card h3 {
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .residual-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.45;
+    }
+
+    .residual-chain {
+      align-self: center;
+      display: grid;
+      gap: 7px;
+    }
+
+    .residual-node {
+      min-height: 42px;
+      display: grid;
+      grid-template-columns: 94px 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--surface);
+      font-size: 9px;
+    }
+
+    .residual-node strong {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .residual-node .accumulated {
+      height: 8px;
+      background:
+        linear-gradient(90deg,
+          rgba(23, 110, 196, 0.42) 0 25%,
+          rgba(119, 72, 184, 0.34) 25% 58%,
+          rgba(25, 132, 92, 0.42) 58% 100%);
+    }
+
+    .attnres-workbench {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 118px;
+      gap: 12px;
+    }
+
+    .depth-sources {
+      display: grid;
+      align-content: center;
+      gap: 7px;
+    }
+
+    .depth-source {
+      min-height: 48px;
+      display: grid;
+      grid-template-columns: 92px 1fr 36px;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 8px;
+    }
+
+    .depth-source strong {
+      color: var(--text);
+    }
+
+    .depth-weight {
+      height: 7px;
+      background: var(--surface-3);
+    }
+
+    .depth-weight i {
+      display: block;
+      width: var(--weight, 50%);
+      height: 100%;
+      background: var(--score);
+      transition: width 320ms ease;
+    }
+
+    .depth-source b {
+      color: var(--score);
+      font-size: 8px;
+      text-align: right;
+    }
+
+    .depth-query-box {
+      align-self: center;
+      min-height: 116px;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      border: 1px solid rgba(119, 72, 184, 0.42);
+      color: var(--score);
+      background: var(--score-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .attnres-result {
+      padding: 9px 11px;
+      border: 1px solid rgba(119, 72, 184, 0.32);
+      color: var(--text);
+      background: var(--score-soft);
+      font-size: 9px;
+      line-height: 1.45;
+    }
+
+    .latent-moe-stage {
+      display: grid;
+      grid-template-rows: 60px minmax(0, 1fr) auto;
+      gap: 14px;
+      padding: 48px 42px 36px;
+    }
+
+    .moe-input-strip {
+      display: grid;
+      grid-template-columns: minmax(130px, 0.55fr) 1fr minmax(170px, 0.72fr);
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.66);
+    }
+
+    .full-token-node {
+      min-height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(23, 110, 196, 0.38);
+      color: var(--query);
+      background: var(--query-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .token-feature-bars {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 3px;
+    }
+
+    .token-feature-bars i {
+      height: 14px;
+      border: 1px solid rgba(23, 110, 196, 0.3);
+      background: rgba(23, 110, 196, 0.14);
+    }
+
+    .router-note {
+      min-height: 38px;
+      display: grid;
+      place-items: center;
+      padding: 7px 9px;
+      border: 1px solid rgba(119, 72, 184, 0.34);
+      color: var(--score);
+      background: var(--score-soft);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .moe-path-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 16px;
+    }
+
+    .moe-path-card {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .moe-path-card h3 {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .moe-flow-row {
+      align-self: center;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      align-items: center;
+      gap: 7px;
+    }
+
+    .moe-flow-row.shared {
+      grid-template-columns: 1fr 24px 1fr 24px 1fr;
+    }
+
+    .moe-flow-node {
+      min-height: 62px;
+      display: grid;
+      place-items: center;
+      padding: 8px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 8px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .moe-flow-node.shared {
+      color: var(--query);
+      border-color: rgba(23, 110, 196, 0.34);
+      background: var(--query-soft);
+    }
+
+    .moe-flow-node.latent {
+      color: var(--accent);
+      border-color: rgba(20, 125, 117, 0.38);
+      background: var(--accent-soft);
+    }
+
+    .moe-flow-node.experts {
+      padding: 7px;
+      color: var(--score);
+      border-color: rgba(119, 72, 184, 0.34);
+      background: var(--score-soft);
+    }
+
+    .expert-bank {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+    }
+
+    .expert-bank span {
+      min-height: 27px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(119, 72, 184, 0.28);
+      color: var(--muted-2);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 7px;
+    }
+
+    .expert-bank span.active {
+      color: var(--score);
+      border-color: var(--score);
+      background: var(--score-soft);
+      font-weight: 700;
+    }
+
+    .moe-stability-band {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr) minmax(180px, 1.2fr);
+      gap: 8px;
+    }
+
+    .stability-cell,
+    .moe-combined-output {
+      min-height: 50px;
+      display: grid;
+      align-content: center;
+      gap: 3px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.7);
+      font-size: 8px;
+      line-height: 1.4;
+    }
+
+    .stability-cell strong {
+      color: var(--score);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .moe-combined-output {
+      color: var(--text);
+      border-color: rgba(25, 132, 92, 0.36);
+      background: var(--value-soft);
+      font-family: var(--mono);
+      text-align: center;
+    }
+
+    .native-vision-stage {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) 74px;
+      gap: 16px;
+      padding: 50px 42px 36px;
+    }
+
+    .vision-main-flow {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 0.72fr 26px 0.82fr 26px 1.25fr;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .vision-input-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .vision-source-card {
+      min-height: 168px;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .vision-source-card strong {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .image-field,
+    .video-field {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(23, 110, 196, 0.28);
+      background:
+        linear-gradient(145deg, rgba(23, 110, 196, 0.13), rgba(20, 125, 117, 0.08)),
+        var(--surface-2);
+    }
+
+    .image-field::before {
+      position: absolute;
+      right: 17%;
+      bottom: 20%;
+      width: 42px;
+      height: 42px;
+      content: "";
+      border-radius: 50%;
+      background: rgba(201, 107, 29, 0.38);
+    }
+
+    .image-field::after {
+      position: absolute;
+      right: -8%;
+      bottom: -30%;
+      width: 112%;
+      height: 70%;
+      content: "";
+      border-radius: 50% 50% 0 0;
+      background: rgba(20, 125, 117, 0.2);
+      transform: rotate(-7deg);
+    }
+
+    .video-field {
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(rgba(24, 50, 53, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(24, 50, 53, 0.08) 1px, transparent 1px),
+        var(--surface-2);
+      background-size: 22px 22px;
+    }
+
+    .video-field span {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(23, 110, 196, 0.34);
+      border-radius: 50%;
+      color: var(--query);
+      background: rgba(255, 255, 255, 0.72);
+      font-size: 13px;
+    }
+
+    .vision-encoder-card {
+      min-height: 190px;
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid rgba(23, 110, 196, 0.34);
+      color: var(--query);
+      background: var(--query-soft);
+      text-align: center;
+    }
+
+    .vision-encoder-card strong {
+      font-size: 13px;
+    }
+
+    .patch-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 3px;
+      margin: 0 auto;
+    }
+
+    .patch-grid i {
+      width: 17px;
+      height: 17px;
+      border: 1px solid rgba(23, 110, 196, 0.3);
+      background: rgba(23, 110, 196, var(--patch-alpha, 0.12));
+    }
+
+    .unified-backbone-card {
+      min-height: 220px;
+      display: grid;
+      align-content: center;
+      gap: 14px;
+      padding: 16px;
+      border: 1px solid rgba(20, 125, 117, 0.38);
+      background: var(--accent-soft);
+    }
+
+    .unified-backbone-card h3 {
+      margin: 0;
+      color: var(--accent);
+      font-size: 14px;
+    }
+
+    .unified-token-stream {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 5px;
+    }
+
+    .unified-token-stream span {
+      min-height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      color: var(--muted);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 8px;
+    }
+
+    .unified-token-stream span.visual {
+      color: var(--query);
+      border-color: rgba(23, 110, 196, 0.38);
+      background: var(--query-soft);
+    }
+
+    .backbone-modules {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .backbone-modules span {
+      min-height: 36px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(20, 125, 117, 0.32);
+      color: var(--accent);
+      background: rgba(255, 255, 255, 0.62);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .vision-agent-loop {
+      display: grid;
+      grid-template-columns: 1fr 30px 1fr 30px 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.66);
+    }
+
+    .loop-step {
+      min-height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .architecture-summary-stage {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto auto;
+      gap: 12px;
+      padding: 48px 42px 30px;
+    }
+
+    .model-summary-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .model-summary-card {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .model-summary-card h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .model-summary-flow {
+      display: grid;
+      align-content: center;
+      gap: 7px;
+    }
+
+    .summary-module {
+      min-height: 42px;
+      display: grid;
+      grid-template-columns: 112px 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--surface);
+      font-size: 9px;
+      line-height: 1.35;
+    }
+
+    .summary-module strong {
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .model-summary-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.45;
+    }
+
+    .systems-contract {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .contract-card {
+      min-height: 54px;
+      display: grid;
+      align-content: center;
+      gap: 3px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--surface-2);
+      font-size: 8px;
+      line-height: 1.4;
+    }
+
+    .contract-card strong {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .reference-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      min-height: 30px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 8px;
+    }
+
+    .reference-row a {
+      padding: 4px 7px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.66);
+      text-decoration: none;
+    }
+
+    .reference-row a:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
     @media (max-width: 1120px) {
       .tensor-attention-flow,
       .decode-pipeline {
@@ -2889,6 +3980,26 @@
       .mla-restore-lane {
         grid-template-columns: 0.68fr auto 0.72fr auto 1.2fr auto 0.86fr;
         gap: 8px;
+      }
+
+      .kimi-map-stage,
+      .kda-stage,
+      .kimi-hybrid-stage,
+      .attnres-stage,
+      .latent-moe-stage,
+      .native-vision-stage,
+      .architecture-summary-stage {
+        padding-left: 26px;
+        padding-right: 26px;
+      }
+
+      .moe-flow-row {
+        gap: 4px;
+      }
+
+      .moe-flow-node {
+        padding-left: 5px;
+        padding-right: 5px;
       }
     }
 
@@ -2943,6 +4054,33 @@
 
       .pipeline-node {
         min-height: 122px;
+      }
+
+      .kimi-axis-grid {
+        gap: 9px;
+      }
+
+      .kimi-axis-card,
+      .kda-card,
+      .hybrid-role-card,
+      .residual-card,
+      .moe-path-card,
+      .model-summary-card {
+        padding: 12px;
+      }
+
+      .kda-comparison {
+        grid-template-columns: 1fr 54px 1fr;
+        gap: 9px;
+      }
+
+      .attnres-stage {
+        grid-template-columns: 0.74fr 1.26fr;
+      }
+
+      .vision-main-flow {
+        grid-template-columns: 0.68fr 18px 0.76fr 18px 1.3fr;
+        gap: 7px;
       }
     }
 
@@ -3091,6 +4229,83 @@
         margin-top: 18px;
       }
 
+      .kimi-map-stage,
+      .kda-stage,
+      .kimi-hybrid-stage,
+      .attnres-stage,
+      .latent-moe-stage,
+      .native-vision-stage,
+      .architecture-summary-stage {
+        min-height: 960px;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        align-content: start;
+        padding: 44px 14px 28px;
+      }
+
+      .agent-trace {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .kimi-axis-grid,
+      .kda-comparison,
+      .hybrid-role-grid,
+      .attnres-stage,
+      .moe-path-grid,
+      .model-summary-grid,
+      .systems-contract {
+        grid-template-columns: 1fr;
+      }
+
+      .kda-transform {
+        min-height: 44px;
+      }
+
+      .kda-rule-band,
+      .moe-stability-band {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .archive-strip {
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      .hybrid-cadence {
+        grid-template-columns: 1fr;
+      }
+
+      .cadence-dots,
+      .compact-arrow {
+        transform: rotate(90deg);
+      }
+
+      .attnres-workbench {
+        grid-template-columns: 1fr;
+      }
+
+      .moe-input-strip,
+      .vision-main-flow,
+      .vision-agent-loop {
+        grid-template-columns: 1fr;
+      }
+
+      .moe-flow-row {
+        grid-template-columns: 1fr;
+      }
+
+      .moe-flow-row.shared {
+        grid-template-columns: 1fr;
+      }
+
+      .vision-input-pair {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .reference-row {
+        flex-wrap: wrap;
+      }
+
       .legend {
         display: none;
       }
@@ -3115,11 +4330,11 @@
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">A</span>
-      GLM-5.2 / Attention Lab
+      GLM-5.2 + Kimi K3 / Architecture Lab
     </div>
     <div class="chapter-title" id="chapter-title">01 · Attention: activation → Q / K / V</div>
     <div class="top-progress">
-      <span id="progress-text">01 / 08</span>
+      <span id="progress-text">01 / 15</span>
       <span class="progress-track" aria-hidden="true"><span class="progress-fill" id="progress-fill"></span></span>
     </div>
   </header>
@@ -3133,6 +4348,13 @@
     <button class="rail-button" type="button" data-target="chapter-6" aria-label="第六章 MLA"><span class="rail-label">06 / MLA</span></button>
     <button class="rail-button" type="button" data-target="chapter-7" aria-label="第七章 DSA"><span class="rail-label">07 / DSA</span></button>
     <button class="rail-button" type="button" data-target="chapter-8" aria-label="第八章 GLM-5.2"><span class="rail-label">08 / GLM-5.2</span></button>
+    <button class="rail-button" type="button" data-target="chapter-9" aria-label="第九章 Kimi K3 信息流"><span class="rail-label">09 / K3 信息流</span></button>
+    <button class="rail-button" type="button" data-target="chapter-10" aria-label="第十章 KDA"><span class="rail-label">10 / KDA</span></button>
+    <button class="rail-button" type="button" data-target="chapter-11" aria-label="第十一章 Hybrid Attention"><span class="rail-label">11 / Hybrid</span></button>
+    <button class="rail-button" type="button" data-target="chapter-12" aria-label="第十二章 Attention Residuals"><span class="rail-label">12 / AttnRes</span></button>
+    <button class="rail-button" type="button" data-target="chapter-13" aria-label="第十三章 Stable LatentMoE"><span class="rail-label">13 / LatentMoE</span></button>
+    <button class="rail-button" type="button" data-target="chapter-14" aria-label="第十四章 Native Vision"><span class="rail-label">14 / Native Vision</span></button>
+    <button class="rail-button" type="button" data-target="chapter-15" aria-label="第十五章 架构总结"><span class="rail-label">15 / 总结</span></button>
   </nav>
 
   <main>
@@ -3568,6 +4790,389 @@
         </div>
       </div>
     </section>
+
+    <section class="chapter" id="chapter-9" data-title="Kimi K3: redesign three information paths" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 09 / Kimi K3 thesis</p>
+            <h2>Kimi K3: 重新设计三条信息通道</h2>
+          </div>
+          <p class="chapter-lead">理解 K3 不需要先看配置表。只要追踪当前 token 怎样读取长历史、重新使用早期表示，并选择更合适的专长计算。</p>
+        </div>
+
+        <div class="stage kimi-map-stage">
+          <span class="stage-label">One long-running agent trace</span>
+          <span class="stage-counter">token · depth · channel</span>
+
+          <div class="agent-trace step-reveal" data-show-at="0" data-focus-at="0" aria-label="长程 agent 任务中的信息轨迹">
+            <span class="trace-chip">读取需求</span>
+            <span class="trace-chip">浏览代码</span>
+            <span class="trace-chip">执行工具</span>
+            <span class="trace-chip">观察画面</span>
+            <span class="trace-chip">定位错误</span>
+            <span class="trace-chip">修改实现</span>
+            <span class="trace-chip current">当前 token</span>
+          </div>
+
+          <div class="kimi-axis-grid">
+            <article class="kimi-axis-card history step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="axis-card-header"><strong>跨 Token</strong><span>history access</span></div>
+              <div class="axis-card-body">
+                <div class="axis-mini-flow"><span>t₁</span><i></i><span>…</span><i></i><span>t<sub>now</sub></span></div>
+                <p>长历史怎样保留？当前 token 怎样拿到很早以前的信息？</p>
+              </div>
+              <div class="axis-mechanism">KDA + Gated MLA</div>
+            </article>
+
+            <article class="kimi-axis-card depth step-reveal" data-show-at="2" data-focus-at="2">
+              <div class="axis-card-header"><strong>跨 Depth</strong><span>representation access</span></div>
+              <div class="axis-card-body">
+                <div class="axis-mini-flow"><span>B₀</span><i></i><span>B₁</span><i></i><span>B<sub>now</sub></span></div>
+                <p>当前层怎样重新读取早期 block，而不是只接住上一层的累计结果？</p>
+              </div>
+              <div class="axis-mechanism">Attention Residuals</div>
+            </article>
+
+            <article class="kimi-axis-card channel step-reveal" data-show-at="3" data-focus-at="3">
+              <div class="axis-card-header"><strong>跨 Channel</strong><span>specialized compute</span></div>
+              <div class="axis-card-body">
+                <div class="axis-mini-flow"><span>x</span><i></i><span>E<sub>A</sub></span><i></i><span>y</span></div>
+                <p>不同 token 怎样进入不同专长路径，而不是全部执行同一套 dense FFN？</p>
+              </div>
+              <div class="axis-mechanism">Stable LatentMoE</div>
+            </article>
+          </div>
+
+          <div class="kimi-thesis-line step-reveal hard-reveal" data-show-at="3">
+            K3 的共同思路：让信息在 <strong>token、depth、channel</strong> 三个方向上选择性流动。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-10" data-title="KDA: replace growing token history with recurrent state" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 10 / Kimi Delta Attention</p>
+            <h2>KDA: 从完整档案变成持续更新的工作记忆</h2>
+          </div>
+          <p class="chapter-lead">Full Attention 为每个历史 token 保存 K/V；KDA 让历史持续更新同一份 recurrent state，状态不再随序列长度逐 token 增长。</p>
+        </div>
+
+        <div class="stage kda-stage">
+          <span class="stage-label">Full token history vs recurrent memory</span>
+          <span class="stage-counter">compression over time</span>
+
+          <div class="kda-comparison">
+            <article class="kda-card step-reveal" data-show-at="0" data-focus-at="0">
+              <h3>Full Attention · 完整档案</h3>
+              <div class="history-log" aria-label="随 token 数增长的 K/V 历史">
+                <div class="history-entry"><b>t₁</b><span class="k">K₁</span><span class="v">V₁</span></div>
+                <div class="history-entry"><b>t₂</b><span class="k">K₂</span><span class="v">V₂</span></div>
+                <div class="history-entry"><b>t₃</b><span class="k">K₃</span><span class="v">V₃</span></div>
+                <div class="history-entry"><b>t₄</b><span class="k">K₄</span><span class="v">V₄</span></div>
+                <div class="history-entry"><b>t₅</b><span class="k">K₅</span><span class="v">V₅</span></div>
+              </div>
+              <p>每来一个 token，就增加一份未来 query 可以直接访问的记录。</p>
+            </article>
+
+            <div class="kda-transform step-reveal" data-show-at="1">
+              <span class="flow-arrow"></span>
+              <strong>UPDATE</strong>
+              <span>history → state</span>
+            </div>
+
+            <article class="kda-card step-reveal" data-show-at="1" data-focus-at="1">
+              <h3>KDA · Recurrent state</h3>
+              <div class="state-shell">
+                <div class="kda-state-grid" role="img" aria-label="固定大小的 KDA state 矩阵">
+                  <i style="--state-alpha:.12"></i><i style="--state-alpha:.28"></i><i style="--state-alpha:.18"></i><i style="--state-alpha:.34"></i><i style="--state-alpha:.16"></i><i style="--state-alpha:.24"></i>
+                  <i style="--state-alpha:.31"></i><i style="--state-alpha:.14"></i><i style="--state-alpha:.36"></i><i style="--state-alpha:.2"></i><i style="--state-alpha:.27"></i><i style="--state-alpha:.11"></i>
+                  <i style="--state-alpha:.17"></i><i style="--state-alpha:.38"></i><i style="--state-alpha:.13"></i><i style="--state-alpha:.3"></i><i style="--state-alpha:.21"></i><i style="--state-alpha:.33"></i>
+                  <i style="--state-alpha:.35"></i><i style="--state-alpha:.19"></i><i style="--state-alpha:.25"></i><i style="--state-alpha:.15"></i><i style="--state-alpha:.32"></i><i style="--state-alpha:.22"></i>
+                </div>
+              </div>
+              <p>所有历史被压进同一份有限状态；长度继续增加，state shape 保持不变。</p>
+            </article>
+          </div>
+
+          <div class="kda-rule-band">
+            <div class="kda-rule step-reveal" data-show-at="2" data-focus-at="2"><strong>Retain</strong><span>保留仍有用的旧信息</span></div>
+            <div class="kda-rule step-reveal" data-show-at="2"><strong>Correct</strong><span>修正与新内容冲突的方向</span></div>
+            <div class="kda-rule step-reveal" data-show-at="2"><strong>Write</strong><span>写入当前 token 带来的信息</span></div>
+            <div class="kda-readout step-reveal" data-show-at="3" data-focus-at="3"><strong>Query reads state</strong><span>效率来自压缩历史，不是无损保存全部 token。</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-11" data-title="Hybrid Attention: working memory plus global lookup" data-steps="3">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 11 / Hybrid Attention</p>
+            <h2>Hybrid Attention: 工作记忆加周期性全局查阅</h2>
+          </div>
+          <p class="chapter-lead">KDA 擅长高频更新有限状态，但压缩会概括细节；Gated MLA 周期性恢复对任意历史位置的直接访问。</p>
+        </div>
+
+        <div class="stage kimi-hybrid-stage">
+          <span class="stage-label">Complementary memory roles</span>
+          <span class="stage-counter">efficient updates · exact lookup</span>
+
+          <div class="archive-strip step-reveal" data-show-at="1" aria-label="可供全局 attention 查阅的历史 token">
+            <span class="archive-token">需求</span>
+            <span class="archive-token">定义</span>
+            <span class="archive-token">约束</span>
+            <span class="archive-token">代码</span>
+            <span class="archive-token">工具</span>
+            <span class="archive-token">画面</span>
+            <span class="archive-token">报错</span>
+            <span class="archive-token highlight">关键细节</span>
+            <span class="archive-token">修改</span>
+            <span class="archive-token">现在</span>
+          </div>
+
+          <div class="hybrid-role-grid">
+            <article class="hybrid-role-card step-reveal" data-show-at="0" data-focus-at="0">
+              <h3>KDA · 高频维护工作记忆</h3>
+              <div class="memory-core" role="img" aria-label="KDA 有限工作记忆">
+                <span style="--memory-alpha:.12"></span><span style="--memory-alpha:.3"></span><span style="--memory-alpha:.18"></span><span style="--memory-alpha:.36"></span><span style="--memory-alpha:.15"></span><span style="--memory-alpha:.26"></span>
+                <span style="--memory-alpha:.32"></span><span style="--memory-alpha:.14"></span><span style="--memory-alpha:.24"></span><span style="--memory-alpha:.39"></span><span style="--memory-alpha:.19"></span><span style="--memory-alpha:.28"></span>
+              </div>
+              <p>多数层持续更新当前最重要的状态，不反复扫描整段历史。</p>
+            </article>
+
+            <article class="hybrid-role-card step-reveal" data-show-at="1" data-focus-at="1">
+              <h3>Gated MLA · 低频全局查阅</h3>
+              <div class="global-scan" aria-label="全局 query 访问历史中的精确位置">
+                <div class="global-query">global<br>query</div>
+                <div class="global-history"><span></span><span></span><span></span><span></span><span></span><span class="hit"></span><span></span><span></span></div>
+              </div>
+              <p>摘要不够时，global attention 仍可直接访问某个历史 token。</p>
+            </article>
+          </div>
+
+          <div class="hybrid-cadence step-reveal hard-reveal" data-show-at="2" data-focus-at="2">
+            <span class="cadence-block">KDA blocks<br>持续更新 state</span>
+            <span class="cadence-dots">···</span>
+            <span class="cadence-block global">Gated MLA<br>重新查阅历史</span>
+            <span class="cadence-dots">···</span>
+            <span class="cadence-block">KDA blocks<br>继续向前推理</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-12" data-title="AttnRes: attend over model depth" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 12 / Attention Residuals</p>
+            <h2>AttnRes: 让当前层沿网络深度选择信息</h2>
+          </div>
+          <p class="chapter-lead">普通 residual 以固定方式累加此前输出；Block AttnRes 保留分块表示，让当前 token 对不同 depth source 分配内容相关权重。</p>
+        </div>
+
+        <div class="stage attnres-stage">
+          <span class="stage-label">Fixed accumulation vs depth attention</span>
+          <span class="stage-counter">same token · multiple representations</span>
+
+          <article class="residual-card step-reveal" data-show-at="0" data-focus-at="0">
+            <h3>普通 Residual · 单一累计流</h3>
+            <div class="residual-chain" aria-label="普通 residual 逐层累加">
+              <div class="residual-node"><strong>Embedding</strong><span class="accumulated"></span></div>
+              <div class="residual-node"><strong>Early layers</strong><span class="accumulated"></span></div>
+              <div class="residual-node"><strong>Middle layers</strong><span class="accumulated"></span></div>
+              <div class="residual-node"><strong>Current hidden</strong><span class="accumulated"></span></div>
+            </div>
+            <p>早期信息不断混入同一条 hidden stream，当前层无法单独选择某份旧表示。</p>
+          </article>
+
+          <article class="residual-card step-reveal" data-show-at="1" data-focus-at="1">
+            <h3>Block AttnRes · Depth sources</h3>
+            <div class="attnres-workbench">
+              <div class="depth-sources">
+                <div class="depth-source step-reveal" data-show-at="2"><strong>Embedding</strong><span class="depth-weight"><i style="--weight:72%"></i></span><b>0.32</b></div>
+                <div class="depth-source step-reveal" data-show-at="2"><strong>Block 1</strong><span class="depth-weight"><i style="--weight:34%"></i></span><b>0.15</b></div>
+                <div class="depth-source step-reveal" data-show-at="2"><strong>Block 2</strong><span class="depth-weight"><i style="--weight:91%"></i></span><b>0.41</b></div>
+                <div class="depth-source step-reveal" data-show-at="2"><strong>Recent block</strong><span class="depth-weight"><i style="--weight:27%"></i></span><b>0.12</b></div>
+              </div>
+              <div class="depth-query-box step-reveal" data-show-at="2" data-focus-at="2">Current token<br>queries depth<br>softmax weights</div>
+            </div>
+            <div class="attnres-result step-reveal" data-show-at="3" data-focus-at="3">当前层得到的是按内容重新组合的 block representation，而不是固定权重的逐层累加。</div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-13" data-title="Stable LatentMoE: route full tokens, dispatch latent payloads" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 13 / Stable LatentMoE</p>
+            <h2>LatentMoE: Router 看完整 token，专家处理更窄 payload</h2>
+          </div>
+          <p class="chapter-lead">公共能力保留 full-width shared path；专长路径先压缩 expert payload，再做稀疏 dispatch，从而解耦专家容量与完整宽度搬运。</p>
+        </div>
+
+        <div class="stage latent-moe-stage">
+          <span class="stage-label">Shared knowledge + latent specialist path</span>
+          <span class="stage-counter">route · compress · dispatch · combine</span>
+
+          <div class="moe-input-strip">
+            <div class="full-token-node step-reveal" data-show-at="0" data-focus-at="0">Full-width token x</div>
+            <div class="token-feature-bars step-reveal" data-show-at="0" aria-label="完整 token feature"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+            <div class="router-note step-reveal" data-show-at="1" data-focus-at="1">Router reads full-width x<br>and selects experts</div>
+          </div>
+
+          <div class="moe-path-grid">
+            <article class="moe-path-card step-reveal" data-show-at="0" data-focus-at="0">
+              <h3>Shared path · 每个 token 都经过</h3>
+              <div class="moe-flow-row shared">
+                <div class="moe-flow-node">full-width<br>x</div>
+                <span class="compact-arrow">→</span>
+                <div class="moe-flow-node shared">Shared<br>experts</div>
+                <span class="compact-arrow">→</span>
+                <div class="moe-flow-node">common<br>output</div>
+              </div>
+            </article>
+
+            <article class="moe-path-card step-reveal" data-show-at="1" data-focus-at="1">
+              <h3>Routed path · 只发送 latent payload</h3>
+              <div class="moe-flow-row">
+                <div class="moe-flow-node latent">Down-project<br>latent payload</div>
+                <span class="compact-arrow">→</span>
+                <div class="moe-flow-node experts step-reveal" data-show-at="2" data-focus-at="2">
+                  <div class="expert-bank" aria-label="示意专家 A 和 C 被选中">
+                    <span class="active">A</span><span>B</span><span class="active">C</span><span>D</span>
+                  </div>
+                </div>
+                <span class="compact-arrow">→</span>
+                <div class="moe-flow-node latent">Normalize<br>+ up-project</div>
+              </div>
+            </article>
+          </div>
+
+          <div class="moe-stability-band">
+            <div class="stability-cell step-reveal" data-show-at="3" data-focus-at="3"><strong>Normalize</strong><span>控制 routed branch 尺度</span></div>
+            <div class="stability-cell step-reveal" data-show-at="3"><strong>Soft-cap</strong><span>抑制极端 activation</span></div>
+            <div class="stability-cell step-reveal" data-show-at="3"><strong>Balance</strong><span>避免少数 expert 过热</span></div>
+            <div class="moe-combined-output step-reveal hard-reveal" data-show-at="3">shared output + routed output → next activation</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-14" data-title="Native Vision: visual tokens enter the same backbone" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 14 / Native multimodality</p>
+            <h2>Native Vision: 视觉 token 进入同一个 K3 backbone</h2>
+          </div>
+          <p class="chapter-lead">图像和视频先由 MoonViT-V2 编码，再投影到文本 backbone 的 embedding space；视觉与文字随后共享同一条主干信息流。</p>
+        </div>
+
+        <div class="stage native-vision-stage">
+          <span class="stage-label">Vision encoder → unified token stream</span>
+          <span class="stage-counter">one backbone · multiple modalities</span>
+
+          <div class="vision-main-flow">
+            <div class="vision-input-pair step-reveal" data-show-at="0" data-focus-at="0">
+              <div class="vision-source-card"><div class="image-field"></div><strong>IMAGE</strong></div>
+              <div class="vision-source-card"><div class="video-field"><span>▶</span></div><strong>VIDEO</strong></div>
+            </div>
+
+            <span class="compact-arrow step-reveal" data-show-at="1">→</span>
+
+            <div class="vision-encoder-card step-reveal" data-show-at="1" data-focus-at="1">
+              <strong>MoonViT-V2</strong>
+              <div class="patch-grid" aria-label="视觉 patch features">
+                <i style="--patch-alpha:.12"></i><i style="--patch-alpha:.24"></i><i style="--patch-alpha:.16"></i><i style="--patch-alpha:.31"></i><i style="--patch-alpha:.19"></i>
+                <i style="--patch-alpha:.28"></i><i style="--patch-alpha:.14"></i><i style="--patch-alpha:.35"></i><i style="--patch-alpha:.21"></i><i style="--patch-alpha:.27"></i>
+                <i style="--patch-alpha:.18"></i><i style="--patch-alpha:.32"></i><i style="--patch-alpha:.13"></i><i style="--patch-alpha:.26"></i><i style="--patch-alpha:.22"></i>
+              </div>
+              <span class="mini-tag">merge + projector</span>
+            </div>
+
+            <span class="compact-arrow step-reveal" data-show-at="2">→</span>
+
+            <div class="unified-backbone-card step-reveal" data-show-at="2" data-focus-at="2">
+              <h3>Unified token stream</h3>
+              <div class="unified-token-stream">
+                <span>请</span><span>修复</span><span class="visual">v₁</span><span class="visual">v₂</span><span class="visual">v₃</span><span>这个</span><span>界面</span>
+              </div>
+              <div class="backbone-modules"><span>KDA / MLA</span><span>AttnRes</span><span>LatentMoE</span></div>
+            </div>
+          </div>
+
+          <div class="vision-agent-loop step-reveal hard-reveal" data-show-at="3" data-focus-at="3">
+            <span class="loop-step">生成代码</span><span class="compact-arrow">→</span>
+            <span class="loop-step">观察渲染画面</span><span class="compact-arrow">→</span>
+            <span class="loop-step">把视觉反馈带回下一轮推理</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-15" data-title="GLM-5.2 and Kimi K3: architecture becomes a systems contract" data-steps="3">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 15 / Architecture → systems</p>
+            <h2>两种长上下文路线，一条系统分析主线</h2>
+          </div>
+          <p class="chapter-lead">架构没有消灭成本，而是把 dense cost 重组为 cache、state、selection、routing 与通信；这些新成本需要在 Prefill 和 Decode 中分别分析。</p>
+        </div>
+
+        <div class="stage architecture-summary-stage">
+          <span class="stage-label">Model architecture as a systems contract</span>
+          <span class="stage-counter">state · selection · routing</span>
+
+          <div class="model-summary-grid">
+            <article class="model-summary-card step-reveal" data-show-at="0" data-focus-at="0">
+              <h3>GLM-5.2 · 压缩历史，再选择读取</h3>
+              <div class="model-summary-flow">
+                <div class="summary-module"><strong>MLA</strong><span>每个历史 token 保存更紧凑的 latent KV。</span></div>
+                <div class="summary-module"><strong>DSA</strong><span>先选相关位置，核心 Attention 只读取 Top-K 历史。</span></div>
+                <div class="summary-module"><strong>IndexShare</strong><span>相邻层复用 token index，摊薄选择路径。</span></div>
+                <div class="summary-module"><strong>MoE</strong><span>FFN 只激活少量 routed experts。</span></div>
+              </div>
+              <p>系统重点：latent cache、Indexer/Top-K、Gather、routing 与 expert communication。</p>
+            </article>
+
+            <article class="model-summary-card step-reveal" data-show-at="1" data-focus-at="1">
+              <h3>Kimi K3 · 沿三条轴选择信息</h3>
+              <div class="model-summary-flow">
+                <div class="summary-module"><strong>KDA + MLA</strong><span>工作记忆更新与周期性全局查阅互补。</span></div>
+                <div class="summary-module"><strong>AttnRes</strong><span>当前 token 按内容重新组合 block representations。</span></div>
+                <div class="summary-module"><strong>LatentMoE</strong><span>router 看完整输入，experts 处理更窄 payload。</span></div>
+                <div class="summary-module"><strong>Native Vision</strong><span>visual tokens 与文本进入同一个 backbone。</span></div>
+              </div>
+              <p>系统重点：recurrent state、depth reads、latent dispatch、expert balance 与视觉序列长度。</p>
+            </article>
+          </div>
+
+          <div class="systems-contract step-reveal hard-reveal" data-show-at="2" data-focus-at="2">
+            <div class="contract-card"><strong>Prefill</strong><span>并行处理长序列：关注矩阵计算、state scan、Top-K 与批量通信。</span></div>
+            <div class="contract-card"><strong>Decode</strong><span>逐 token 执行：关注 cache/state 读取、weight streaming、launch 与通信延迟。</span></div>
+            <div class="contract-card"><strong>Roofline → MoE</strong><span>把 FLOPs、HBM bytes 与 collective bytes 映射到具体模块，再决定优化位置。</span></div>
+          </div>
+
+          <div class="reference-row step-reveal" data-show-at="2" aria-label="参考资料">
+            <span>References</span>
+            <a href="https://z.ai/blog/glm-5.2" target="_blank" rel="noreferrer">GLM-5.2</a>
+            <a href="https://arxiv.org/abs/2607.24653" target="_blank" rel="noreferrer">Kimi K3</a>
+            <a href="https://arxiv.org/abs/2510.26692" target="_blank" rel="noreferrer">Kimi Linear</a>
+            <a href="https://arxiv.org/abs/2603.15031" target="_blank" rel="noreferrer">AttnRes</a>
+            <a href="https://arxiv.org/abs/2601.18089" target="_blank" rel="noreferrer">LatentMoE</a>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="control-dock" aria-label="演示控制">
@@ -3638,6 +5243,46 @@
           "<strong>DSA · selective read</strong>：Indexer、Top-K 与 Gather 将核心 Attention 聚焦到少量历史位置。",
           "<strong>IndexShare + MoE</strong>：相邻层复用 token index；FFN 仅激活少量 routed experts。",
           "<strong>Combined advantage</strong>：缓存更紧、核心读取更少、跨层索引复用、FFN 稀疏激活，共同提升长上下文效率。"
+        ],
+        [
+          "<strong>先追踪任务，不先看配置</strong>：长程 agent 的当前 token 需要重新利用此前读过的文档、代码、工具结果与视觉反馈。",
+          "<strong>Across tokens</strong>：KDA 与 Gated MLA 共同决定长历史怎样保存、更新和被重新访问。",
+          "<strong>Across depth</strong>：Attention Residuals 让当前层选择此前 block 的表示，而不是只接受固定累计流。",
+          "<strong>Across channels</strong>：Stable LatentMoE 让不同 token 进入不同专长路径；三者共同构成 K3 的信息流主线。"
+        ],
+        [
+          "<strong>完整档案</strong>：Full Attention 为每个历史 token 新增一份 K/V，未来 query 可以直接访问任意记录。",
+          "<strong>工作记忆</strong>：KDA 将历史持续写入同一份 recurrent state，状态 shape 不随 token 数继续增长。",
+          "<strong>Delta update</strong>：每一步保留仍有用的信息、修正冲突方向，再写入当前 token 带来的新内容。",
+          "<strong>读取边界</strong>：query 直接读取有限 state；效率来自压缩，因此它不是对完整历史的无损替代。"
+        ],
+        [
+          "<strong>KDA</strong>：多数层高频更新有限工作记忆，避免每一步都重新扫描全部历史。",
+          "<strong>Gated MLA</strong>：压缩可能丢失精确细节，因此模型仍周期性保留全局 token-to-token 查阅能力。",
+          "<strong>Hybrid role</strong>：KDA 负责可扩展的状态更新，global attention 负责低频但精确的历史检索。"
+        ],
+        [
+          "<strong>普通 residual</strong>：此前输出以固定方式累加进同一条 hidden stream，早期表示逐渐混在一起。",
+          "<strong>Block AttnRes</strong>：网络保留分块表示，把 model depth 变成一组可被重新读取的 sources。",
+          "<strong>Content-dependent weights</strong>：当前 token 对不同 depth source 分配 softmax 权重。",
+          "<strong>Depth mixture</strong>：当前层接收按内容重新组合的 block representations，而不是固定的逐层累加。"
+        ],
+        [
+          "<strong>Shared path</strong>：所有 token 都经过 full-width 公共路径，承载通用变换。",
+          "<strong>Router and payload</strong>：router 从完整 token 做选择；真正发送给专家的 payload 被压到 latent space。",
+          "<strong>Selective experts</strong>：每个 token 只激活少量专家；A/B/C/D 是示意，实际分工由训练形成。",
+          "<strong>Stable combine</strong>：归一化、activation soft-cap 与负载平衡控制 routed branch，再与 shared output 合并。"
+        ],
+        [
+          "<strong>视觉输入</strong>：图像和视频仍先经过独立 vision encoder，并不是从输入端就与文本完全相同。",
+          "<strong>MoonViT-V2 + projector</strong>：视觉内容被编码、合并并映射到文本 backbone 使用的 embedding space。",
+          "<strong>Unified backbone</strong>：visual tokens 与 text tokens 随后共享 KDA/MLA、AttnRes 和 LatentMoE 主干。",
+          "<strong>Vision in the loop</strong>：生成代码、观察画面、再依据视觉反馈修改，可以成为同一段长程 agent 轨迹。"
+        ],
+        [
+          "<strong>GLM-5.2</strong>：先用 MLA 压缩逐 token 历史，再由 DSA 选择核心 Attention 真正读取的位置。",
+          "<strong>Kimi K3</strong>：用 recurrent/global hybrid、depth attention 与 latent experts 改造三条信息通道。",
+          "<strong>Architecture → systems</strong>：下一步要把 state、selection、routing 和 communication 分别映射到 Prefill、Decode 与 TPU Roofline。"
         ]
       ];
 

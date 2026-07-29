@@ -71,7 +71,7 @@ GLM5.2 和 Kimi K3 都在继续扩大模型规模和上下文长度，但推理�
 
 ## 已整理材料
 
-- [Kimi K3 HTML 演示](../architecture/kimi-k3-visualization/index.html)
+- [GLM-5.2 & Kimi K3 合并版 HTML 演示](../architecture/glm5.2-visualization/index.html)
 - [Kimi K3 架构讲义](../architecture/kimi-k3.md)
 
 ## 后续文档建议
@@ -83,7 +83,7 @@ kimi&glm/
 ├── architecture/
 │   ├── glm5.2.md
 │   ├── kimi-k3.md
-│   └── kimi-k3-visualization/
+│   └── glm5.2-visualization/
 │       └── index.html
 ├── tpu-roofline.md
 ├── prefill-vs-decode.md

@@ -16,7 +16,7 @@ KDA 与全局 attention、Attention Residuals、LatentMoE 分别改造这三条�
 
 ## 演示入口
 
-[打开 Kimi K3 HTML 演示](kimi-k3-visualization/index.html)
+[从 Chapter 09 打开合并版 HTML 演示](glm5.2-visualization/index.html#chapter-9)
 
 推荐时长为 12～15 分钟。每一章只回答一个问题；按 `Space` 或 `→` 逐步揭示画面，底部文字就是当前画面的讲述提示。
 

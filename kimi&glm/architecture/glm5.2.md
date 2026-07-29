@@ -2,7 +2,7 @@
 
 > 本节负责人：@炯轩
 >
-> 配套演示：[GLM-5.2 Attention 可视化](./glm5.2-visualization/index.html)
+> 配套演示：[GLM-5.2 & Kimi K3 合并版 HTML PPT](./glm5.2-visualization/index.html)
 
 GLM-5.2 面向长程任务和百万 token 上下文，核心架构围绕注意力状态的保存与访问展开：使用 MLA 压缩历史 K/V 表示，使用 DSA 选择需要参与核心注意力的历史 token，并通过 IndexShare 在相邻层之间复用 token 选择结果。
 
