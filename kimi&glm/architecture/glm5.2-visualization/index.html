@@ -4339,138 +4339,68 @@
 
     .attnres-stage {
       display: grid;
-      grid-template-columns: 0.82fr 1.18fr;
-      gap: 18px;
-      padding: 50px 42px 38px;
+      grid-template-rows: minmax(0, 1fr) 76px;
+      gap: 12px;
+      padding: 48px 34px 30px;
     }
 
-    .residual-card {
+    .attnres-figure {
       min-height: 0;
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr) auto;
-      gap: 12px;
-      padding: 16px;
-      border: 1px solid var(--line-strong);
-      background: rgba(255, 255, 255, 0.72);
-    }
-
-    .residual-card h3 {
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 5px;
       margin: 0;
-      font-size: 14px;
+      overflow: hidden;
     }
 
-    .residual-card p {
-      margin: 0;
-      color: var(--muted);
-      font-size: 9px;
-      line-height: 1.45;
-    }
-
-    .residual-chain {
-      align-self: center;
-      display: grid;
-      gap: 7px;
-    }
-
-    .residual-node {
-      min-height: 42px;
-      display: grid;
-      grid-template-columns: 94px 1fr;
-      align-items: center;
-      gap: 10px;
-      padding: 7px 10px;
-      border: 1px solid var(--line);
-      color: var(--muted);
-      background: var(--surface);
-      font-size: 9px;
-    }
-
-    .residual-node strong {
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 9px;
-    }
-
-    .residual-node .accumulated {
-      height: 8px;
-      background:
-        linear-gradient(90deg,
-          rgba(23, 110, 196, 0.42) 0 25%,
-          rgba(119, 72, 184, 0.34) 25% 58%,
-          rgba(25, 132, 92, 0.42) 58% 100%);
-    }
-
-    .attnres-workbench {
-      min-height: 0;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 118px;
-      gap: 12px;
-    }
-
-    .depth-sources {
-      display: grid;
-      align-content: center;
-      gap: 7px;
-    }
-
-    .depth-source {
-      min-height: 48px;
-      display: grid;
-      grid-template-columns: 92px 1fr 36px;
-      align-items: center;
-      gap: 9px;
-      padding: 7px 9px;
-      border: 1px solid var(--line);
-      background: var(--surface);
-      font-family: var(--mono);
-      font-size: 8px;
-    }
-
-    .depth-source strong {
-      color: var(--text);
-    }
-
-    .depth-weight {
-      height: 7px;
-      background: var(--surface-3);
-    }
-
-    .depth-weight i {
-      display: block;
-      width: var(--weight, 50%);
+    .attnres-figure img {
+      width: 100%;
       height: 100%;
-      background: var(--score);
-      transition: width 320ms ease;
+      min-height: 0;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+      background: #fff;
     }
 
-    .depth-source b {
-      color: var(--score);
-      font-size: 8px;
+    .attnres-figure figcaption {
+      margin: 0;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 7px;
       text-align: right;
     }
 
-    .depth-query-box {
-      align-self: center;
-      min-height: 116px;
-      display: grid;
-      place-items: center;
-      padding: 12px;
-      border: 1px solid rgba(119, 72, 184, 0.42);
-      color: var(--score);
-      background: var(--score-soft);
-      font-family: var(--mono);
-      font-size: 9px;
-      line-height: 1.45;
-      text-align: center;
+    .attnres-figure figcaption a {
+      color: var(--accent);
+      text-decoration: none;
     }
 
-    .attnres-result {
-      padding: 9px 11px;
-      border: 1px solid rgba(119, 72, 184, 0.32);
+    .attnres-takeaways {
+      display: grid;
+      grid-template-columns: minmax(0, 0.84fr) minmax(0, 0.92fr) minmax(0, 1.24fr);
+      border-top: 1px solid var(--line);
+    }
+
+    .attnres-takeaway {
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      padding: 9px 14px;
+      border-left: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 8px;
+      line-height: 1.4;
+    }
+
+    .attnres-takeaway:first-child {
+      border-left: 0;
+    }
+
+    .attnres-takeaway strong {
       color: var(--text);
-      background: var(--score-soft);
+      font-family: var(--mono);
       font-size: 9px;
-      line-height: 1.45;
     }
 
     .latent-moe-stage {
@@ -5095,7 +5025,6 @@
       .kimi-axis-card,
       .kda-card,
       .hybrid-role-card,
-      .residual-card,
       .moe-path-card,
       .model-summary-card {
         padding: 12px;
@@ -5104,10 +5033,6 @@
       .kda-comparison {
         grid-template-columns: 1fr 54px 1fr;
         gap: 9px;
-      }
-
-      .attnres-stage {
-        grid-template-columns: 0.74fr 1.26fr;
       }
 
       .vision-main-flow {
@@ -5374,8 +5299,23 @@
         transform: rotate(90deg);
       }
 
-      .attnres-workbench {
+      .attnres-stage {
+        min-height: 720px;
+        grid-template-rows: minmax(360px, auto) auto;
+      }
+
+      .attnres-takeaways {
         grid-template-columns: 1fr;
+      }
+
+      .attnres-takeaway {
+        min-height: 62px;
+        border-top: 1px solid var(--line);
+        border-left: 0;
+      }
+
+      .attnres-takeaway:first-child {
+        border-top: 0;
       }
 
       .moe-input-strip,
@@ -6254,7 +6194,7 @@
       </div>
     </section>
 
-    <section class="chapter" id="chapter-13" data-title="AttnRes: attend over model depth" data-steps="4">
+    <section class="chapter" id="chapter-13" data-title="AttnRes: attend over model depth" data-steps="3">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
@@ -6265,33 +6205,19 @@
         </div>
 
         <div class="stage attnres-stage">
-          <span class="stage-label">Fixed accumulation vs depth attention</span>
-          <span class="stage-counter">same token · multiple representations</span>
+          <span class="stage-label">Standard Residual · Full AttnRes · Block AttnRes</span>
+          <span class="stage-counter">official architecture overview</span>
 
-          <article class="residual-card step-reveal" data-show-at="0" data-focus-at="0">
-            <h3>普通 Residual · 单一累计流</h3>
-            <div class="residual-chain" aria-label="普通 residual 逐层累加">
-              <div class="residual-node"><strong>Embedding</strong><span class="accumulated"></span></div>
-              <div class="residual-node"><strong>Early layers</strong><span class="accumulated"></span></div>
-              <div class="residual-node"><strong>Middle layers</strong><span class="accumulated"></span></div>
-              <div class="residual-node"><strong>Current hidden</strong><span class="accumulated"></span></div>
-            </div>
-            <p>早期信息不断混入同一条 hidden stream，当前层无法单独选择某份旧表示。</p>
-          </article>
+          <figure class="attnres-figure step-reveal" data-show-at="0">
+            <img src="./assets/attention-residuals-overview.png" alt="MoonshotAI Attention Residuals 架构图，对比标准残差、Full Attention Residuals 与 Block Attention Residuals">
+            <figcaption>Source: <a href="https://github.com/MoonshotAI/Attention-Residuals" target="_blank" rel="noreferrer">MoonshotAI / Attention-Residuals · overview.png</a></figcaption>
+          </figure>
 
-          <article class="residual-card step-reveal" data-show-at="1" data-focus-at="1">
-            <h3>Block AttnRes · Depth sources</h3>
-            <div class="attnres-workbench">
-              <div class="depth-sources">
-                <div class="depth-source step-reveal" data-show-at="2"><strong>Embedding</strong><span class="depth-weight"><i style="--weight:72%"></i></span><b>0.32</b></div>
-                <div class="depth-source step-reveal" data-show-at="2"><strong>Block 1</strong><span class="depth-weight"><i style="--weight:34%"></i></span><b>0.15</b></div>
-                <div class="depth-source step-reveal" data-show-at="2"><strong>Block 2</strong><span class="depth-weight"><i style="--weight:91%"></i></span><b>0.41</b></div>
-                <div class="depth-source step-reveal" data-show-at="2"><strong>Recent block</strong><span class="depth-weight"><i style="--weight:27%"></i></span><b>0.12</b></div>
-              </div>
-              <div class="depth-query-box step-reveal" data-show-at="2" data-focus-at="2">Current token<br>queries depth<br>softmax weights</div>
-            </div>
-            <div class="attnres-result step-reveal" data-show-at="3" data-focus-at="3">当前层得到的是按内容重新组合的 block representation，而不是固定权重的逐层累加。</div>
-          </article>
+          <div class="attnres-takeaways">
+            <div class="attnres-takeaway step-reveal" data-show-at="0" data-focus-at="0"><strong>(a) Standard Residuals</strong><span>每个子层输出以固定单位权重加入同一条 residual stream。</span></div>
+            <div class="attnres-takeaway step-reveal" data-show-at="1" data-focus-at="1"><strong>(b) Full AttnRes</strong><span>每层用 learned w 生成 α，对全部早期表示做 depth attention。</span></div>
+            <div class="attnres-takeaway step-reveal" data-show-at="2" data-focus-at="2"><strong>(c) Block AttnRes</strong><span>层内仍做普通 residual；只在 block representations 之间做 attention，把状态量从 O(Ld) 降到 O(Nd)。</span></div>
+          </div>
         </div>
       </div>
     </section>
@@ -6456,6 +6382,7 @@
             <a href="https://arxiv.org/abs/2607.24653" target="_blank" rel="noreferrer">Kimi K3</a>
             <a href="https://arxiv.org/abs/2510.26692" target="_blank" rel="noreferrer">Kimi Linear</a>
             <a href="https://arxiv.org/abs/2603.15031" target="_blank" rel="noreferrer">AttnRes</a>
+            <a href="https://github.com/MoonshotAI/Attention-Residuals" target="_blank" rel="noreferrer">AttnRes GitHub</a>
             <a href="https://www.spaces.ac.cn/archives/11664" target="_blank" rel="noreferrer">AttnRes 解读</a>
             <a href="https://arxiv.org/abs/2601.18089" target="_blank" rel="noreferrer">LatentMoE</a>
           </div>
@@ -6557,10 +6484,9 @@
           "<strong>Hybrid role</strong>：KDA 负责可扩展的状态更新，global attention 负责低频的全局内容交互。"
         ],
         [
-          "<strong>普通 residual</strong>：此前输出以固定等权方式累加进同一条 hidden stream，越深时单层相对贡献越容易被稀释。",
-          "<strong>Block AttnRes</strong>：网络保留分块表示，把 model depth 变成一组可被重新读取的 sources。",
-          "<strong>Content-dependent weights</strong>：当前 token 对不同 depth source 分配 softmax 权重。",
-          "<strong>Depth mixture</strong>：当前层接收按内容重新组合的 block representations，而不是固定的逐层累加。"
+          "<strong>(a) Standard Residuals</strong>：所有子层输出都以固定单位权重加入同一条 residual stream。",
+          "<strong>(b) Full AttnRes</strong>：每层用 learned pseudo-query w 生成 α，从全部早期表示中做 depth attention。",
+          "<strong>(c) Block AttnRes</strong>：层内保留普通 residual，只在 block representations 之间做 attention，把状态量从 O(Ld) 降到 O(Nd)。"
         ],
         [
           "<strong>Shared path</strong>：所有 token 都经过 full-width 公共路径，承载通用变换。",
