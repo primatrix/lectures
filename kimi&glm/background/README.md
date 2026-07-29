@@ -73,8 +73,6 @@ GLM5.2 和 Kimi K3 都在继续扩大模型规模和上下文长度，但推理�
 
 - [Kimi K3 HTML 演示](../architecture/kimi-k3-visualization/index.html)
 - [Kimi K3 架构讲义](../architecture/kimi-k3.md)
-- [Kimi K3 架构研究笔记](../sources/kimi-k3/architecture-reference.md)
-- [Kimi K3 原始资料索引](../sources/kimi-k3/README.md)
 
 ## 后续文档建议
 

@@ -210,12 +210,8 @@ LatentMoE 把公共能力和专长能力拆成两条路。shared path 继续处�
 
 ---
 
-## 讲者备课资料
+## References
 
-主讲时不需要展示下面这些材料；观众追问实现细节时再使用：
-
-- [Kimi K3 架构研究笔记](../sources/kimi-k3/architecture-reference.md)
-- [Kimi K3 原始资料索引](../sources/kimi-k3/README.md)
 - [Kimi K3 Technical Report](https://arxiv.org/abs/2607.24653)
 - [Kimi Linear](https://arxiv.org/abs/2510.26692)
 - [Attention Residuals](https://arxiv.org/abs/2603.15031)
