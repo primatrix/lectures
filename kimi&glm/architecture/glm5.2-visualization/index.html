@@ -3542,6 +3542,13 @@
       stroke-dasharray: 3 3;
     }
 
+    .latent-moe-answer-svg .router-control-line {
+      fill: none;
+      stroke: color-mix(in srgb, var(--value) 72%, transparent);
+      stroke-width: 1;
+      stroke-dasharray: 4 3;
+    }
+
     .answer-map-stage .kimi-thesis-line {
       justify-content: flex-start;
       padding: 8px 0 0;
@@ -5632,7 +5639,7 @@
         <div class="chapter-heading">
           <div>
             <p class="eyebrow">Chapter 10 / Kimi K3 answers</p>
-            <h2>K3 的回答：固定状态、按层重读、低维路由</h2>
+            <h2>K3 的回答：固定状态、按层重读、低维专家路径</h2>
           </div>
           <p class="chapter-lead">第 9 页提出的三个 scaling 问题，在 K3 里分别落到 token、depth、channel 三条信息流；每一条都避免“规模变大就全量付费”。</p>
         </div>
@@ -5702,9 +5709,9 @@
 
             <article class="problem-axis-row channel step-reveal" data-show-at="3" data-focus-at="3">
               <h3 class="problem-axis-label">跨 Channel：</h3>
-              <p class="problem-axis-copy"><b>Stable LatentMoE 只把 routed 分支压到 latent width ℓ。</b>专家计算与 All-to-All 都搬更窄的 activation；RMSNorm / SiTU-GLU 保持稳定，Quantile Balancing 用 routing bias 对齐专家目标负载。</p>
-              <div class="problem-axis-sketch" role="img" aria-label="Token 分成全宽 shared expert 分支和先降维再路由的 latent expert 分支，Quantile Balancing 平衡 routed experts">
-                <svg class="latent-moe-answer-svg" viewBox="0 0 590 100" aria-hidden="true">
+              <p class="problem-axis-copy"><b>Router 读取 full-width x；W↓ 只压缩送往专家的 payload。</b>两条路径并行：routing scores 从 x 选 expert，latent z 再被 dispatch、计算与聚合；RMSNorm / SiTU-GLU 稳住数值，QB 对齐专家负载。</p>
+              <div class="problem-axis-sketch" role="img" aria-label="Router 从完整 token x 计算选路；并行的降维分支把 x 压成 latent payload z，再发送给选中的 routed experts">
+                <svg class="latent-moe-answer-svg" viewBox="0 0 590 108" aria-hidden="true">
                   <defs>
                     <marker id="latent-arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
                       <path d="M0,0 L6,3 L0,6 Z" fill="var(--value)"></path>
@@ -5713,52 +5720,57 @@
                       <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"></path>
                     </marker>
                   </defs>
-                  <rect class="routed-node" x="4" y="37" width="50" height="26"></rect>
-                  <text class="strong" x="29" y="53">x [d]</text>
-                  <circle class="routed-node" cx="76" cy="50" r="4"></circle>
-                  <path class="shared-line" d="M54 50 L76 50 L76 18 L125 18" marker-end="url(#shared-arrow)"></path>
+                  <rect class="routed-node" x="4" y="40" width="50" height="26"></rect>
+                  <text class="strong" x="29" y="56">x [d]</text>
+                  <circle class="routed-node" cx="76" cy="53" r="4"></circle>
+                  <path class="shared-line" d="M54 53 L76 53 L76 18 L125 18" marker-end="url(#shared-arrow)"></path>
                   <rect class="shared-node" x="130" y="5" width="105" height="26"></rect>
                   <text class="strong" x="182" y="17">Shared experts</text>
                   <text class="micro" x="182" y="26">full width d</text>
-                  <path class="shared-line" d="M235 18 L548 18 L548 45" marker-end="url(#shared-arrow)"></path>
+                  <path class="shared-line" d="M235 18 L548 18 L548 46" marker-end="url(#shared-arrow)"></path>
 
-                  <path class="path-line" d="M76 50 L105 50" marker-end="url(#latent-arrow)"></path>
-                  <rect class="routed-node" x="111" y="37" width="62" height="26"></rect>
-                  <text class="strong" x="142" y="49">W↓</text>
-                  <text class="micro" x="142" y="58">d → ℓ</text>
-                  <path class="path-line" d="M173 50 L191 50" marker-end="url(#latent-arrow)"></path>
-                  <rect class="routed-node" x="197" y="37" width="58" height="26"></rect>
-                  <text class="strong" x="226" y="53">Router</text>
-                  <path class="path-line" d="M255 50 L273 50" marker-end="url(#latent-arrow)"></path>
+                  <path class="path-line" d="M76 53 L105 53" marker-end="url(#latent-arrow)"></path>
+                  <rect class="routed-node" x="111" y="40" width="62" height="26"></rect>
+                  <text class="strong" x="142" y="52">W↓</text>
+                  <text class="micro" x="142" y="61">d → ℓ</text>
+                  <path class="path-line" d="M173 53 L187 53" marker-end="url(#latent-arrow)"></path>
+                  <rect class="routed-node" x="193" y="40" width="62" height="26"></rect>
+                  <text class="strong" x="224" y="52">z [ℓ]</text>
+                  <text class="micro" x="224" y="61">payload</text>
+                  <path class="path-line" d="M255 53 L273 53" marker-end="url(#latent-arrow)"></path>
 
-                  <rect class="expert-node" x="279" y="28" width="34" height="18"></rect>
-                  <rect class="expert-node" x="317" y="28" width="34" height="18"></rect>
-                  <rect class="expert-node" x="279" y="53" width="34" height="18"></rect>
-                  <rect class="expert-node" x="317" y="53" width="34" height="18"></rect>
-                  <text x="296" y="40">E1</text><text x="334" y="40">E2</text>
-                  <text x="296" y="65">E3</text><text x="334" y="65">E4</text>
-                  <path class="qb-line" d="M278 82 L352 82"></path>
-                  <text class="strong" x="315" y="94">QB · target load</text>
+                  <rect class="expert-node" x="279" y="31" width="34" height="18"></rect>
+                  <rect class="expert-node" x="317" y="31" width="34" height="18"></rect>
+                  <rect class="expert-node" x="279" y="56" width="34" height="18"></rect>
+                  <rect class="expert-node" x="317" y="56" width="34" height="18"></rect>
+                  <text x="296" y="43">E1</text><text x="334" y="43">E2</text>
+                  <text x="296" y="68">E3</text><text x="334" y="68">E4</text>
 
-                  <path class="path-line" d="M351 50 L369 50" marker-end="url(#latent-arrow)"></path>
-                  <rect class="routed-node" x="375" y="37" width="76" height="26"></rect>
-                  <text class="strong" x="413" y="49">RMSNorm</text>
-                  <text class="micro" x="413" y="58">stable combine</text>
-                  <path class="path-line" d="M451 50 L469 50" marker-end="url(#latent-arrow)"></path>
-                  <rect class="routed-node" x="475" y="37" width="56" height="26"></rect>
-                  <text class="strong" x="503" y="49">W↑</text>
-                  <text class="micro" x="503" y="58">ℓ → d</text>
-                  <path class="path-line" d="M531 50 L541 50" marker-end="url(#latent-arrow)"></path>
-                  <circle class="routed-node" cx="550" cy="50" r="10"></circle>
-                  <text class="strong" x="550" y="53">+</text>
-                  <path class="path-line" d="M560 50 L582 50" marker-end="url(#latent-arrow)"></path>
+                  <path class="path-line" d="M76 57 L76 91 L181 91" marker-end="url(#latent-arrow)"></path>
+                  <rect class="routed-node" x="187" y="78" width="74" height="26"></rect>
+                  <text class="strong" x="224" y="90">Router</text>
+                  <text class="micro" x="224" y="99">QB bias · reads x[d]</text>
+                  <path class="router-control-line" d="M261 91 L269 91 L269 72 L278 72" marker-end="url(#latent-arrow)"></path>
+
+                  <path class="path-line" d="M351 53 L369 53" marker-end="url(#latent-arrow)"></path>
+                  <rect class="routed-node" x="375" y="40" width="76" height="26"></rect>
+                  <text class="strong" x="413" y="52">RMSNorm</text>
+                  <text class="micro" x="413" y="61">stable combine</text>
+                  <path class="path-line" d="M451 53 L469 53" marker-end="url(#latent-arrow)"></path>
+                  <rect class="routed-node" x="475" y="40" width="56" height="26"></rect>
+                  <text class="strong" x="503" y="52">W↑</text>
+                  <text class="micro" x="503" y="61">ℓ → d</text>
+                  <path class="path-line" d="M531 53 L541 53" marker-end="url(#latent-arrow)"></path>
+                  <circle class="routed-node" cx="550" cy="53" r="10"></circle>
+                  <text class="strong" x="550" y="56">+</text>
+                  <path class="path-line" d="M560 53 L582 53" marker-end="url(#latent-arrow)"></path>
                 </svg>
               </div>
             </article>
           </div>
 
           <div class="kimi-thesis-line problem-thesis step-reveal hard-reveal" data-show-at="3">
-            <span>一一对应：</span><strong>逐 token KV → 固定状态</strong><span>·</span><strong>等权残差 → 按深度注意</strong><span>·</span><strong>全宽专家 → 低维稀疏路由</strong>
+            <span>一一对应：</span><strong>逐 token KV → 固定状态</strong><span>·</span><strong>等权残差 → 按深度注意</strong><span>·</span><strong>full-width 选路 → latent payload</strong>
           </div>
         </div>
       </div>
@@ -5933,7 +5945,7 @@
 
         <div class="stage latent-moe-stage">
           <span class="stage-label">Shared knowledge + latent specialist path</span>
-          <span class="stage-counter">route · compress · dispatch · combine</span>
+          <span class="stage-counter">score on x · dispatch z · combine</span>
 
           <div class="moe-input-strip">
             <div class="full-token-node step-reveal" data-show-at="0" data-focus-at="0">Full-width token x</div>
@@ -6168,7 +6180,7 @@
           "<strong>共同原则</strong>：K3 不让规模增长直接变成每个 token 的全量状态、全量读取和全量计算，而是先压缩，再按内容选择。",
           "<strong>回答一 · Token</strong>：KDA 把历史压进固定尺寸 recurrent state；周期性的 Gated MLA 保留全局 token-to-token 交互和紧凑 latent KV。",
           "<strong>回答二 · Depth</strong>：Block AttnRes 用 learned query 生成 α，从 embedding、前序 blocks 与当前 partial sum 中按内容重读。",
-          "<strong>回答三 · Channel</strong>：Stable LatentMoE 在 latent width 完成 routed expert 计算与通信；Quantile Balancing 让专家负载对齐目标值。"
+          "<strong>回答三 · Channel</strong>：Router 从 full-width x 选择 experts；并行的数据分支把 payload 压成 latent z，再执行 dispatch、专家计算与聚合。"
         ],
         [
           "<strong>完整档案</strong>：Full Attention 为每个历史 token 新增一份 K/V，未来 query 可以直接访问任意记录。",
