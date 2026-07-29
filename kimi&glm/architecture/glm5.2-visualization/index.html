@@ -2960,6 +2960,350 @@
       display: none;
     }
 
+    .kimi-map-stage.problem-map-stage {
+      grid-template-rows: 80px minmax(0, 1fr) 42px;
+      gap: 10px;
+      padding-top: 44px;
+      padding-bottom: 30px;
+    }
+
+    .problem-axis-list {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: repeat(3, minmax(0, 1fr));
+    }
+
+    .problem-axis-row {
+      --axis-color: var(--accent);
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 126px minmax(0, 1fr) minmax(380px, 0.92fr);
+      align-items: center;
+      gap: 24px;
+      padding: 10px 6px;
+      border-top: 1px solid var(--line);
+      color: var(--axis-color);
+    }
+
+    .problem-axis-row:last-child {
+      border-bottom: 1px solid var(--line);
+    }
+
+    .problem-axis-row.history {
+      --axis-color: var(--query);
+    }
+
+    .problem-axis-row.depth {
+      --axis-color: var(--score);
+    }
+
+    .problem-axis-row.channel {
+      --axis-color: var(--value);
+    }
+
+    .problem-axis-row.is-current {
+      border-color: var(--line) !important;
+      box-shadow: none;
+    }
+
+    .problem-axis-label {
+      margin: 0;
+      color: var(--axis-color);
+      font-size: 17px;
+      font-weight: 750;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
+    }
+
+    .problem-axis-copy {
+      margin: 0;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .problem-axis-copy b {
+      color: var(--axis-color);
+      font-weight: 750;
+    }
+
+    .problem-axis-sketch {
+      position: relative;
+      min-width: 0;
+      height: 86px;
+      color: var(--axis-color);
+      font-family: var(--mono);
+    }
+
+    .sketch-arrow {
+      position: relative;
+      height: 1px;
+      background: currentColor;
+    }
+
+    .sketch-arrow::after {
+      content: "";
+      position: absolute;
+      top: -3px;
+      right: 0;
+      width: 6px;
+      height: 6px;
+      border-top: 1px solid currentColor;
+      border-right: 1px solid currentColor;
+      transform: rotate(45deg);
+    }
+
+    .kv-cache-sketch {
+      display: grid;
+      grid-template-columns: 54px 34px minmax(0, 1fr);
+      align-items: center;
+      gap: 9px;
+    }
+
+    .kv-query-box {
+      min-height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      background: var(--query-soft);
+      font-size: 10px;
+      font-weight: 750;
+    }
+
+    .kv-cache-bank {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 1fr 0.64fr 1fr 1fr;
+      align-items: stretch;
+      gap: 5px;
+      padding-top: 20px;
+    }
+
+    .kv-cache-bank::before {
+      content: "KV CACHE · grows with context";
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: var(--muted-2);
+      font-size: 7px;
+      letter-spacing: 0.05em;
+    }
+
+    .kv-pair {
+      min-height: 46px;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.72);
+      font-style: normal;
+      font-size: 7px;
+      text-align: center;
+    }
+
+    .kv-pair i,
+    .kv-pair b {
+      display: grid;
+      place-items: center;
+      font-style: normal;
+      font-weight: 650;
+    }
+
+    .kv-pair i {
+      color: var(--key);
+      background: var(--key-soft);
+    }
+
+    .kv-pair b {
+      color: var(--value);
+      border-top: 1px solid var(--line);
+      background: var(--value-soft);
+    }
+
+    .kv-pair.ellipsis {
+      place-items: center;
+      border: 0;
+      color: var(--muted-2);
+      background: transparent;
+      font-size: 12px;
+    }
+
+    .kv-pair.current {
+      border-color: currentColor;
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 30%, transparent);
+    }
+
+    .residual-sketch {
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr) 30px;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .residual-endpoint {
+      color: var(--muted);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .residual-units {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      height: 76px;
+    }
+
+    .residual-units::before {
+      content: "";
+      position: absolute;
+      top: 49px;
+      right: 0;
+      left: 0;
+      height: 1px;
+      background: currentColor;
+    }
+
+    .residual-unit {
+      position: relative;
+      min-width: 0;
+      height: 76px;
+    }
+
+    .residual-layer {
+      position: absolute;
+      z-index: 2;
+      top: 34px;
+      left: 10px;
+      width: 52px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      background: color-mix(in srgb, currentColor 8%, white);
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .residual-add {
+      position: absolute;
+      z-index: 3;
+      top: 37px;
+      right: 2px;
+      width: 25px;
+      height: 25px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      background: var(--surface);
+      font-size: 15px;
+      line-height: 1;
+    }
+
+    .residual-skip {
+      position: absolute;
+      z-index: 1;
+      top: 8px;
+      right: 14px;
+      left: 0;
+      height: 42px;
+      border-top: 1px solid currentColor;
+      border-right: 1px solid currentColor;
+      border-radius: 0 7px 0 0;
+      opacity: 0.7;
+    }
+
+    .moe-sketch {
+      display: grid;
+      grid-template-columns: 54px 30px 62px 32px minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+    }
+
+    .moe-token,
+    .moe-router {
+      min-height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      background: var(--value-soft);
+      font-size: 8px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .moe-router {
+      min-height: 52px;
+      border-radius: 50%;
+      font-size: 7px;
+    }
+
+    .moe-branch {
+      position: relative;
+      height: 78px;
+      border-left: 1px solid currentColor;
+      opacity: 0.78;
+    }
+
+    .moe-branch i {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 1px;
+      background: currentColor;
+    }
+
+    .moe-branch i:nth-child(1) { top: 9px; }
+    .moe-branch i:nth-child(2) { top: 29px; opacity: 0.28; }
+    .moe-branch i:nth-child(3) { top: 49px; }
+    .moe-branch i:nth-child(4) { top: 69px; opacity: 0.28; }
+
+    .moe-experts {
+      display: grid;
+      grid-template-rows: repeat(4, 1fr);
+      gap: 4px;
+      height: 82px;
+    }
+
+    .moe-expert {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      color: var(--muted-2);
+      background: rgba(255, 255, 255, 0.58);
+      font-size: 7px;
+    }
+
+    .moe-expert b {
+      font-weight: 700;
+    }
+
+    .moe-expert em {
+      font-style: normal;
+    }
+
+    .moe-expert.selected {
+      border-color: currentColor;
+      color: currentColor;
+      background: var(--value-soft);
+    }
+
+    .moe-expert:not(.selected) {
+      opacity: 0.48;
+    }
+
+    .kimi-thesis-line.problem-thesis {
+      justify-content: flex-start;
+      padding: 8px 0 0;
+      border: 0;
+      border-top: 1px solid var(--line);
+      background: transparent;
+      text-align: left;
+    }
+
     .kimi-axis-grid {
       min-height: 0;
       display: grid;
@@ -4173,6 +4517,15 @@
         gap: 9px;
       }
 
+      .problem-axis-row {
+        grid-template-columns: 108px minmax(0, 1fr) minmax(320px, 0.86fr);
+        gap: 14px;
+      }
+
+      .problem-axis-copy {
+        font-size: 12px;
+      }
+
       .kimi-axis-card,
       .kda-card,
       .hybrid-role-card,
@@ -4359,6 +4712,18 @@
 
       .trace-events {
         grid-template-columns: repeat(2, 1fr);
+      }
+
+      .problem-axis-row {
+        grid-template-columns: 1fr;
+        align-content: start;
+        gap: 8px;
+        padding: 16px 0;
+      }
+
+      .problem-axis-sketch {
+        width: 100%;
+        height: 96px;
       }
 
       .kimi-axis-grid,
@@ -4921,12 +5286,12 @@
         <div class="chapter-heading">
           <div>
             <p class="eyebrow">Chapter 09 / The scaling problem</p>
-            <h2>Agent trace 从 128K 到 1M，模型会卡在哪里？</h2>
+            <h2>1M Agent trace：模型会卡在哪里？</h2>
           </div>
-          <p class="chapter-lead">先不看 K3 用了哪些模块，只追问三件事：长历史如何承担、深层表示如何保留贡献、模型容量如何增长而不让每个 token 付全价？</p>
+          <p class="chapter-lead">先不看 K3 的模块名，只看规模扩大后出现的三类瓶颈：长历史要搬更多 KV，深层 residual 难以选择早期表示，Dense 扩容会抬高每 token 成本。</p>
         </div>
 
-        <div class="stage kimi-map-stage">
+        <div class="stage kimi-map-stage problem-map-stage">
           <span class="stage-label">One long-running agent trace</span>
           <span class="stage-counter">context keeps accumulating</span>
 
@@ -4943,40 +5308,56 @@
             </div>
           </div>
 
-          <div class="kimi-axis-grid">
-            <article class="kimi-axis-card history step-reveal" data-show-at="1" data-focus-at="1">
-              <div class="axis-card-header"><strong>跨 Token</strong><span>long context</span></div>
-              <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>128K</span><i></i><span>KV</span><i></i><span>1M</span></div>
-                <p><b>Context 越长，KV 状态越大。</b>怎样避免 decode 每一步都搬运、读取越来越长的历史？</p>
-              </div>
-              <div class="axis-pressure">KV 容量 ↑ · HBM 读取 ↑ · 延迟 ↑</div>
-            </article>
-
-            <article class="kimi-axis-card depth step-reveal" data-show-at="2" data-focus-at="2">
-              <div class="axis-card-header"><strong>跨 Depth</strong><span>deep network</span></div>
-              <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>早期层</span><i></i><span>累加</span><i></i><span>当前层</span></div>
-                <p><b>Residual 把各层输出等权累加。</b>网络越深，单层贡献越容易被稀释；当前层也无法单独取回某个早期表示。</p>
-              </div>
-              <div class="axis-pressure">等权累加 · 贡献稀释 · 无法按层选择</div>
-            </article>
-
-            <article class="kimi-axis-card channel step-reveal" data-show-at="3" data-focus-at="3">
-              <div class="axis-card-header"><strong>跨 Channel</strong><span>capacity scaling</span></div>
-              <div class="axis-card-body">
-                <div class="axis-line-stack" aria-label="Dense 扩容带来的单 token 成本">
-                  <div class="axis-line"><strong>模型加宽</strong><span>Dense FFN 放入更多参数</span></div>
-                  <div class="axis-line"><strong>全量执行</strong><span>每个 token 仍经过全部参数</span></div>
-                  <div class="axis-line"><strong>成本同步增长</strong><span>权重读取和 FLOPs 一起上涨</span></div>
+          <div class="problem-axis-list">
+            <article class="problem-axis-row history step-reveal" data-show-at="1" data-focus-at="1">
+              <h3 class="problem-axis-label">跨 Token：</h3>
+              <p class="problem-axis-copy"><b>Context 越长，KV Cache 越大。</b>Decode 的每一步都要加载更长的历史，容量、访存和延迟随长度增长。</p>
+              <div class="problem-axis-sketch kv-cache-sketch" role="img" aria-label="当前 Query 读取随上下文增长的 KV Cache">
+                <div class="kv-query-box">q<sub>now</sub></div>
+                <span class="sketch-arrow"></span>
+                <div class="kv-cache-bank">
+                  <span class="kv-pair"><i>K₁</i><b>V₁</b></span>
+                  <span class="kv-pair"><i>K₂</i><b>V₂</b></span>
+                  <span class="kv-pair ellipsis">…</span>
+                  <span class="kv-pair"><i>Kₜ₋₁</i><b>Vₜ₋₁</b></span>
+                  <span class="kv-pair current"><i>Kₜ</i><b>Vₜ</b></span>
                 </div>
-                <p><b>真正的问题：</b>能否把总容量做大，却只让每个 token 调用需要的那部分能力？</p>
               </div>
-              <div class="axis-plain-result">总容量要扩，单 token 成本不能等比例扩</div>
+            </article>
+
+            <article class="problem-axis-row depth step-reveal" data-show-at="2" data-focus-at="2">
+              <h3 class="problem-axis-label">跨 Depth：</h3>
+              <p class="problem-axis-copy"><b>Residual 逐层累加。</b>网络越深，早期表示越容易混进累计流；当前层很难单独选择真正有用的早期信息。</p>
+              <div class="problem-axis-sketch residual-sketch" role="img" aria-label="三个带跳连和加法节点的 residual block">
+                <span class="residual-endpoint">h₀</span>
+                <div class="residual-units">
+                  <div class="residual-unit"><i class="residual-skip"></i><span class="residual-layer">Layer 1</span><b class="residual-add">+</b></div>
+                  <div class="residual-unit"><i class="residual-skip"></i><span class="residual-layer">Layer 2</span><b class="residual-add">+</b></div>
+                  <div class="residual-unit"><i class="residual-skip"></i><span class="residual-layer">Layer 3</span><b class="residual-add">+</b></div>
+                </div>
+                <span class="residual-endpoint">h₃</span>
+              </div>
+            </article>
+
+            <article class="problem-axis-row channel step-reveal" data-show-at="3" data-focus-at="3">
+              <h3 class="problem-axis-label">跨 Channel：</h3>
+              <p class="problem-axis-copy"><b>Dense 扩容会让每个 token 执行更多参数。</b>能否把能力拆成多个专家，只激活与当前 token 相关的少数路径？</p>
+              <div class="problem-axis-sketch moe-sketch" role="img" aria-label="Token 经过 Router 只路由到少量 MoE 专家">
+                <div class="moe-token">token</div>
+                <span class="sketch-arrow"></span>
+                <div class="moe-router">Router</div>
+                <div class="moe-branch"><i></i><i></i><i></i><i></i></div>
+                <div class="moe-experts">
+                  <span class="moe-expert selected"><b>Expert 1</b><em>selected</em></span>
+                  <span class="moe-expert"><b>Expert 2</b><em>idle</em></span>
+                  <span class="moe-expert selected"><b>Expert 3</b><em>selected</em></span>
+                  <span class="moe-expert"><b>Expert 4</b><em>idle</em></span>
+                </div>
+              </div>
             </article>
           </div>
 
-          <div class="kimi-thesis-line step-reveal hard-reveal" data-show-at="3">
+          <div class="kimi-thesis-line problem-thesis step-reveal hard-reveal" data-show-at="3">
             <span>核心问题：</span><strong>怎样让有效信息留下来</strong><span>，又不让状态 / 访存 / 计算随 scale 一起失控？</span>
           </div>
         </div>
@@ -5440,8 +5821,8 @@
         [
           "<strong>上下文持续累积</strong>：一条 agent trace 从需求、代码、工具结果一路走到当前 token，context 可能从 128K 延伸到 1M。",
           "<strong>问题一 · Token</strong>：逐 token KV 状态随长度增长；怎样避免 decode 每一步都读取更长的历史？",
-          "<strong>问题二 · Depth</strong>：固定 residual 把此前输出混进单一累计流；当前层怎样重新找到真正有用的早期表示？",
-          "<strong>问题三 · Channel</strong>：模型容量越大，Dense FFN 的每 token 权重读取和计算也越大；能否只调用当前 token 需要的能力？"
+          "<strong>问题二 · Depth</strong>：Residual 逐层累加，早期表示混进累计流；当前层怎样重新找到真正有用的信息？",
+          "<strong>问题三 · Channel</strong>：Dense 扩容会抬高每 token 成本；能否用 Router 只激活与当前 token 相关的少数专家？"
         ],
         [
           "<strong>共同原则</strong>：K3 避免每一层、每一步都全量搬运历史、层表示和模型参数，把主要信息流改造成压缩、选择与路由。",
