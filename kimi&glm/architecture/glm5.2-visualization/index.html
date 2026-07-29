@@ -1,0 +1,3814 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+  <title>GLM-5.2 Attention Architecture</title>
+  <style>
+    :root {
+      --bg: #f4f8f7;
+      --bg-deep: #eaf2f0;
+      --surface: #ffffff;
+      --surface-2: #eef5f3;
+      --surface-3: #e3efec;
+      --line: rgba(27, 69, 72, 0.13);
+      --line-strong: rgba(27, 69, 72, 0.28);
+      --text: #183235;
+      --muted: #567276;
+      --muted-2: #7a9396;
+      --activation: #526c70;
+      --query: #176ec4;
+      --query-soft: rgba(23, 110, 196, 0.10);
+      --key: #c96b1d;
+      --key-soft: rgba(201, 107, 29, 0.11);
+      --value: #19845c;
+      --value-soft: rgba(25, 132, 92, 0.11);
+      --score: #7748b8;
+      --score-soft: rgba(119, 72, 184, 0.11);
+      --accent: #147d75;
+      --accent-soft: rgba(20, 125, 117, 0.10);
+      --danger: #c83f4b;
+      --shadow: 0 18px 48px rgba(35, 71, 72, 0.12);
+      --mono: "SFMono-Regular", "Cascadia Code", "Roboto Mono", Consolas, monospace;
+      --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --header-h: 58px;
+      --control-h: 72px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-snap-type: y mandatory;
+      background: var(--bg-deep);
+    }
+
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 82% 12%, rgba(55, 145, 135, 0.12), transparent 28%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .grid-noise {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      opacity: 0.38;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, black, transparent 92%);
+    }
+
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 20;
+      height: var(--header-h);
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 18px;
+      padding: 0 28px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(250, 253, 252, 0.91);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      color: var(--accent);
+      background: var(--accent-soft);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .chapter-title {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-progress {
+      justify-self: end;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+
+    .progress-track {
+      width: 116px;
+      height: 2px;
+      background: var(--line);
+    }
+
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      background: var(--accent);
+      transition: width 320ms ease;
+    }
+
+    .chapter-rail {
+      position: fixed;
+      top: 50%;
+      right: 22px;
+      z-index: 18;
+      display: grid;
+      gap: 11px;
+      transform: translateY(-50%);
+    }
+
+    .rail-button {
+      position: relative;
+      width: 12px;
+      height: 12px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .rail-button::before {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border: 1px solid var(--muted-2);
+      background: var(--bg-deep);
+      transform: rotate(45deg);
+      transition: 180ms ease;
+    }
+
+    .rail-button:hover::before,
+    .rail-button[aria-current="true"]::before {
+      inset: 1px;
+      border-color: var(--accent);
+      background: var(--accent);
+      box-shadow: 0 0 14px rgba(156, 230, 216, 0.48);
+    }
+
+    .rail-label {
+      position: absolute;
+      top: 50%;
+      right: 22px;
+      padding: 5px 8px;
+      opacity: 0;
+      color: var(--text);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font-size: 11px;
+      white-space: nowrap;
+      pointer-events: none;
+      transform: translate(4px, -50%);
+      transition: 160ms ease;
+    }
+
+    .rail-button:hover .rail-label,
+    .rail-button:focus-visible .rail-label {
+      opacity: 1;
+      transform: translate(0, -50%);
+    }
+
+    .control-dock {
+      position: fixed;
+      inset: auto 0 0 0;
+      z-index: 20;
+      height: var(--control-h);
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 20px;
+      padding: 0 28px;
+      border-top: 1px solid var(--line);
+      background: rgba(250, 253, 252, 0.93);
+      backdrop-filter: blur(18px);
+    }
+
+    .step-caption {
+      min-width: 0;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .step-caption strong {
+      color: var(--accent);
+      font-weight: 650;
+    }
+
+    .dock-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .nav-button {
+      min-width: 88px;
+      min-height: 38px;
+      padding: 0 16px;
+      border: 1px solid var(--line-strong);
+      color: var(--text);
+      background: var(--surface);
+      cursor: pointer;
+      transition: 160ms ease;
+    }
+
+    .nav-button:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .nav-button.primary {
+      color: #ffffff;
+      border-color: var(--accent);
+      background: var(--accent);
+      font-weight: 700;
+    }
+
+    .nav-button.primary:hover {
+      background: #0f6d66;
+    }
+
+    .keyboard-hint {
+      justify-self: end;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    main {
+      position: relative;
+    }
+
+    .chapter {
+      position: relative;
+      height: 100svh;
+      min-height: 650px;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      overflow: hidden;
+    }
+
+    .chapter-shell {
+      width: min(1540px, calc(100% - 116px));
+      height: 100%;
+      margin: 0 auto;
+      padding: calc(var(--header-h) + 24px) 0 calc(var(--control-h) + 22px);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .chapter-heading {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
+      align-items: end;
+      gap: 34px;
+    }
+
+    .eyebrow {
+      margin: 0 0 7px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    p {
+      margin-top: 0;
+    }
+
+    h1,
+    h2 {
+      margin-bottom: 0;
+      font-size: clamp(29px, 2.25vw, 44px);
+      line-height: 1.05;
+      letter-spacing: -0.035em;
+      font-weight: 720;
+    }
+
+    .chapter-lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(13px, 1vw, 16px);
+      line-height: 1.55;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(135deg, rgba(20, 125, 117, 0.055), transparent 34%),
+        rgba(255, 255, 255, 0.82);
+      box-shadow: var(--shadow);
+    }
+
+    .stage::before,
+    .stage::after {
+      content: "";
+      position: absolute;
+      z-index: 4;
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+    }
+
+    .stage::before {
+      inset: -1px auto auto -1px;
+      border-top: 2px solid var(--accent);
+      border-left: 2px solid var(--accent);
+    }
+
+    .stage::after {
+      inset: auto -1px -1px auto;
+      border-right: 2px solid var(--accent);
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .stage-label {
+      position: absolute;
+      top: 13px;
+      left: 16px;
+      z-index: 6;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .stage-counter {
+      position: absolute;
+      top: 12px;
+      right: 15px;
+      z-index: 6;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .legend {
+      position: absolute;
+      right: 16px;
+      bottom: 13px;
+      z-index: 8;
+      display: flex;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-dot {
+      width: 7px;
+      height: 7px;
+      border: 1px solid currentColor;
+      background: currentColor;
+    }
+
+    .c-q { color: var(--query); }
+    .c-k { color: var(--key); }
+    .c-v { color: var(--value); }
+    .c-score { color: var(--score); }
+
+    .step-reveal {
+      opacity: 0.14;
+      filter: saturate(0.45);
+      transform: translateY(7px);
+      transition:
+        opacity 300ms ease,
+        filter 300ms ease,
+        transform 300ms ease,
+        border-color 300ms ease,
+        background 300ms ease,
+        box-shadow 300ms ease;
+    }
+
+    .step-reveal.is-visible {
+      opacity: 1;
+      filter: none;
+      transform: translateY(0);
+    }
+
+    .step-reveal.is-current {
+      border-color: currentColor !important;
+      box-shadow: 0 0 0 1px currentColor, 0 0 26px color-mix(in srgb, currentColor 24%, transparent);
+    }
+
+    .flow-arrow {
+      position: relative;
+      width: clamp(26px, 3.2vw, 52px);
+      height: 1px;
+      align-self: center;
+      background: var(--line-strong);
+    }
+
+    .flow-arrow::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: 7px;
+      height: 7px;
+      border-top: 1px solid var(--muted);
+      border-right: 1px solid var(--muted);
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .mini-tag,
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 23px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.025);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+
+    .status-tag.accent {
+      color: var(--accent);
+      border-color: rgba(156, 230, 216, 0.36);
+      background: var(--accent-soft);
+    }
+
+    .vector {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 3px;
+      min-width: 70px;
+    }
+
+    .vector span {
+      height: 14px;
+      border: 1px solid var(--line-strong);
+      background: rgba(217, 230, 229, 0.08);
+    }
+
+    .vector.query span {
+      border-color: rgba(86, 168, 255, 0.58);
+      background: var(--query-soft);
+    }
+
+    .vector.key span {
+      border-color: rgba(255, 171, 94, 0.58);
+      background: var(--key-soft);
+    }
+
+    .vector.value span {
+      border-color: rgba(91, 216, 155, 0.58);
+      background: var(--value-soft);
+    }
+
+    .vector.score span {
+      border-color: rgba(189, 140, 255, 0.58);
+      background: var(--score-soft);
+    }
+
+    .formula {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: clamp(10px, 0.82vw, 13px);
+      line-height: 1.5;
+      white-space: nowrap;
+    }
+
+    .formula .q { color: var(--query); }
+    .formula .k { color: var(--key); }
+    .formula .v { color: var(--value); }
+    .formula .s { color: var(--score); }
+
+    /* Chapter 1 */
+    .attention-stage {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) 118px;
+      padding: 42px 24px 38px;
+    }
+
+    .attention-flow {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(118px, 0.8fr) auto minmax(160px, 1.05fr) auto minmax(170px, 1.16fr) auto minmax(125px, 0.8fr);
+      align-items: center;
+      gap: clamp(8px, 1.1vw, 18px);
+      padding: 6px 20px 12px;
+    }
+
+    .token-column,
+    .projection-column,
+    .compute-column,
+    .output-column {
+      display: grid;
+      align-content: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .node-title {
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .token {
+      display: grid;
+      grid-template-columns: 34px 1fr;
+      align-items: center;
+      gap: 9px;
+      min-height: 34px;
+      padding: 6px 8px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.022);
+    }
+
+    .token.decode {
+      color: var(--accent);
+      border-color: rgba(156, 230, 216, 0.38);
+      background: var(--accent-soft);
+    }
+
+    .token-id {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .projection {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .projection-node {
+      min-height: 105px;
+      padding: 12px 8px;
+      border: 1px solid currentColor;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 9px;
+      background: rgba(255, 255, 255, 0.018);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .compute-node {
+      padding: 11px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+    }
+
+    .compute-node.score-node {
+      color: var(--score);
+      background: var(--score-soft);
+    }
+
+    .compute-node.softmax-node {
+      color: var(--score);
+    }
+
+    .compute-node.sum-node {
+      color: var(--value);
+      background: var(--value-soft);
+    }
+
+    .output-node {
+      display: grid;
+      gap: 12px;
+      padding: 18px 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.025);
+      text-align: center;
+    }
+
+    .cache-band {
+      position: relative;
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
+      padding: 14px 18px;
+      border-top: 1px solid var(--line);
+      background: rgba(224, 238, 235, 0.48);
+    }
+
+    .cache-title {
+      display: grid;
+      gap: 5px;
+    }
+
+    .cache-title strong {
+      font-size: 13px;
+    }
+
+    .cache-title span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .cache-slots {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(72px, 1fr));
+      gap: 8px;
+    }
+
+    .cache-slot {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 7px;
+      min-height: 55px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .cache-slot:last-child {
+      border-color: rgba(156, 230, 216, 0.35);
+    }
+
+    .kv-mini {
+      display: grid;
+      gap: 3px;
+    }
+
+    .kv-mini i {
+      display: block;
+      height: 7px;
+    }
+
+    .kv-mini .k { background: var(--key); }
+    .kv-mini .v { background: var(--value); }
+
+    /* Chapters 2 and 3 */
+    .heads-stage {
+      display: grid;
+      grid-template-columns: 0.7fr 2.5fr;
+      gap: 24px;
+      padding: 50px 42px 46px;
+    }
+
+    .baseline-inset {
+      align-self: stretch;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+      padding: 18px;
+      border-right: 1px solid var(--line);
+    }
+
+    .baseline-inset h3 {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .mini-pipeline {
+      align-self: center;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .mini-node {
+      min-height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.022);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .mini-arrow {
+      width: 14px;
+      height: 1px;
+      background: var(--line-strong);
+    }
+
+    .baseline-note {
+      color: var(--muted-2);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .head-map {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto repeat(4, minmax(0, 1fr)) auto;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .head-map-header,
+    .head-row {
+      display: grid;
+      grid-template-columns: 0.78fr 42px 1.52fr 42px 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .head-map-header {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.09em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .head-row {
+      min-height: 60px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+    }
+
+    .head-node,
+    .kv-pair {
+      min-height: 38px;
+      display: grid;
+      align-items: center;
+      border: 1px solid currentColor;
+      background: rgba(255, 255, 255, 0.018);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .head-node {
+      grid-template-columns: 34px 1fr;
+      gap: 8px;
+      padding: 7px 9px;
+    }
+
+    .kv-pair {
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      padding: 5px;
+      color: var(--muted);
+    }
+
+    .kv-pair span {
+      min-height: 26px;
+      display: grid;
+      place-items: center;
+    }
+
+    .kv-pair .k {
+      color: var(--key);
+      background: var(--key-soft);
+    }
+
+    .kv-pair .v {
+      color: var(--value);
+      background: var(--value-soft);
+    }
+
+    .row-link {
+      position: relative;
+      height: 1px;
+      background: var(--line-strong);
+    }
+
+    .row-link::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: -3px;
+      width: 6px;
+      height: 6px;
+      border-top: 1px solid var(--muted);
+      border-right: 1px solid var(--muted);
+      transform: rotate(45deg);
+    }
+
+    .attention-core {
+      min-height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--score);
+      color: var(--score);
+      background: var(--score-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .head-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .summary-cell {
+      padding: 9px 11px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .summary-cell strong {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+    }
+
+    .gqa-map {
+      grid-template-rows: auto repeat(2, minmax(0, 1fr)) auto;
+    }
+
+    .gqa-group {
+      min-height: 126px;
+      display: grid;
+      grid-template-columns: 0.78fr 42px 1.52fr 42px 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+    }
+
+    .query-pair {
+      display: grid;
+      gap: 8px;
+    }
+
+    .shared-kv {
+      position: relative;
+      min-height: 92px;
+      display: grid;
+      align-content: center;
+      gap: 7px;
+      padding: 12px;
+      border: 1px solid var(--key);
+      color: var(--muted);
+      background:
+        linear-gradient(90deg, var(--key-soft) 0 50%, var(--value-soft) 50% 100%);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .shared-kv::before {
+      content: "SHARED";
+      position: absolute;
+      top: 5px;
+      right: 6px;
+      color: var(--key);
+      font-size: 8px;
+      letter-spacing: 0.1em;
+    }
+
+    /* Chapter 4 */
+    .mla-stage {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 24px;
+      padding: 50px 42px 46px;
+    }
+
+    .mla-flow {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 1fr auto 0.8fr auto 1.15fr;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .full-kv-stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    .full-kv-row {
+      display: grid;
+      grid-template-columns: 34px 1fr 1fr;
+      gap: 6px;
+      align-items: center;
+      min-height: 46px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .full-kv-row .k,
+    .full-kv-row .v {
+      min-height: 26px;
+      display: grid;
+      place-items: center;
+    }
+
+    .full-kv-row .k {
+      color: var(--key);
+      background: var(--key-soft);
+    }
+
+    .full-kv-row .v {
+      color: var(--value);
+      background: var(--value-soft);
+    }
+
+    .compress-node,
+    .latent-cache,
+    .restore-node {
+      min-height: 170px;
+      padding: 18px 14px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+      text-align: center;
+    }
+
+    .compress-node {
+      color: var(--score);
+      border-color: rgba(189, 140, 255, 0.46);
+      background: var(--score-soft);
+    }
+
+    .latent-cache {
+      min-height: 210px;
+      color: var(--accent);
+      border-color: rgba(156, 230, 216, 0.48);
+      background: var(--accent-soft);
+    }
+
+    .latent-bars {
+      width: 72px;
+      display: grid;
+      gap: 5px;
+    }
+
+    .latent-bars i {
+      height: 12px;
+      border: 1px solid rgba(156, 230, 216, 0.56);
+      background: rgba(156, 230, 216, 0.18);
+    }
+
+    .restore-node {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      color: var(--muted);
+    }
+
+    .restore-node .restore-label {
+      grid-column: 1 / -1;
+    }
+
+    .restore-k,
+    .restore-v {
+      min-height: 58px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .restore-k {
+      color: var(--key);
+      background: var(--key-soft);
+    }
+
+    .restore-v {
+      color: var(--value);
+      background: var(--value-soft);
+    }
+
+    .mla-equivalence {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 14px;
+      padding-left: 26px;
+      border-left: 1px solid var(--line);
+    }
+
+    .mla-equivalence h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .equation-paths {
+      display: grid;
+      align-content: center;
+      gap: 12px;
+    }
+
+    .equation-path {
+      display: grid;
+      gap: 8px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+    }
+
+    .equation-path.active {
+      border-color: rgba(156, 230, 216, 0.4);
+      background: var(--accent-soft);
+    }
+
+    .equation-label {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .equation {
+      font-family: var(--mono);
+      font-size: clamp(12px, 1.08vw, 17px);
+      white-space: nowrap;
+    }
+
+    .mla-note {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+
+    /* Chapter 5 */
+    .dsa-stage {
+      display: grid;
+      grid-template-columns: 0.78fr 1.4fr 0.92fr;
+      gap: 24px;
+      padding: 52px 42px 46px;
+    }
+
+    .query-panel,
+    .indexer-panel,
+    .sparse-panel {
+      min-width: 0;
+      display: grid;
+      align-content: center;
+      gap: 14px;
+    }
+
+    .query-box {
+      padding: 18px;
+      border: 1px solid var(--query);
+      color: var(--query);
+      background: var(--query-soft);
+    }
+
+    .query-box h3,
+    .indexer-panel h3,
+    .sparse-panel h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .query-box p {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .indexer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .score-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .score-row {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr) 42px;
+      align-items: center;
+      gap: 10px;
+      min-height: 52px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+      transition: 280ms ease;
+    }
+
+    .score-row.selected {
+      color: var(--score);
+      border-color: var(--score);
+      background: var(--score-soft);
+    }
+
+    .score-row.suppressed {
+      opacity: 0.34 !important;
+      filter: grayscale(0.65);
+    }
+
+    .score-token,
+    .score-value {
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .score-bar {
+      height: 8px;
+      background: rgba(189, 140, 255, 0.1);
+    }
+
+    .score-bar i {
+      display: block;
+      width: var(--score-width);
+      height: 100%;
+      background: var(--score);
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 520ms cubic-bezier(.2, .8, .2, 1);
+    }
+
+    .score-row.is-visible .score-bar i {
+      transform: scaleX(1);
+    }
+
+    .topk-strip {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid rgba(189, 140, 255, 0.42);
+      color: var(--score);
+      background: var(--score-soft);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .selected-indices {
+      justify-self: end;
+      display: flex;
+      gap: 6px;
+    }
+
+    .selected-indices span {
+      padding: 4px 7px;
+      border: 1px solid currentColor;
+      background: rgba(189, 140, 255, 0.1);
+    }
+
+    .gather-list {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .gather-token {
+      min-height: 74px;
+      display: grid;
+      align-content: center;
+      gap: 7px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .gather-token.selected {
+      border-color: var(--score);
+      background: var(--score-soft);
+    }
+
+    .sparse-core {
+      min-height: 148px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 10px;
+      padding: 18px;
+      border: 1px solid var(--score);
+      color: var(--score);
+      background: var(--score-soft);
+      text-align: center;
+    }
+
+    .sparse-core p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    /* Chapter 6 */
+    .assembly-stage {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 20px;
+      padding: 48px 42px 44px;
+    }
+
+    .spec-band {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+    }
+
+    .spec-item {
+      min-height: 58px;
+      display: grid;
+      align-content: center;
+      gap: 3px;
+      padding: 9px 14px;
+      border-right: 1px solid var(--line);
+    }
+
+    .spec-item:last-child {
+      border-right: 0;
+    }
+
+    .spec-item strong {
+      font-family: var(--mono);
+      font-size: 14px;
+    }
+
+    .spec-item span {
+      color: var(--muted);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .assembly-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1.45fr 0.85fr;
+      gap: 26px;
+    }
+
+    .model-pipeline {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .pipeline-node {
+      position: relative;
+      min-height: 142px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 11px;
+      padding: 12px 8px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+      text-align: center;
+    }
+
+    .pipeline-node::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -11px;
+      width: 10px;
+      height: 1px;
+      background: var(--line-strong);
+    }
+
+    .pipeline-node:last-child::after {
+      display: none;
+    }
+
+    .pipeline-node strong {
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .pipeline-node span {
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.4;
+    }
+
+    .pipeline-node.mla {
+      color: var(--accent);
+      border-color: rgba(156, 230, 216, 0.42);
+      background: var(--accent-soft);
+    }
+
+    .pipeline-node.indexer,
+    .pipeline-node.topk {
+      color: var(--score);
+      border-color: rgba(189, 140, 255, 0.42);
+      background: var(--score-soft);
+    }
+
+    .pipeline-node.attention {
+      color: var(--query);
+      border-color: rgba(86, 168, 255, 0.42);
+      background: var(--query-soft);
+    }
+
+    .pipeline-node.moe {
+      color: var(--value);
+      border-color: rgba(91, 216, 155, 0.42);
+      background: var(--value-soft);
+    }
+
+    .indexshare-panel {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+      padding-left: 26px;
+      border-left: 1px solid var(--line);
+    }
+
+    .indexshare-panel h3 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .layer-stack {
+      display: grid;
+      align-content: center;
+      gap: 8px;
+    }
+
+    .layer-row {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.018);
+    }
+
+    .layer-row.full {
+      border-color: rgba(189, 140, 255, 0.46);
+      background: var(--score-soft);
+    }
+
+    .layer-name {
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .layer-path {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .index-chip {
+      padding: 4px 6px;
+      color: var(--score);
+      border: 1px solid rgba(189, 140, 255, 0.4);
+      background: rgba(189, 140, 255, 0.08);
+      font-family: var(--mono);
+      white-space: nowrap;
+    }
+
+    .final-thesis {
+      position: absolute;
+      left: 42px;
+      right: 42px;
+      bottom: 48px;
+      z-index: 5;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--line);
+    }
+
+    .thesis-item {
+      padding: 11px 16px 0;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .thesis-item strong {
+      display: block;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    /* Revised tensor-first diagrams */
+    .tensor-attention-stage {
+      padding: 52px 36px 44px;
+    }
+
+    .tensor-attention-flow {
+      height: 100%;
+      display: grid;
+      grid-template-columns: 0.72fr auto 0.95fr auto 1fr auto 1fr auto 1.05fr auto 0.72fr;
+      align-items: center;
+      gap: clamp(7px, 0.85vw, 15px);
+    }
+
+    .tensor-card,
+    .operator-shape,
+    .mix-shape,
+    .cache-tensor {
+      min-width: 0;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .tensor-card {
+      min-height: 180px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .tensor-card.compact {
+      min-height: 92px;
+      gap: 7px;
+      padding: 10px;
+    }
+
+    .tensor-card strong,
+    .operator-shape strong,
+    .mix-shape strong,
+    .cache-tensor strong {
+      font-family: var(--mono);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .tensor-dim {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 9px;
+      white-space: nowrap;
+    }
+
+    .tensor-cells {
+      display: grid;
+      grid-template-columns: repeat(var(--cols, 4), 12px);
+      grid-auto-rows: 12px;
+      gap: 3px;
+    }
+
+    .tensor-cells span {
+      border: 1px solid var(--line-strong);
+      background: var(--surface-2);
+    }
+
+    .tensor-cells.query span { border-color: rgba(23, 110, 196, 0.48); background: var(--query-soft); }
+    .tensor-cells.key span { border-color: rgba(201, 107, 29, 0.48); background: var(--key-soft); }
+    .tensor-cells.value span { border-color: rgba(25, 132, 92, 0.48); background: var(--value-soft); }
+    .tensor-cells.score span { border-color: rgba(119, 72, 184, 0.35); background: var(--score-soft); }
+
+    .qkv-tensor-stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    .qkv-tensor {
+      min-height: 54px;
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 9px;
+      border: 1px solid currentColor;
+      background: rgba(255, 255, 255, 0.74);
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .matrix-shape {
+      display: grid;
+      grid-template-columns: repeat(4, 17px);
+      grid-auto-rows: 17px;
+      gap: 3px;
+    }
+
+    .matrix-shape.five {
+      grid-template-columns: repeat(5, 18px);
+    }
+
+    .matrix-cell {
+      border: 1px solid rgba(119, 72, 184, 0.32);
+      background: rgba(119, 72, 184, var(--alpha, 0.12));
+    }
+
+    .matrix-cell.masked {
+      border-color: var(--line);
+      background:
+        linear-gradient(135deg, transparent 46%, rgba(86, 114, 118, 0.18) 47% 53%, transparent 54%),
+        var(--surface-2);
+    }
+
+    .operator-shape {
+      min-height: 180px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .operator-shape.score-op {
+      color: var(--score);
+      border-color: rgba(119, 72, 184, 0.38);
+      background: var(--score-soft);
+    }
+
+    .operator-icon {
+      position: relative;
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      transform: rotate(45deg);
+    }
+
+    .operator-icon span {
+      font-family: var(--mono);
+      font-size: 12px;
+      transform: rotate(-45deg);
+    }
+
+    .weight-bars {
+      width: 86px;
+      display: grid;
+      gap: 5px;
+    }
+
+    .weight-bars i {
+      display: block;
+      width: var(--w);
+      height: 8px;
+      background: var(--score);
+      opacity: var(--o, 0.55);
+    }
+
+    .mix-shape {
+      min-height: 180px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 11px;
+      padding: 14px;
+      color: var(--value);
+      border-color: rgba(25, 132, 92, 0.38);
+      background: var(--value-soft);
+    }
+
+    .value-chips {
+      display: flex;
+      gap: 4px;
+    }
+
+    .value-chips span {
+      width: 16px;
+      height: 32px;
+      border: 1px solid rgba(25, 132, 92, 0.42);
+      background: rgba(25, 132, 92, var(--alpha, 0.12));
+    }
+
+    .prefill-cache-strip {
+      position: absolute;
+      left: 36px;
+      right: 36px;
+      bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .value-bus {
+      position: absolute;
+      left: 19.5%;
+      right: 17.5%;
+      bottom: 42px;
+      height: 18px;
+      border-bottom: 1px solid rgba(25, 132, 92, 0.48);
+      color: var(--value);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .value-bus::before,
+    .value-bus::after {
+      content: "";
+      position: absolute;
+      bottom: -1px;
+      width: 1px;
+      height: 12px;
+      background: rgba(25, 132, 92, 0.48);
+    }
+
+    .value-bus::before { left: 0; }
+    .value-bus::after { right: 0; }
+
+    .prefill-cache-strip .cache-write-arrow {
+      width: 44px;
+      height: 1px;
+      background: var(--line-strong);
+    }
+
+    .cache-token-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 7px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .cache-token-chip i {
+      width: 6px;
+      height: 12px;
+    }
+
+    .cache-token-chip .k { background: var(--key); }
+    .cache-token-chip .v { background: var(--value); }
+
+    /* Decode slide */
+    .decode-stage {
+      display: grid;
+      grid-template-rows: 96px minmax(0, 1fr);
+      gap: 22px;
+      padding: 48px 38px 42px;
+    }
+
+    .decode-cache {
+      display: grid;
+      grid-template-columns: 148px repeat(5, minmax(76px, 1fr));
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .decode-cache-label {
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      padding-right: 12px;
+      border-right: 1px solid var(--line);
+    }
+
+    .decode-cache-label strong { font-size: 12px; }
+    .decode-cache-label span { color: var(--muted); font-size: 9px; }
+
+    .decode-cache-slot {
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+    }
+
+    .decode-cache-slot.new-token {
+      color: var(--accent);
+      border-color: rgba(20, 125, 117, 0.42);
+      background: var(--accent-soft);
+    }
+
+    .decode-pipeline {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 0.72fr auto 0.9fr auto 1.22fr auto 0.98fr auto 0.72fr;
+      align-items: center;
+      gap: clamp(8px, 1vw, 16px);
+    }
+
+    .current-token-box {
+      min-height: 154px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 10px;
+      padding: 14px;
+      border: 1px solid rgba(20, 125, 117, 0.42);
+      background: var(--accent-soft);
+    }
+
+    .decode-qkv {
+      display: grid;
+      gap: 8px;
+    }
+
+    .decode-qkv .qkv-tensor {
+      min-height: 42px;
+    }
+
+    .history-scan {
+      min-height: 178px;
+      display: grid;
+      align-content: center;
+      gap: 14px;
+      padding: 15px;
+      border: 1px solid rgba(119, 72, 184, 0.38);
+      background: var(--score-soft);
+    }
+
+    .history-keys,
+    .history-values {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 5px;
+    }
+
+    .history-keys span,
+    .history-values span {
+      min-height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .history-keys { color: var(--key); }
+    .history-values { color: var(--value); }
+    .history-keys span { background: var(--key-soft); }
+    .history-values span { background: var(--value-soft); }
+
+    .decode-weight-mix {
+      min-height: 178px;
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      padding: 15px;
+      border: 1px solid rgba(25, 132, 92, 0.36);
+      background: var(--value-soft);
+    }
+
+    /* MHA growth slide */
+    .head-growth-stage {
+      padding: 50px 42px 44px;
+    }
+
+    .head-growth {
+      height: 100%;
+      display: grid;
+      grid-template-rows: repeat(4, minmax(54px, 1fr)) auto;
+      gap: 8px;
+    }
+
+    .parallel-head-row {
+      display: grid;
+      grid-template-columns: 0.7fr auto 1.22fr auto 0.92fr auto 0.62fr;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.7);
+    }
+
+    .head-tensor {
+      min-height: 38px;
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 8px;
+      border: 1px solid currentColor;
+      font-family: var(--mono);
+      font-size: 10px;
+    }
+
+    .head-kv-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .head-kv-pair span,
+    .head-attn,
+    .head-output {
+      min-height: 38px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .head-kv-pair .k { color: var(--key); background: var(--key-soft); }
+    .head-kv-pair .v { color: var(--value); background: var(--value-soft); }
+    .head-attn { color: var(--score); background: var(--score-soft); }
+    .head-output { color: var(--value); background: var(--value-soft); }
+
+    .head-concat {
+      min-height: 46px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) auto 1.2fr;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border-top: 1px solid var(--line);
+    }
+
+    .head-concat span {
+      min-height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .head-concat .concat-label {
+      border-color: rgba(20, 125, 117, 0.35);
+      background: var(--accent-soft);
+    }
+
+    /* GQA merge slide */
+    .gqa-stage-v2 {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 50px 42px 44px;
+    }
+
+    .gqa-flow-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 0.78fr 38px 1.2fr 38px 0.9fr 38px 0.58fr;
+      align-items: stretch;
+      gap: 9px;
+    }
+
+    .four-row-stack,
+    .link-stack,
+    .gqa-kv-stack {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .four-row-stack > *,
+    .gqa-kv-stack > * {
+      min-height: 0;
+    }
+
+    .link-stack .row-link {
+      align-self: center;
+    }
+
+    .gqa-kv-stack {
+      position: relative;
+    }
+
+    .old-kv-cell,
+    .shared-kv-cell {
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 5px;
+      padding: 8px;
+      border: 1px solid rgba(201, 107, 29, 0.34);
+      background:
+        linear-gradient(90deg, var(--key-soft) 0 50%, var(--value-soft) 50% 100%),
+        var(--surface);
+      font-family: var(--mono);
+      font-size: 9px;
+      transition: opacity 260ms ease, transform 260ms ease;
+    }
+
+    .old-kv-cell.is-merged-away {
+      opacity: 0.14;
+      transform: scaleY(0.84);
+    }
+
+    .shared-kv-cell {
+      z-index: 3;
+      align-self: center;
+      height: calc(50% - 4px);
+      min-height: 54px;
+      color: var(--text);
+      border-color: var(--key);
+      background:
+        linear-gradient(90deg, rgba(201, 107, 29, 0.14) 0 50%, rgba(25, 132, 92, 0.14) 50% 100%),
+        var(--surface);
+    }
+
+    .shared-kv-cell.group-a { grid-row: 1 / span 2; grid-column: 1; }
+    .shared-kv-cell.group-b { grid-row: 3 / span 2; grid-column: 1; }
+
+    .gqa-summary-line {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--line);
+    }
+
+    .gqa-summary-line span {
+      padding: 10px 12px 0;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .gqa-summary-line strong {
+      display: block;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    /* MLA tensor flow */
+    .mla-tensor-stage {
+      display: grid;
+      grid-template-rows: 0.95fr 1.05fr;
+      gap: 16px;
+      padding: 48px 38px 42px;
+    }
+
+    .mla-lane {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 88px minmax(0, 1fr);
+      gap: 18px;
+      align-items: center;
+    }
+
+    .mla-lane + .mla-lane {
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .lane-label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 9px;
+      line-height: 1.45;
+      text-transform: uppercase;
+    }
+
+    .lane-label strong {
+      color: var(--text);
+      font-size: 11px;
+    }
+
+    .mla-write-flow {
+      display: grid;
+      grid-template-columns: 0.62fr auto 0.8fr auto 0.72fr auto 1.3fr;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mla-read-flow {
+      display: grid;
+      grid-template-columns: 0.72fr auto 1fr auto 0.82fr auto 0.82fr auto 0.68fr;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .projection-shape {
+      min-height: 84px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 6px;
+      padding: 9px;
+      border: 1px solid rgba(119, 72, 184, 0.38);
+      color: var(--score);
+      background: var(--score-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .latent-vector {
+      min-height: 84px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 7px;
+      padding: 9px;
+      border: 1px solid rgba(20, 125, 117, 0.4);
+      color: var(--accent);
+      background: var(--accent-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .latent-cells {
+      display: flex;
+      gap: 3px;
+    }
+
+    .latent-cells i {
+      width: 9px;
+      height: 28px;
+      border: 1px solid rgba(20, 125, 117, 0.4);
+      background: rgba(20, 125, 117, 0.12);
+    }
+
+    .mla-cache-box {
+      min-height: 96px;
+      display: grid;
+      grid-template-columns: 1fr 0.38fr;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+    }
+
+    .cache-column {
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .cache-column i {
+      height: 8px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(20, 125, 117, 0.3);
+    }
+
+    .cache-column.rope i {
+      background: var(--key-soft);
+      border-color: rgba(201, 107, 29, 0.3);
+    }
+
+    .absorbed-query,
+    .latent-score,
+    .latent-sum,
+    .up-project {
+      min-height: 92px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 7px;
+      padding: 9px;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .absorbed-query { color: var(--query); border-color: rgba(23, 110, 196, 0.38); background: var(--query-soft); }
+    .latent-score { color: var(--score); border-color: rgba(119, 72, 184, 0.38); background: var(--score-soft); }
+    .latent-sum { color: var(--accent); border-color: rgba(20, 125, 117, 0.38); background: var(--accent-soft); }
+    .up-project { color: var(--value); border-color: rgba(25, 132, 92, 0.38); background: var(--value-soft); }
+
+    /* Dimension-led Attention diagrams */
+    .attention-ledger-stage,
+    .decode-ledger-stage {
+      display: grid;
+      grid-template-rows: 0.82fr 1.18fr;
+      gap: 14px;
+      padding: 46px 34px 40px;
+    }
+
+    .attention-ledger-stage {
+      grid-template-rows: 0.55fr 1.45fr;
+    }
+
+    .attention-projection-stage {
+      display: grid;
+      align-items: center;
+      padding: 54px 42px 46px;
+    }
+
+    .attention-projection-stage .prefill-projection-lane {
+      width: 100%;
+      min-height: 220px;
+    }
+
+    .attention-query-stage {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr);
+      align-items: center;
+      gap: 28px;
+      padding: 50px 42px 42px;
+    }
+
+    .attention-query-stage .query-calculation {
+      align-content: center;
+      gap: 16px;
+    }
+
+    .attention-query-stage .shape-chain {
+      min-height: 104px;
+    }
+
+    .attention-query-stage .stack-output {
+      justify-content: center;
+      min-height: 72px;
+    }
+
+    .shape-lane {
+      min-height: 0;
+      display: grid;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .prefill-projection-lane {
+      grid-template-columns: 1fr auto 0.52fr auto 2.15fr;
+    }
+
+    .single-query-lane,
+    .decode-query-lane {
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+
+    .single-query-lane {
+      display: grid;
+      grid-template-columns: 0.9fr 1.5fr;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .shape-chain {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .shape-matrix {
+      position: relative;
+      min-width: 0;
+      display: grid;
+      align-content: center;
+      gap: 6px;
+      padding: 9px 10px 22px 34px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .shape-matrix.small {
+      padding-left: 28px;
+    }
+
+    .shape-matrix.query { border-color: rgba(23, 110, 196, 0.38); background: var(--query-soft); }
+    .shape-matrix.key { border-color: rgba(201, 107, 29, 0.38); background: var(--key-soft); }
+    .shape-matrix.value { border-color: rgba(25, 132, 92, 0.38); background: var(--value-soft); }
+    .shape-matrix.weight { border-color: rgba(119, 72, 184, 0.38); background: var(--score-soft); }
+
+    .shape-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 9px;
+      white-space: nowrap;
+    }
+
+    .shape-title strong {
+      font-size: 11px;
+    }
+
+    .shape-rows {
+      display: grid;
+      gap: 3px;
+    }
+
+    .shape-row {
+      display: grid;
+      grid-template-columns: 22px repeat(var(--dim, 6), 9px);
+      align-items: center;
+      gap: 2px;
+      min-height: 11px;
+    }
+
+    .shape-row b {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 8px;
+      font-weight: 500;
+    }
+
+    .shape-row i,
+    .transpose-grid i {
+      display: block;
+      width: 9px;
+      height: 9px;
+      border: 1px solid var(--line-strong);
+      background: rgba(82, 108, 112, 0.07);
+    }
+
+    .shape-matrix.query .shape-row i { border-color: rgba(23, 110, 196, 0.36); background: rgba(23, 110, 196, 0.12); }
+    .shape-matrix.key .shape-row i { border-color: rgba(201, 107, 29, 0.36); background: rgba(201, 107, 29, 0.12); }
+    .shape-matrix.value .shape-row i { border-color: rgba(25, 132, 92, 0.36); background: rgba(25, 132, 92, 0.12); }
+
+    .axis-y {
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 7px;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      transform: translate(-35%, -50%) rotate(-90deg);
+    }
+
+    .axis-x {
+      position: absolute;
+      left: 34px;
+      right: 8px;
+      bottom: 6px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 7px;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .projection-gate {
+      min-width: 72px;
+      min-height: 68px;
+      display: grid;
+      place-items: center;
+      padding: 8px;
+      border: 1px solid var(--line-strong);
+      background: var(--surface-2);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .qkv-shape-group {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .shape-op {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      flex: 0 0 24px;
+      border: 1px solid var(--line-strong);
+      color: var(--muted);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .transpose-grid {
+      display: grid;
+      grid-template-columns: repeat(var(--cols, 4), 9px);
+      gap: 2px;
+    }
+
+    .transpose-grid.key i { border-color: rgba(201, 107, 29, 0.36); background: rgba(201, 107, 29, 0.12); }
+
+    .token-key-columns {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(16px, 1fr));
+      gap: 4px;
+    }
+
+    .token-key-column {
+      display: grid;
+      grid-template-rows: auto repeat(4, 9px);
+      justify-items: stretch;
+      gap: 2px;
+      color: var(--key);
+    }
+
+    .token-key-column b {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 7px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .token-key-column i {
+      display: block;
+      min-width: 16px;
+      border: 1px solid rgba(201, 107, 29, 0.36);
+      background: rgba(201, 107, 29, 0.12);
+    }
+
+    .token-key-column.new-token i {
+      border-color: rgba(20, 125, 117, 0.52);
+      background: rgba(20, 125, 117, 0.18);
+    }
+
+    .weight-row {
+      display: grid;
+      grid-template-columns: repeat(var(--weights, 4), 28px);
+      gap: 3px;
+    }
+
+    .weight-row i {
+      min-height: 22px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(119, 72, 184, 0.34);
+      color: var(--score);
+      background: rgba(119, 72, 184, var(--alpha, 0.12));
+      font-family: var(--mono);
+      font-size: 7px;
+      font-style: normal;
+    }
+
+    .shape-note {
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.4;
+      text-align: center;
+    }
+
+    .query-calculation {
+      min-width: 0;
+      display: grid;
+      gap: 9px;
+    }
+
+    .hard-reveal {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .hard-reveal.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .query-example-label {
+      display: grid;
+      gap: 5px;
+      align-content: center;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .query-example-label strong {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .stack-output {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cache-inline {
+      display: grid;
+      gap: 4px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 8px;
+    }
+
+    .output-project-chip {
+      display: grid;
+      gap: 3px;
+      padding: 8px 10px;
+      border: 1px solid rgba(20, 125, 117, 0.34);
+      color: var(--accent);
+      background: var(--accent-soft);
+      font-family: var(--mono);
+      font-size: 8px;
+      white-space: nowrap;
+    }
+
+    .output-stack-mini {
+      display: grid;
+      grid-template-columns: repeat(4, 38px);
+      gap: 4px;
+      padding: 8px;
+      border: 1px solid rgba(25, 132, 92, 0.34);
+      background: var(--value-soft);
+    }
+
+    .output-stack-mini span {
+      min-height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(25, 132, 92, 0.36);
+      color: var(--value);
+      background: rgba(255, 255, 255, 0.64);
+      font-family: var(--mono);
+      font-size: 8px;
+    }
+
+    .output-stack-mini strong {
+      grid-column: 1 / -1;
+      color: var(--value);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .decode-setup-lane {
+      grid-template-columns: 0.78fr auto 1.6fr auto 1.72fr;
+    }
+
+    .decode-cache-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .shape-row.new-row {
+      color: var(--accent);
+    }
+
+    .shape-row.new-row i {
+      border-color: rgba(20, 125, 117, 0.52) !important;
+      background: rgba(20, 125, 117, 0.18) !important;
+    }
+
+    .decode-query-lane {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr);
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* MLA equivalence comparison */
+    .mla-equivalence-stage-v2 {
+      display: grid;
+      grid-template-rows: 82px minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+      padding: 46px 34px 38px;
+    }
+
+    .latent-cache-origin {
+      display: grid;
+      grid-template-columns: 0.65fr auto 0.7fr auto 1.2fr;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .equiv-lane {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 104px minmax(0, 1fr);
+      align-items: center;
+      gap: 14px;
+    }
+
+    .equiv-lane + .equiv-lane {
+      border-top: 1px dashed var(--line-strong);
+    }
+
+    .equiv-lane-label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 8px;
+      line-height: 1.45;
+      text-transform: uppercase;
+    }
+
+    .equiv-lane-label strong {
+      color: var(--text);
+      font-size: 10px;
+    }
+
+    .equiv-flow {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: 0.78fr auto 1.12fr auto 0.96fr auto 0.82fr;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .equiv-node {
+      position: relative;
+      min-height: 72px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 5px;
+      padding: 8px;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 8px;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    .equiv-node.expand { color: var(--key); border-color: rgba(201, 107, 29, 0.38); background: var(--key-soft); }
+    .equiv-node.attn { color: var(--score); border-color: rgba(119, 72, 184, 0.38); background: var(--score-soft); }
+    .equiv-node.absorb { color: var(--query); border-color: rgba(23, 110, 196, 0.38); background: var(--query-soft); }
+    .equiv-node.latent-mix { color: var(--accent); border-color: rgba(20, 125, 117, 0.38); background: var(--accent-soft); }
+    .equiv-node.output { color: var(--value); border-color: rgba(25, 132, 92, 0.38); background: var(--value-soft); }
+
+    .same-badge {
+      position: absolute;
+      top: -8px;
+      right: 6px;
+      padding: 2px 5px;
+      border: 1px solid rgba(20, 125, 117, 0.36);
+      color: var(--accent);
+      background: var(--surface);
+      font-family: var(--mono);
+      font-size: 7px;
+      white-space: nowrap;
+    }
+
+    .common-position-note {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 7px;
+    }
+
+    /* MLA presentation simplification: storage first, no absorption */
+    .mla-simple-stage {
+      display: grid;
+      grid-template-rows: 1.08fr 0.92fr;
+      gap: 18px;
+      padding: 48px 42px 40px;
+    }
+
+    .mla-storage-comparison {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1.25fr 86px 0.78fr;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .cache-comparison-card,
+    .latent-storage-card {
+      min-height: 164px;
+      display: grid;
+      align-content: center;
+      gap: 12px;
+      padding: 16px;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.72);
+    }
+
+    .cache-comparison-card h3,
+    .latent-storage-card h3 {
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .cache-comparison-card p,
+    .latent-storage-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .head-cache-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(48px, 1fr));
+      gap: 7px;
+    }
+
+    .cache-token-stack,
+    .latent-token-stack {
+      display: grid;
+      gap: 4px;
+    }
+
+    .cache-token-row {
+      display: grid;
+      grid-template-columns: 22px repeat(8, minmax(26px, 1fr));
+      align-items: center;
+      gap: 3px;
+    }
+
+    .latent-token-row {
+      display: grid;
+      grid-template-columns: 22px minmax(80px, 1fr) minmax(30px, 0.24fr);
+      align-items: center;
+      gap: 4px;
+    }
+
+    .cache-token-row b,
+    .latent-token-row b {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 8px;
+      font-weight: 600;
+    }
+
+    .cache-token-row i,
+    .latent-token-row i {
+      min-height: 21px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      font-family: var(--mono);
+      font-size: 7px;
+      font-style: normal;
+    }
+
+    .cache-token-row .k { color: var(--key); background: var(--key-soft); }
+    .cache-token-row .v { color: var(--value); background: var(--value-soft); }
+    .latent-token-row .latent { color: var(--accent); background: rgba(20, 125, 117, 0.12); }
+    .latent-token-row .rope { color: var(--key); background: var(--key-soft); }
+
+    .cache-head-block {
+      min-height: 42px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .cache-head-block.k { color: var(--key); background: var(--key-soft); }
+    .cache-head-block.v { color: var(--value); background: var(--value-soft); }
+
+    .compression-marker {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .compression-marker .flow-arrow {
+      width: 64px;
+    }
+
+    .latent-storage-card {
+      min-height: 116px;
+      border-color: rgba(20, 125, 117, 0.42);
+      background: var(--accent-soft);
+    }
+
+    .latent-storage-shape {
+      display: grid;
+      grid-template-columns: 1fr 0.22fr;
+      gap: 7px;
+    }
+
+    .latent-main,
+    .latent-rope {
+      min-height: 54px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .latent-main { color: var(--accent); background: rgba(20, 125, 117, 0.12); }
+    .latent-rope { color: var(--key); background: var(--key-soft); }
+
+    .mla-restore-lane {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 0.72fr auto 0.8fr auto 1.32fr auto 0.9fr;
+      align-items: center;
+      gap: 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .restore-kv-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(42px, 1fr));
+      gap: 5px;
+      padding: 9px;
+      border: 1px solid var(--line-strong);
+      background: var(--surface);
+    }
+
+    .restore-kv-grid strong {
+      grid-column: 1 / -1;
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .standard-attn-node {
+      min-height: 96px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 7px;
+      padding: 10px;
+      border: 1px solid rgba(119, 72, 184, 0.38);
+      color: var(--score);
+      background: var(--score-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .scope-note {
+      grid-column: 1 / -1;
+      padding: 7px 9px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: var(--surface-2);
+      font-size: 9px;
+      line-height: 1.45;
+    }
+
+    /* Explicit combined advantages */
+    .assembly-stage.has-benefits {
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      padding-bottom: 34px;
+    }
+
+    .final-thesis.benefits {
+      position: static;
+      left: auto;
+      right: auto;
+      bottom: auto;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.64);
+    }
+
+    .benefits .thesis-item {
+      padding: 9px 12px;
+      border-right: 1px solid var(--line);
+    }
+
+    .benefits .thesis-item:last-child {
+      border-right: 0;
+    }
+
+    .benefits .thesis-item strong {
+      margin-bottom: 3px;
+      color: var(--accent);
+    }
+
+    .benefit-summary {
+      grid-column: 1 / -1;
+      padding: 7px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--text);
+      background: var(--accent-soft);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    @media (max-width: 1120px) {
+      .tensor-attention-flow,
+      .decode-pipeline {
+        gap: 6px;
+      }
+
+      .tensor-card,
+      .operator-shape,
+      .mix-shape {
+        padding-left: 8px;
+        padding-right: 8px;
+      }
+
+      .tensor-cells {
+        grid-template-columns: repeat(var(--cols, 4), 9px);
+        grid-auto-rows: 10px;
+      }
+
+      .parallel-head-row {
+        grid-template-columns: 0.68fr 24px 1.1fr 24px 0.82fr 24px 0.58fr;
+      }
+
+      .gqa-flow-grid {
+        grid-template-columns: 0.75fr 24px 1.08fr 24px 0.82fr 24px 0.58fr;
+      }
+
+      .mla-simple-stage {
+        padding-left: 26px;
+        padding-right: 26px;
+      }
+
+      .mla-restore-lane {
+        grid-template-columns: 0.68fr auto 0.72fr auto 1.2fr auto 0.86fr;
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 1080px) {
+      :root {
+        --header-h: 54px;
+        --control-h: 66px;
+      }
+
+      .chapter-shell {
+        width: calc(100% - 72px);
+      }
+
+      .chapter-heading {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
+      .chapter-lead {
+        max-width: 880px;
+      }
+
+      .heads-stage,
+      .mla-stage,
+      .dsa-stage,
+      .assembly-stage {
+        padding-left: 26px;
+        padding-right: 26px;
+      }
+
+      .heads-stage {
+        grid-template-columns: 0.55fr 2.45fr;
+      }
+
+      .baseline-inset {
+        padding: 12px;
+      }
+
+      .attention-flow {
+        padding-left: 4px;
+        padding-right: 4px;
+      }
+
+      .token-column .token:nth-of-type(3),
+      .token-column .token:nth-of-type(4) {
+        display: none;
+      }
+
+      .assembly-grid {
+        grid-template-columns: 1.6fr 0.7fr;
+      }
+
+      .pipeline-node {
+        min-height: 122px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      html {
+        scroll-snap-type: none;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr auto;
+        padding: 0 14px;
+      }
+
+      .chapter-title,
+      .progress-track,
+      .keyboard-hint,
+      .chapter-rail {
+        display: none;
+      }
+
+      .control-dock {
+        grid-template-columns: 1fr auto;
+        height: auto;
+        min-height: 70px;
+        padding: 10px 14px;
+      }
+
+      .step-caption {
+        font-size: 11px;
+      }
+
+      .dock-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .nav-button {
+        min-width: 66px;
+        padding: 0 10px;
+      }
+
+      .chapter {
+        height: auto;
+        min-height: 100svh;
+        overflow: visible;
+      }
+
+      .chapter-shell {
+        width: calc(100% - 28px);
+        min-height: 100svh;
+        padding-bottom: 104px;
+      }
+
+      h1,
+      h2 {
+        font-size: 28px;
+      }
+
+      .stage {
+        min-height: 720px;
+        overflow: auto;
+      }
+
+      .attention-stage {
+        grid-template-rows: 1fr auto;
+      }
+
+      .attention-flow {
+        grid-template-columns: 1fr;
+        align-content: start;
+        padding: 28px 12px;
+      }
+
+      .attention-flow > .flow-arrow {
+        width: 1px;
+        height: 22px;
+        justify-self: center;
+      }
+
+      .attention-flow > .flow-arrow::after {
+        top: auto;
+        right: auto;
+        bottom: 0;
+        left: -3px;
+        transform: rotate(135deg);
+      }
+
+      .cache-band {
+        grid-template-columns: 1fr;
+      }
+
+      .cache-slots {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .heads-stage,
+      .mla-stage,
+      .dsa-stage,
+      .assembly-stage,
+      .assembly-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .baseline-inset,
+      .mla-equivalence,
+      .indexshare-panel {
+        border: 0;
+        padding: 0;
+      }
+
+      .head-map-header,
+      .head-row,
+      .gqa-group {
+        grid-template-columns: 0.9fr 18px 1.2fr 18px 0.9fr;
+      }
+
+      .mla-flow {
+        grid-template-columns: 1fr;
+      }
+
+      .mla-flow > .flow-arrow {
+        width: 1px;
+        height: 20px;
+        justify-self: center;
+      }
+
+      .model-pipeline {
+        grid-template-columns: 1fr;
+      }
+
+      .pipeline-node {
+        min-height: 76px;
+      }
+
+      .pipeline-node::after {
+        top: auto;
+        right: 50%;
+        bottom: -10px;
+        width: 1px;
+        height: 10px;
+      }
+
+      .final-thesis {
+        position: static;
+        grid-template-columns: 1fr;
+        margin-top: 18px;
+      }
+
+      .legend {
+        display: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="grid-noise" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">A</span>
+      GLM-5.2 / Attention Lab
+    </div>
+    <div class="chapter-title" id="chapter-title">01 · Attention: activation → Q / K / V</div>
+    <div class="top-progress">
+      <span id="progress-text">01 / 08</span>
+      <span class="progress-track" aria-hidden="true"><span class="progress-fill" id="progress-fill"></span></span>
+    </div>
+  </header>
+
+  <nav class="chapter-rail" aria-label="章节导航">
+    <button class="rail-button" type="button" data-target="chapter-1" aria-label="第一章 QKV 投影" aria-current="true"><span class="rail-label">01 / QKV 投影</span></button>
+    <button class="rail-button" type="button" data-target="chapter-2" aria-label="第二章 单 Query Attention"><span class="rail-label">02 / 单 Query</span></button>
+    <button class="rail-button" type="button" data-target="chapter-3" aria-label="第三章 Decode"><span class="rail-label">03 / Decode</span></button>
+    <button class="rail-button" type="button" data-target="chapter-4" aria-label="第四章 MHA"><span class="rail-label">04 / MHA</span></button>
+    <button class="rail-button" type="button" data-target="chapter-5" aria-label="第五章 GQA"><span class="rail-label">05 / GQA</span></button>
+    <button class="rail-button" type="button" data-target="chapter-6" aria-label="第六章 MLA"><span class="rail-label">06 / MLA</span></button>
+    <button class="rail-button" type="button" data-target="chapter-7" aria-label="第七章 DSA"><span class="rail-label">07 / DSA</span></button>
+    <button class="rail-button" type="button" data-target="chapter-8" aria-label="第八章 GLM-5.2"><span class="rail-label">08 / GLM-5.2</span></button>
+  </nav>
+
+  <main>
+    <section class="chapter" id="chapter-1" data-title="Attention: activation → Q / K / V" data-steps="2">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 01 / Prefill attention</p>
+            <h1>Attention: 从 activation 得到 Q / K / V</h1>
+          </div>
+          <p class="chapter-lead">Activation 的 4 行对应 4 个 token；Q/K/V 投影保留 token 轴，只改变横向的 feature 维度。</p>
+        </div>
+
+        <div class="stage attention-projection-stage">
+          <span class="stage-label">Single head · S = 4 tokens</span>
+          <span class="stage-counter">vertical = token · horizontal = feature</span>
+
+          <div class="shape-lane prefill-projection-lane">
+            <div class="shape-matrix step-reveal" data-show-at="0" data-focus-at="0">
+              <div class="shape-title"><strong>Activation X</strong><span>[4 × d<sub>model</sub>]</span></div>
+              <span class="axis-y">token axis · S=4</span>
+              <div class="shape-rows">
+                <div class="shape-row" style="--dim:8"><b>t₁</b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="shape-row" style="--dim:8"><b>t₂</b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="shape-row" style="--dim:8"><b>t₃</b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="shape-row" style="--dim:8"><b>t₄</b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              </div>
+              <span class="axis-x">embedding axis · d<sub>model</sub> →</span>
+            </div>
+            <span class="flow-arrow step-reveal" data-show-at="1"></span>
+            <div class="projection-gate step-reveal" data-show-at="1" data-focus-at="1">Q / K / V<br>projections</div>
+            <span class="flow-arrow step-reveal" data-show-at="1"></span>
+            <div class="qkv-shape-group step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="shape-matrix small query">
+                <div class="shape-title"><strong>Q</strong><span>[4×d<sub>h</sub>]</span></div><div class="shape-rows">
+                  <div class="shape-row" style="--dim:5"><b>q₁</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>q₂</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>q₃</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>q₄</b><i></i><i></i><i></i><i></i><i></i></div>
+                </div><span class="axis-x">head dim →</span>
+              </div>
+              <div class="shape-matrix small key">
+                <div class="shape-title"><strong>K</strong><span>[4×d<sub>h</sub>]</span></div><div class="shape-rows">
+                  <div class="shape-row" style="--dim:5"><b>k₁</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>k₂</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>k₃</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>k₄</b><i></i><i></i><i></i><i></i><i></i></div>
+                </div><span class="axis-x">head dim →</span>
+              </div>
+              <div class="shape-matrix small value">
+                <div class="shape-title"><strong>V</strong><span>[4×d<sub>v</sub>]</span></div><div class="shape-rows">
+                  <div class="shape-row" style="--dim:5"><b>v₁</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>v₂</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>v₃</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>v₄</b><i></i><i></i><i></i><i></i><i></i></div>
+                </div><span class="axis-x">value dim →</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-2" data-title="Attention: one Query row → one output row" data-steps="3">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 02 / One-query attention</p>
+            <h2>Attention: 一行权重如何变成一行输出</h2>
+          </div>
+          <p class="chapter-lead">一行 Query 对全部可见 Key 产生一组 token 权重；同一组权重混合 Value 行，得到一行输出。</p>
+        </div>
+
+        <div class="stage attention-query-stage">
+          <span class="stage-label">Zoom in · query token t₄</span>
+          <span class="stage-counter">1 row → 4 weights → 1 row</span>
+
+          <div class="query-example-label step-reveal" data-show-at="0" data-focus-at="0"><strong>只看 q₄</strong><span>这一行能看到 k₁…k₄。权重的长度等于可访问的历史 token 数，而不是 embedding dimension。</span></div>
+          <div class="query-calculation">
+            <div class="shape-chain step-reveal" data-show-at="0" data-focus-at="0">
+              <div class="shape-matrix small query"><div class="shape-title"><strong>q₄</strong><span>[1×d<sub>h</sub>]</span></div><div class="shape-row" style="--dim:6"><b></b><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="axis-x">one Query row</span></div>
+              <span class="shape-op">×</span>
+              <div class="shape-matrix small key"><div class="shape-title"><strong>Kᵀ</strong><span>[d<sub>h</sub>×4]</span></div><div class="transpose-grid key" style="--cols:4"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="axis-x">4 Key columns</span></div>
+              <span class="shape-op">→</span>
+              <div class="shape-matrix small weight"><div class="shape-title"><strong>weights p₄</strong><span>[1×4]</span></div><div class="weight-row"><i style="--alpha:.18">.10</i><i style="--alpha:.42">.25</i><i style="--alpha:.28">.15</i><i style="--alpha:.72">.50</i></div><span class="axis-x">one weight per token · sum=1</span></div>
+            </div>
+
+            <div class="shape-chain step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="shape-matrix small weight"><div class="shape-title"><strong>p₄</strong><span>[1×4]</span></div><div class="weight-row"><i style="--alpha:.18">.10</i><i style="--alpha:.42">.25</i><i style="--alpha:.28">.15</i><i style="--alpha:.72">.50</i></div><span class="axis-x">how much from each token?</span></div>
+              <span class="shape-op">×</span>
+              <div class="shape-matrix small value"><div class="shape-title"><strong>V</strong><span>[4×d<sub>v</sub>]</span></div><div class="shape-rows"><div class="shape-row" style="--dim:6"><b>v₁</b><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:6"><b>v₂</b><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:6"><b>v₃</b><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:6"><b>v₄</b><i></i><i></i><i></i><i></i><i></i><i></i></div></div><span class="axis-x">4 Value rows</span></div>
+              <span class="shape-op">→</span>
+              <div class="shape-matrix small value"><div class="shape-title"><strong>o₄</strong><span>[1×d<sub>v</sub>]</span></div><div class="shape-row" style="--dim:6"><b></b><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="axis-x">one mixed output row</span></div>
+            </div>
+
+            <div class="stack-output step-reveal hard-reveal" data-show-at="2" data-focus-at="2"><span class="shape-note">q₁…q₄ repeat the same operation</span><span class="shape-op">⇢</span><div class="output-stack-mini"><strong>O [4×d<sub>v</sub>]</strong><span>o₁</span><span>o₂</span><span>o₃</span><span>o₄</span></div><div class="output-project-chip"><strong>W<sub>O</sub></strong><span>→ next activation</span><span>[4×d<sub>model</sub>]</span></div><div class="cache-inline"><strong>Prefill cache</strong><span>K [4×d<sub>h</sub>]</span><span>V [4×d<sub>v</sub>]</span></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-3" data-title="Decode: the same one-row calculation over cached history" data-steps="5">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 03 / Decode attention</p>
+            <h2>Decode: 同一行计算，历史来自 KV cache</h2>
+          </div>
+          <p class="chapter-lead">Decode 每次新增一个 token；K/V cache 因而增加一行，当前 Query 读取完整的 5-token 历史。</p>
+        </div>
+
+        <div class="stage decode-ledger-stage">
+          <span class="stage-label">Decode step t = 5</span>
+          <span class="stage-counter">Q: [1×dₕ] · cache: [5×dₕ/dᵥ]</span>
+
+          <div class="shape-lane decode-setup-lane">
+            <div class="shape-matrix step-reveal" data-show-at="0" data-focus-at="0"><div class="shape-title"><strong>New activation x₅</strong><span>[1×d<sub>model</sub>]</span></div><div class="shape-row" style="--dim:8"><b>t₅</b><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span class="axis-x">one horizontal embedding row</span></div>
+            <span class="flow-arrow step-reveal" data-show-at="1"></span>
+            <div class="qkv-shape-group step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="shape-matrix small query"><div class="shape-title"><strong>q₅</strong><span>[1×dₕ]</span></div><div class="shape-row" style="--dim:5"><b></b><i></i><i></i><i></i><i></i><i></i></div><span class="axis-x">read history</span></div>
+              <div class="shape-matrix small key"><div class="shape-title"><strong>k₅</strong><span>[1×dₕ]</span></div><div class="shape-row" style="--dim:5"><b></b><i></i><i></i><i></i><i></i><i></i></div><span class="axis-x">append row</span></div>
+              <div class="shape-matrix small value"><div class="shape-title"><strong>v₅</strong><span>[1×dᵥ]</span></div><div class="shape-row" style="--dim:5"><b></b><i></i><i></i><i></i><i></i><i></i></div><span class="axis-x">append row</span></div>
+            </div>
+            <span class="flow-arrow step-reveal" data-show-at="2"></span>
+            <div class="decode-cache-pair step-reveal" data-show-at="0" data-focus-at="2">
+              <div class="shape-matrix small key"><div class="shape-title"><strong>K cache</strong><span>[4→5 rows × dₕ]</span></div><div class="shape-rows"><div class="shape-row" style="--dim:5"><b>k₁</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>k₂</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>k₃</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>k₄</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row new-row step-reveal hard-reveal" data-show-at="2" style="--dim:5"><b>+k₅</b><i></i><i></i><i></i><i></i><i></i></div></div><span class="axis-x">token rows</span></div>
+              <div class="shape-matrix small value"><div class="shape-title"><strong>V cache</strong><span>[4→5 rows × dᵥ]</span></div><div class="shape-rows"><div class="shape-row" style="--dim:5"><b>v₁</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>v₂</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>v₃</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:5"><b>v₄</b><i></i><i></i><i></i><i></i><i></i></div><div class="shape-row new-row step-reveal hard-reveal" data-show-at="2" style="--dim:5"><b>+v₅</b><i></i><i></i><i></i><i></i><i></i></div></div><span class="axis-x">token rows</span></div>
+            </div>
+          </div>
+
+          <div class="decode-query-lane">
+            <div class="query-example-label step-reveal" data-show-at="3" data-focus-at="3"><strong>同一个算式，S 变成 5</strong><span>q₅ 产生 5 个权重；5 个权重正好对应 V cache 的 5 行。</span></div>
+            <div class="shape-chain">
+              <div class="shape-matrix small query step-reveal" data-show-at="3"><div class="shape-title"><strong>q₅</strong><span>[1×dₕ]</span></div><div class="shape-row" style="--dim:5"><b></b><i></i><i></i><i></i><i></i><i></i></div><span class="axis-x">one row</span></div>
+              <span class="shape-op step-reveal" data-show-at="3">×</span>
+              <div class="shape-matrix small key step-reveal" data-show-at="3"><div class="shape-title"><strong>K cacheᵀ</strong><span>[dₕ×5]</span></div><div class="token-key-columns" aria-label="五个 token 对应五列 Key"><span class="token-key-column"><b>k₁</b><i></i><i></i><i></i><i></i></span><span class="token-key-column"><b>k₂</b><i></i><i></i><i></i><i></i></span><span class="token-key-column"><b>k₃</b><i></i><i></i><i></i><i></i></span><span class="token-key-column"><b>k₄</b><i></i><i></i><i></i><i></i></span><span class="token-key-column new-token"><b>k₅</b><i></i><i></i><i></i><i></i></span></div><span class="axis-x">5 token columns · k₁…k₅</span></div>
+              <span class="shape-op step-reveal" data-show-at="3">→</span>
+              <div class="shape-matrix small weight step-reveal" data-show-at="3" data-focus-at="3"><div class="shape-title"><strong>p₅</strong><span>[1×5]</span></div><div class="weight-row" style="--weights:5"><i style="--alpha:.16">.08</i><i style="--alpha:.44">.22</i><i style="--alpha:.24">.12</i><i style="--alpha:.68">.34</i><i style="--alpha:.48">.24</i></div><span class="axis-x">sum = 1</span></div>
+              <span class="shape-op step-reveal" data-show-at="4">×</span>
+              <div class="shape-matrix small value step-reveal" data-show-at="4"><div class="shape-title"><strong>V cache</strong><span>[5×dᵥ]</span></div><div class="shape-rows"><div class="shape-row" style="--dim:4"><b>v₁</b><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:4"><b>v₂</b><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:4"><b>v₃</b><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:4"><b>v₄</b><i></i><i></i><i></i><i></i></div><div class="shape-row" style="--dim:4"><b>v₅</b><i></i><i></i><i></i><i></i></div></div><span class="axis-x">5 value rows</span></div>
+              <span class="shape-op step-reveal" data-show-at="4">→</span>
+              <div class="shape-matrix small value step-reveal" data-show-at="4" data-focus-at="4"><div class="shape-title"><strong>o₅</strong><span>[1×dᵥ]</span></div><div class="shape-row" style="--dim:5"><b></b><i></i><i></i><i></i><i></i><i></i></div><span class="axis-x">one output row</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-4" data-title="MHA: one head → four parallel heads" data-steps="3">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 04 / Multi-Head Attention</p>
+            <h2>MHA: 把一条 Attention 路径复制成多个 head</h2>
+          </div>
+          <p class="chapter-lead">MHA 让不同 head 在不同子空间独立建模关系；4 条 Attention 路径并行执行，输出最后合并。</p>
+        </div>
+
+        <div class="stage head-growth-stage">
+          <span class="stage-label">1 head → 4 parallel heads</span>
+          <span class="stage-counter">all heads run in parallel</span>
+
+          <div class="head-growth" role="img" aria-label="单头 Attention 逐步扩展为四头 MHA">
+            <div class="parallel-head-row step-reveal" data-show-at="0" data-focus-at="0">
+              <div class="head-tensor c-q"><span>Q₁</span><span class="tensor-dim">head 1</span></div><span class="row-link"></span>
+              <div class="head-kv-pair"><span class="k">K₁</span><span class="v">V₁</span></div><span class="row-link"></span>
+              <div class="head-attn">Attention 1</div><span class="row-link"></span><div class="head-output">O₁</div>
+            </div>
+            <div class="parallel-head-row step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="head-tensor c-q"><span>Q₂</span><span class="tensor-dim">head 2</span></div><span class="row-link"></span>
+              <div class="head-kv-pair"><span class="k">K₂</span><span class="v">V₂</span></div><span class="row-link"></span>
+              <div class="head-attn">Attention 2</div><span class="row-link"></span><div class="head-output">O₂</div>
+            </div>
+            <div class="parallel-head-row step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="head-tensor c-q"><span>Q₃</span><span class="tensor-dim">head 3</span></div><span class="row-link"></span>
+              <div class="head-kv-pair"><span class="k">K₃</span><span class="v">V₃</span></div><span class="row-link"></span>
+              <div class="head-attn">Attention 3</div><span class="row-link"></span><div class="head-output">O₃</div>
+            </div>
+            <div class="parallel-head-row step-reveal" data-show-at="1">
+              <div class="head-tensor c-q"><span>Q₄</span><span class="tensor-dim">head 4</span></div><span class="row-link"></span>
+              <div class="head-kv-pair"><span class="k">K₄</span><span class="v">V₄</span></div><span class="row-link"></span>
+              <div class="head-attn">Attention 4</div><span class="row-link"></span><div class="head-output">O₄</div>
+            </div>
+            <div class="head-concat step-reveal" data-show-at="2" data-focus-at="2">
+              <span>O₁</span><span>O₂</span><span>O₃</span><span>O₄</span><span>→</span><span class="concat-label">Concat + W<sub>O</sub> → next activation</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-5" data-title="GQA: merge KV heads, keep parallel Attention" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 05 / Grouped-Query Attention</p>
+            <h2>GQA: 合并 K/V heads，保留并行 Attention heads</h2>
+          </div>
+          <p class="chapter-lead">GQA 保留 4 条 Query/Attention 路径，仅将 4 组 K/V 压缩为 2 组共享状态，降低 cache 规模。</p>
+        </div>
+
+        <div class="stage gqa-stage-v2">
+          <span class="stage-label">MHA ending state → merge KV only</span>
+          <span class="stage-counter">4 Q · 2 KV · 4 Attention</span>
+
+          <div class="gqa-flow-grid" role="img" aria-label="四条 MHA 路径只合并 K/V heads，Attention heads 仍各自并行计算">
+            <div class="four-row-stack">
+              <div class="head-tensor c-q step-reveal" data-show-at="0"><span>Q₁</span><span class="tensor-dim">head 1</span></div>
+              <div class="head-tensor c-q step-reveal" data-show-at="0"><span>Q₂</span><span class="tensor-dim">head 2</span></div>
+              <div class="head-tensor c-q step-reveal" data-show-at="0"><span>Q₃</span><span class="tensor-dim">head 3</span></div>
+              <div class="head-tensor c-q step-reveal" data-show-at="0"><span>Q₄</span><span class="tensor-dim">head 4</span></div>
+            </div>
+            <div class="link-stack step-reveal" data-show-at="0"><span class="row-link"></span><span class="row-link"></span><span class="row-link"></span><span class="row-link"></span></div>
+            <div class="gqa-kv-stack step-reveal" data-show-at="0" data-focus-at="0">
+              <div class="old-kv-cell" data-merge-at="1" style="grid-row:1;grid-column:1">K₁ / V₁</div>
+              <div class="old-kv-cell" data-merge-at="1" style="grid-row:2;grid-column:1">K₂ / V₂</div>
+              <div class="old-kv-cell" data-merge-at="2" style="grid-row:3;grid-column:1">K₃ / V₃</div>
+              <div class="old-kv-cell" data-merge-at="2" style="grid-row:4;grid-column:1">K₄ / V₄</div>
+              <div class="shared-kv-cell group-a step-reveal" data-show-at="1" data-focus-at="1"><strong>1× Shared KV · A</strong><span>replaces two KV blocks</span></div>
+              <div class="shared-kv-cell group-b step-reveal" data-show-at="2" data-focus-at="2"><strong>1× Shared KV · B</strong><span>replaces two KV blocks</span></div>
+            </div>
+            <div class="link-stack step-reveal" data-show-at="0"><span class="row-link"></span><span class="row-link"></span><span class="row-link"></span><span class="row-link"></span></div>
+            <div class="four-row-stack">
+              <div class="head-attn step-reveal" data-show-at="0">Attention 1</div>
+              <div class="head-attn step-reveal" data-show-at="0">Attention 2</div>
+              <div class="head-attn step-reveal" data-show-at="0">Attention 3</div>
+              <div class="head-attn step-reveal" data-show-at="0">Attention 4</div>
+            </div>
+            <div class="link-stack step-reveal" data-show-at="0"><span class="row-link"></span><span class="row-link"></span><span class="row-link"></span><span class="row-link"></span></div>
+            <div class="four-row-stack">
+              <div class="head-output step-reveal" data-show-at="0">O₁</div><div class="head-output step-reveal" data-show-at="0">O₂</div>
+              <div class="head-output step-reveal" data-show-at="0">O₃</div><div class="head-output step-reveal" data-show-at="0">O₄</div>
+            </div>
+          </div>
+
+          <div class="gqa-summary-line step-reveal" data-show-at="3" data-focus-at="3">
+            <span><strong>4 Query heads</strong>表达路径不变</span>
+            <span><strong>2 KV heads · 50%</strong>toy example 中 KV block 数量减半</span>
+            <span><strong>4 Attention heads</strong>仍然独立、并行、dense</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-6" data-title="MLA: cache latent state instead of full K / V" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 06 / Multi-head Latent Attention</p>
+            <h2>MLA: 用 latent 压缩 KV cache</h2>
+          </div>
+          <p class="chapter-lead">MLA 将每个历史 token 的完整 multi-head K/V 替换为更紧凑的 latent 表示；非吸收实现可在使用时恢复 K/V。</p>
+        </div>
+
+        <div class="stage mla-simple-stage">
+          <span class="stage-label">Context cache · 5 tokens · toy 4-head example</span>
+          <span class="stage-counter">same 5 token rows · less state per row</span>
+
+          <div class="mla-storage-comparison" role="img" aria-label="同样五个历史 token，普通 MHA 每行保存四组 Key 和四组 Value；MLA 每行只保存更小的 latent KV 与位置分量">
+            <div class="cache-comparison-card step-reveal" data-show-at="0" data-focus-at="0">
+              <h3>MHA cache · 5 个 token × 完整 multi-head K / V</h3>
+              <div class="cache-token-stack" aria-label="t1 到 t5 五行，每行包含四个 K head 与四个 V head">
+                <span class="cache-token-row"><b>t₁</b><i class="k">K₁</i><i class="k">K₂</i><i class="k">K₃</i><i class="k">K₄</i><i class="v">V₁</i><i class="v">V₂</i><i class="v">V₃</i><i class="v">V₄</i></span>
+                <span class="cache-token-row"><b>t₂</b><i class="k">K₁</i><i class="k">K₂</i><i class="k">K₃</i><i class="k">K₄</i><i class="v">V₁</i><i class="v">V₂</i><i class="v">V₃</i><i class="v">V₄</i></span>
+                <span class="cache-token-row"><b>t₃</b><i class="k">K₁</i><i class="k">K₂</i><i class="k">K₃</i><i class="k">K₄</i><i class="v">V₁</i><i class="v">V₂</i><i class="v">V₃</i><i class="v">V₄</i></span>
+                <span class="cache-token-row"><b>t₄</b><i class="k">K₁</i><i class="k">K₂</i><i class="k">K₃</i><i class="k">K₄</i><i class="v">V₁</i><i class="v">V₂</i><i class="v">V₃</i><i class="v">V₄</i></span>
+                <span class="cache-token-row"><b>t₅</b><i class="k">K₁</i><i class="k">K₂</i><i class="k">K₃</i><i class="k">K₄</i><i class="v">V₁</i><i class="v">V₂</i><i class="v">V₃</i><i class="v">V₄</i></span>
+              </div>
+              <p>token 轴有 5 行；每行常驻 8 个 head-specific blocks</p>
+            </div>
+
+            <div class="compression-marker step-reveal" data-show-at="1" data-focus-at="1">
+              <span class="flow-arrow"></span>
+              <strong>KV down-project</strong>
+              <span>h<sub>t</sub> → c<sub>t</sub><sup>KV</sup></span>
+            </div>
+
+            <div class="latent-storage-card step-reveal" data-show-at="1" data-focus-at="1">
+              <h3>MLA cache · 5 个 token × 紧凑 latent</h3>
+              <div class="latent-token-stack" aria-label="t1 到 t5 五行，每行包含一个 latent KV 与一个位置分量">
+                <span class="latent-token-row"><b>t₁</b><i class="latent">c₁<sup>KV</sup></i><i class="rope">k₁<sup>R</sup></i></span>
+                <span class="latent-token-row"><b>t₂</b><i class="latent">c₂<sup>KV</sup></i><i class="rope">k₂<sup>R</sup></i></span>
+                <span class="latent-token-row"><b>t₃</b><i class="latent">c₃<sup>KV</sup></i><i class="rope">k₃<sup>R</sup></i></span>
+                <span class="latent-token-row"><b>t₄</b><i class="latent">c₄<sup>KV</sup></i><i class="rope">k₄<sup>R</sup></i></span>
+                <span class="latent-token-row"><b>t₅</b><i class="latent">c₅<sup>KV</sup></i><i class="rope">k₅<sup>R</sup></i></span>
+              </div>
+              <p>token 行数仍是 5；每行保存的状态明显更窄</p>
+            </div>
+          </div>
+
+          <div class="mla-restore-lane" role="img" aria-label="非吸收 MLA：读取 latent cache，上投影恢复完整 K 和 V，再执行标准 multi-head attention">
+            <div class="latent-storage-card step-reveal" data-show-at="1"><h3>Read token t₅</h3><div class="latent-storage-shape"><span class="latent-main">c₅<sup>KV</sup></span><span class="latent-rope">k₅<sup>R</sup></span></div></div>
+            <span class="flow-arrow step-reveal" data-show-at="2"></span>
+            <div class="projection-gate step-reveal" data-show-at="2" data-focus-at="2">KV up-project<br><small>when used</small></div>
+            <span class="flow-arrow step-reveal" data-show-at="2"></span>
+            <div class="restore-kv-grid step-reveal" data-show-at="2" data-focus-at="2">
+              <strong>t₅ · 恢复完整 multi-head K / V</strong>
+              <span class="cache-head-block k">K₁</span><span class="cache-head-block k">K₂</span><span class="cache-head-block k">K₃</span><span class="cache-head-block k">K₄</span>
+              <span class="cache-head-block v">V₁</span><span class="cache-head-block v">V₂</span><span class="cache-head-block v">V₃</span><span class="cache-head-block v">V₄</span>
+            </div>
+            <span class="flow-arrow step-reveal" data-show-at="3"></span>
+            <div class="standard-attn-node step-reveal" data-show-at="3" data-focus-at="3"><strong>Same MHA Attention</strong><span>Q × Kᵀ → weights</span><span>weights × V → output</span></div>
+            <p class="scope-note step-reveal" data-show-at="3"><strong>Storage effect</strong>：同样 5 个历史 token，cache 的行数不变；每行保存的状态从完整 multi-head K/V 变成更窄的 latent。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-7" data-title="DSA: select history before Sparse Attention" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 07 / DeepSeek Sparse Attention</p>
+            <h2>DSA: 先选历史 token，再做 Sparse Attention</h2>
+          </div>
+          <p class="chapter-lead">DSA 用轻量 Indexer 从历史中选出 Top-K token；核心 Attention 只读取这些位置的 latent KV。</p>
+        </div>
+
+        <div class="stage dsa-stage">
+          <span class="stage-label">Fixed query · 4 history tokens · toy Top-2</span>
+          <span class="stage-counter">GLM-5.2: Top-K 2048</span>
+
+          <div class="query-panel">
+            <div class="query-box step-reveal" data-show-at="0" data-focus-at="0">
+              <h3>Current Query · q₅</h3>
+              <div class="vector query" aria-label="Query 向量"><span></span><span></span><span></span><span></span></div>
+              <p>为当前 token 在历史位置中寻找最相关的候选。</p>
+            </div>
+            <span class="formula step-reveal" data-show-at="1"><span class="q">q₅</span> × index keys → <span class="s">scores</span></span>
+          </div>
+
+          <div class="indexer-panel">
+            <div class="indexer-header">
+              <h3 class="step-reveal" data-show-at="1" data-focus-at="1">Indexer scores</h3>
+              <span class="status-tag accent step-reveal" data-show-at="2">Top-2 selected</span>
+            </div>
+
+            <div class="score-list">
+              <div class="score-row step-reveal" data-show-at="1" data-select-at="2" data-selected="false" style="--score-width: 21%">
+                <span class="score-token">t₁</span><span class="score-bar"><i></i></span><span class="score-value">0.21</span>
+              </div>
+              <div class="score-row step-reveal" data-show-at="1" data-select-at="2" data-selected="true" style="--score-width: 88%">
+                <span class="score-token">t₂</span><span class="score-bar"><i></i></span><span class="score-value">0.88</span>
+              </div>
+              <div class="score-row step-reveal" data-show-at="1" data-select-at="2" data-selected="false" style="--score-width: 34%">
+                <span class="score-token">t₃</span><span class="score-bar"><i></i></span><span class="score-value">0.34</span>
+              </div>
+              <div class="score-row step-reveal" data-show-at="1" data-select-at="2" data-selected="true" style="--score-width: 73%">
+                <span class="score-token">t₄</span><span class="score-bar"><i></i></span><span class="score-value">0.73</span>
+              </div>
+            </div>
+
+            <div class="topk-strip step-reveal" data-show-at="2" data-focus-at="2">
+              <span>Top-K positions</span>
+              <span class="selected-indices"><span>t₂</span><span>t₄</span></span>
+            </div>
+          </div>
+
+          <div class="sparse-panel">
+            <h3 class="step-reveal" data-show-at="3">Gather selected latent KV</h3>
+            <div class="gather-list">
+              <div class="gather-token selected step-reveal" data-show-at="3"><span>t₂</span><span class="mini-tag">latent KV</span></div>
+              <div class="gather-token selected step-reveal" data-show-at="3"><span>t₄</span><span class="mini-tag">latent KV</span></div>
+            </div>
+            <div class="sparse-core step-reveal" data-show-at="3" data-focus-at="3">
+              <strong>Sparse Core Attention</strong>
+              <span class="formula"><span class="q">q₅</span> × {<span class="k">K₂</span>, <span class="k">K₄</span>}</span>
+              <p>核心 Attention 只访问被选中的历史状态。</p>
+            </div>
+          </div>
+
+          <div class="legend" aria-label="颜色图例">
+            <span class="legend-item c-q"><span class="legend-dot"></span>Query</span>
+            <span class="legend-item c-score"><span class="legend-dot"></span>Selected</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-8" data-title="GLM-5.2: assemble MLA, DSA and MoE" data-steps="5">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 08 / GLM-5.2 assembly</p>
+            <h2>GLM-5.2: 组装 MLA、DSA 与 MoE</h2>
+          </div>
+          <p class="chapter-lead">MLA、DSA、IndexShare 与 MoE 分别优化缓存、历史读取、跨层索引和 FFN 激活，共同支撑长上下文效率。</p>
+        </div>
+
+        <div class="stage assembly-stage has-benefits">
+          <span class="stage-label">GLM-5.2 · architecture summary</span>
+          <span class="stage-counter">glm_moe_dsa</span>
+
+          <div class="spec-band step-reveal" data-show-at="0" data-focus-at="0">
+            <div class="spec-item"><strong>78</strong><span>Transformer layers</span></div>
+            <div class="spec-item"><strong>1M</strong><span>Max context</span></div>
+            <div class="spec-item"><strong>2048</strong><span>DSA Top-K</span></div>
+            <div class="spec-item"><strong>256 / 8</strong><span>Routed / active experts</span></div>
+          </div>
+
+          <div class="assembly-grid">
+            <div class="model-pipeline" aria-label="GLM-5.2 单层数据流">
+              <div class="pipeline-node step-reveal" data-show-at="1" data-focus-at="1"><strong>Hidden</strong><span>current token</span></div>
+              <div class="pipeline-node mla step-reveal" data-show-at="1" data-focus-at="1"><strong>MLA</strong><span>latent KV cache</span></div>
+              <div class="pipeline-node indexer step-reveal" data-show-at="2" data-focus-at="2"><strong>Indexer</strong><span>score history</span></div>
+              <div class="pipeline-node topk step-reveal" data-show-at="2"><strong>Top-K</strong><span>token positions</span></div>
+              <div class="pipeline-node attention step-reveal" data-show-at="2"><strong>Sparse<br>Attention</strong><span>selected history</span></div>
+              <div class="pipeline-node moe step-reveal" data-show-at="3" data-focus-at="3"><strong>MoE</strong><span>8 routed + 1 shared</span></div>
+              <div class="pipeline-node step-reveal" data-show-at="3"><strong>Output</strong><span>next activation</span></div>
+            </div>
+
+            <aside class="indexshare-panel step-reveal" data-show-at="3" data-focus-at="3">
+              <h3>IndexShare · 复用位置，不复用 Attention 输出</h3>
+              <div class="layer-stack">
+                <div class="layer-row full">
+                  <span class="layer-name">Full layer</span>
+                  <span class="layer-path"><span>Indexer</span><span>→</span><span class="index-chip">[t₂, t₄, …]</span></span>
+                </div>
+                <div class="layer-row">
+                  <span class="layer-name">Shared +1</span>
+                  <span class="layer-path"><span class="index-chip">reuse index</span><span>→ own Core Attention</span></span>
+                </div>
+                <div class="layer-row">
+                  <span class="layer-name">Shared +2</span>
+                  <span class="layer-path"><span class="index-chip">reuse index</span><span>→ own Core Attention</span></span>
+                </div>
+                <div class="layer-row">
+                  <span class="layer-name">Shared +3</span>
+                  <span class="layer-path"><span class="index-chip">reuse index</span><span>→ own Core Attention</span></span>
+                </div>
+              </div>
+            </aside>
+          </div>
+
+          <div class="final-thesis benefits step-reveal hard-reveal" data-show-at="4" data-focus-at="4">
+            <div class="thesis-item"><strong>MLA · 存得更紧</strong>缓存 latent KV，降低长历史的状态体积与读取压力。</div>
+            <div class="thesis-item"><strong>DSA · 核心读得更少</strong>核心 Attention 从全部 L 个位置收敛到 Top-K=2048。</div>
+            <div class="thesis-item"><strong>IndexShare · 索引少重复</strong>相邻层复用 token index，摊薄 Indexer 与 Top-K 路径。</div>
+            <div class="thesis-item"><strong>MoE · FFN 稀疏激活</strong>256 个 routed experts 中每 token 只激活 8 个，外加 shared expert。</div>
+            <div class="benefit-summary">组合结果：历史存得紧 · 核心 Attention 读得少 · 索引跨层复用 · FFN 稀疏激活（仍需承担 Indexer、Gather、Routing 与通信代价）</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="control-dock" aria-label="演示控制">
+    <div class="step-caption" id="step-caption" aria-live="polite"></div>
+    <div class="dock-actions">
+      <button class="nav-button" id="prev-button" type="button">← 上一步</button>
+      <button class="nav-button primary" id="next-button" type="button">下一步 →</button>
+    </div>
+    <div class="keyboard-hint">SPACE / ← → 分步 · ↑ ↓ 章节</div>
+  </footer>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const chapters = Array.from(document.querySelectorAll(".chapter"));
+      const railButtons = Array.from(document.querySelectorAll(".rail-button"));
+      const titleElement = document.getElementById("chapter-title");
+      const progressText = document.getElementById("progress-text");
+      const progressFill = document.getElementById("progress-fill");
+      const captionElement = document.getElementById("step-caption");
+      const prevButton = document.getElementById("prev-button");
+      const nextButton = document.getElementById("next-button");
+
+      const captions = [
+        [
+          "<strong>Activation X</strong>：t₁–t₄ 构成纵向 4 行，每一行是一条 d_model 维 embedding。",
+          "<strong>Q / K / V projections</strong>：token 数保持为 4，变化只发生在横向 feature 维度。"
+        ],
+        [
+          "<strong>Query–Key scores</strong>：q₄ [1×d_h] 与 Kᵀ [d_h×4] 生成 p₄ [1×4]，四个位置对应四个 token。",
+          "<strong>Weighted Value</strong>：p₄ 的四个权重控制 v₁–v₄ 的贡献，输出为一条 o₄ [1×d_v]。",
+          "<strong>Attention output</strong>：o₁–o₄ 纵向堆叠为 O [4×d_v]，随后经 W_O 回到 d_model。"
+        ],
+        [
+          "<strong>Decode activation</strong>：x₅ 是一条 [1×d_model] 横向行；t₁–t₄ 已保存在 KV cache。",
+          "<strong>Current-token projections</strong>：x₅ 生成 q₅、k₅、v₅ 三条 [1×d] 行。",
+          "<strong>Cache length = 5</strong>：k₅/v₅ 成为第五个 token 行，K/V cache 从 4×d 扩展为 5×d。",
+          "<strong>Five-token attention</strong>：K_cacheᵀ 的 k₁–k₅ 五列生成 p₅ [1×5]，每列对应一个历史位置。",
+          "<strong>Decode output</strong>：p₅ [1×5] 混合 V_cache 的五行，得到当前 token 的 o₅ [1×d_v]。"
+        ],
+        [
+          "<strong>Single-head baseline</strong>：一组 Q/K/V 驱动一条独立的 Attention 路径。",
+          "<strong>Four parallel heads</strong>：四组 Q/K/V 各自计算 Attention，并行产生 O₁–O₄。",
+          "<strong>MHA output</strong>：各 head 输出完成后 concat，再通过输出投影形成统一 activation。"
+        ],
+        [
+          "<strong>MHA baseline</strong>：4 个 Query heads、4 组 K/V heads 与 4 条 Attention 路径彼此对应。",
+          "<strong>Shared KV · A</strong>：Q₁/Q₂ 共享一组 K/V，但 Attention₁/₂ 仍然分别计算。",
+          "<strong>Shared KV · B</strong>：Q₃/Q₄ 共享另一组 K/V，KV block 总量由 4 组降为 2 组。",
+          "<strong>GQA structure</strong>：4 个 Query/Attention heads 保持并行，减少的是 KV heads 与 cache 副本。"
+        ],
+        [
+          "<strong>Full KV cache</strong>：5 个 token 行中的每一行，都包含 K₁–K₄ 与 V₁–V₄。",
+          "<strong>Latent KV cache</strong>：同样保留 5 个 token 行，每行只保存 cᵢ^KV 与位置分量 kᵢ^R。",
+          "<strong>On-demand recovery</strong>：以 t₅ 为例，c₅^KV 在使用时恢复为完整 multi-head K/V。",
+          "<strong>Attention unchanged</strong>：恢复后的 K/V 进入标准 MHA，cache 的存储状态则保持为紧凑 latent。"
+        ],
+        [
+          "<strong>Current Query</strong>：q₅ 面向全部历史位置提出一次检索请求。",
+          "<strong>Indexer scores</strong>：轻量索引路径为每个历史 token 计算相关性分数。",
+          "<strong>Top-K selection</strong>：Toy example 选择 t₂、t₄，其他位置不进入核心 Attention。",
+          "<strong>Sparse Attention</strong>：Gather 读取选中位置的 latent KV，核心计算集中在 Top-K token。"
+        ],
+        [
+          "<strong>GLM-5.2 scale</strong>：78 层、1M context、DSA Top-K 2048、256 routed experts / 8 active。",
+          "<strong>MLA · compact state</strong>：历史 token 以紧凑 latent KV 形式进入长上下文缓存。",
+          "<strong>DSA · selective read</strong>：Indexer、Top-K 与 Gather 将核心 Attention 聚焦到少量历史位置。",
+          "<strong>IndexShare + MoE</strong>：相邻层复用 token index；FFN 仅激活少量 routed experts。",
+          "<strong>Combined advantage</strong>：缓存更紧、核心读取更少、跨层索引复用、FFN 稀疏激活，共同提升长上下文效率。"
+        ]
+      ];
+
+      const state = chapters.map(() => 0);
+      let currentChapter = 0;
+      let observerLock = false;
+
+      const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+      const pad = (value) => String(value).padStart(2, "0");
+
+      function maxStep(index) {
+        return Number(chapters[index].dataset.steps) - 1;
+      }
+
+      function renderChapter(index) {
+        const chapter = chapters[index];
+        const step = state[index];
+
+        chapter.querySelectorAll("[data-show-at]").forEach((element) => {
+          const showAt = Number(element.dataset.showAt);
+          const visible = step >= showAt;
+          element.classList.toggle("is-visible", visible);
+          element.setAttribute("aria-hidden", String(!visible));
+        });
+
+        chapter.querySelectorAll("[data-focus-at]").forEach((element) => {
+          element.classList.toggle("is-current", step === Number(element.dataset.focusAt));
+        });
+
+        chapter.querySelectorAll("[data-select-at]").forEach((element) => {
+          const active = step >= Number(element.dataset.selectAt);
+          const selected = element.dataset.selected === "true";
+          element.classList.toggle("selected", active && selected);
+          element.classList.toggle("suppressed", active && !selected);
+        });
+
+        chapter.querySelectorAll("[data-merge-at]").forEach((element) => {
+          element.classList.toggle("is-merged-away", step >= Number(element.dataset.mergeAt));
+        });
+
+        if (index === currentChapter) {
+          updateChrome();
+        }
+      }
+
+      function updateChrome() {
+        const step = state[currentChapter];
+        const totalSteps = maxStep(currentChapter) + 1;
+        const chapterNumber = currentChapter + 1;
+        const overall = ((currentChapter + (step + 1) / totalSteps) / chapters.length) * 100;
+
+        titleElement.textContent = `${pad(chapterNumber)} · ${chapters[currentChapter].dataset.title}`;
+        progressText.textContent = `${pad(chapterNumber)} / ${pad(chapters.length)} · STEP ${step + 1}/${totalSteps}`;
+        progressFill.style.width = `${overall}%`;
+        captionElement.innerHTML = captions[currentChapter][step];
+
+        railButtons.forEach((button, index) => {
+          button.setAttribute("aria-current", String(index === currentChapter));
+        });
+
+        prevButton.disabled = currentChapter === 0 && step === 0;
+        prevButton.style.opacity = prevButton.disabled ? "0.38" : "1";
+        nextButton.textContent = currentChapter === chapters.length - 1 && step === maxStep(currentChapter)
+          ? "回到开头 ↺"
+          : "下一步 →";
+      }
+
+      function setCurrentChapter(index, shouldScroll = false) {
+        currentChapter = clamp(index, 0, chapters.length - 1);
+        renderChapter(currentChapter);
+
+        if (shouldScroll) {
+          observerLock = true;
+          chapters[currentChapter].scrollIntoView({ behavior: "smooth", block: "start" });
+          window.setTimeout(() => {
+            observerLock = false;
+          }, 650);
+        }
+      }
+
+      function next() {
+        const lastStep = maxStep(currentChapter);
+        if (state[currentChapter] < lastStep) {
+          state[currentChapter] += 1;
+          renderChapter(currentChapter);
+          return;
+        }
+
+        if (currentChapter < chapters.length - 1) {
+          setCurrentChapter(currentChapter + 1, true);
+          return;
+        }
+
+        state.fill(0);
+        chapters.forEach((_, index) => renderChapter(index));
+        setCurrentChapter(0, true);
+      }
+
+      function previous() {
+        if (state[currentChapter] > 0) {
+          state[currentChapter] -= 1;
+          renderChapter(currentChapter);
+          return;
+        }
+
+        if (currentChapter > 0) {
+          const previousIndex = currentChapter - 1;
+          state[previousIndex] = maxStep(previousIndex);
+          renderChapter(previousIndex);
+          setCurrentChapter(previousIndex, true);
+        }
+      }
+
+      function goToChapter(index) {
+        setCurrentChapter(index, true);
+      }
+
+      prevButton.addEventListener("click", previous);
+      nextButton.addEventListener("click", next);
+
+      railButtons.forEach((button, index) => {
+        button.addEventListener("click", () => goToChapter(index));
+      });
+
+      document.addEventListener("keydown", (event) => {
+        const target = event.target;
+        if (target instanceof HTMLElement && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) {
+          return;
+        }
+
+        if (event.key === " " || event.key === "ArrowRight") {
+          event.preventDefault();
+          next();
+        } else if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          previous();
+        } else if (event.key === "ArrowDown" || event.key === "PageDown") {
+          event.preventDefault();
+          goToChapter(currentChapter + 1);
+        } else if (event.key === "ArrowUp" || event.key === "PageUp") {
+          event.preventDefault();
+          goToChapter(currentChapter - 1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          goToChapter(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          goToChapter(chapters.length - 1);
+        }
+      });
+
+      const observer = new IntersectionObserver((entries) => {
+        if (observerLock) return;
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!visible) return;
+        const index = chapters.indexOf(visible.target);
+        if (index !== -1 && index !== currentChapter) {
+          currentChapter = index;
+          renderChapter(currentChapter);
+        }
+      }, { threshold: [0.5, 0.65, 0.8] });
+
+      chapters.forEach((chapter, index) => {
+        renderChapter(index);
+        observer.observe(chapter);
+      });
+
+      updateChrome();
+    })();
+  </script>
+</body>
+</html>
