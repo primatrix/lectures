@@ -3882,6 +3882,314 @@
       background: var(--accent-soft);
     }
 
+    .kda-stage.kda-formula-stage {
+      grid-template-rows: 112px minmax(0, 1fr) 78px;
+      gap: 12px;
+      padding: 48px 42px 32px;
+    }
+
+    .kda-formula-band {
+      display: grid;
+      align-content: center;
+      gap: 14px;
+      padding: 8px 0 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .kda-equation {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 10px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: clamp(17px, 1.45vw, 25px);
+      letter-spacing: -0.025em;
+      white-space: nowrap;
+    }
+
+    .kda-equation .state-symbol {
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    .kda-equation .term {
+      position: relative;
+      padding: 4px 6px 5px;
+      border-bottom: 2px solid currentColor;
+      font-weight: 650;
+    }
+
+    .kda-equation .term::before {
+      content: attr(data-label);
+      position: absolute;
+      bottom: calc(100% + 1px);
+      left: 50%;
+      color: currentColor;
+      font-size: 7px;
+      font-weight: 750;
+      letter-spacing: 0.1em;
+      transform: translateX(-50%);
+    }
+
+    .kda-equation .forget {
+      color: var(--query);
+    }
+
+    .kda-equation .correct {
+      color: var(--score);
+    }
+
+    .kda-equation .write {
+      color: var(--value);
+    }
+
+    .kda-state-shape {
+      margin: 0;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 9px;
+      text-align: center;
+    }
+
+    .kda-state-shape strong {
+      color: var(--accent);
+    }
+
+    .kda-memory-contrast {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 92px minmax(0, 1fr);
+      align-items: stretch;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .kda-memory-pane {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+    }
+
+    .kda-memory-pane h3 {
+      margin: 0;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .kda-memory-pane h3 b {
+      color: currentColor;
+    }
+
+    .kda-memory-pane p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.45;
+    }
+
+    .kda-memory-pane.full-cache {
+      color: var(--query);
+    }
+
+    .kda-memory-pane.fixed-state {
+      color: var(--accent);
+    }
+
+    .kda-kv-stream {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(38px, 1fr)) 20px repeat(2, minmax(38px, 1fr));
+      align-items: end;
+      gap: 7px;
+      padding-top: 18px;
+    }
+
+    .kda-kv-stream::before {
+      content: "one K/V record per token";
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 7px;
+      letter-spacing: 0.06em;
+    }
+
+    .kda-kv-token {
+      min-height: 62px;
+      display: grid;
+      grid-template-rows: 18px 1fr 1fr;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.74);
+      font-family: var(--mono);
+      font-size: 7px;
+      text-align: center;
+    }
+
+    .kda-kv-token b,
+    .kda-kv-token i,
+    .kda-kv-token em {
+      display: grid;
+      place-items: center;
+      font-style: normal;
+    }
+
+    .kda-kv-token b {
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    .kda-kv-token i {
+      color: var(--key);
+      background: var(--key-soft);
+    }
+
+    .kda-kv-token em {
+      color: var(--value);
+      border-top: 1px solid var(--line);
+      background: var(--value-soft);
+    }
+
+    .kda-kv-ellipsis {
+      align-self: center;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .kda-memory-arrow {
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 8px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 8px;
+      text-align: center;
+    }
+
+    .kda-memory-arrow .sketch-arrow {
+      width: 58px;
+    }
+
+    .kda-fixed-visual {
+      display: grid;
+      grid-template-columns: minmax(170px, 0.84fr) minmax(130px, 1fr);
+      align-items: center;
+      gap: 18px;
+    }
+
+    .kda-fixed-matrix {
+      position: relative;
+      aspect-ratio: 1.55;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 4px;
+      padding: 16px 13px 12px;
+      border: 1px solid rgba(20, 125, 117, 0.5);
+      background: var(--accent-soft);
+    }
+
+    .kda-fixed-matrix::before {
+      content: "Sₜ";
+      position: absolute;
+      top: 3px;
+      left: 8px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .kda-fixed-matrix::after {
+      content: "↻";
+      position: absolute;
+      top: 50%;
+      right: -16px;
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--accent);
+      border-left-color: transparent;
+      border-radius: 50%;
+      color: var(--accent);
+      background: var(--surface);
+      font-size: 16px;
+      transform: translateY(-50%);
+    }
+
+    .kda-fixed-matrix i {
+      border: 1px solid rgba(20, 125, 117, 0.25);
+      background: rgba(20, 125, 117, var(--state-alpha, 0.18));
+    }
+
+    .kda-fixed-copy {
+      display: grid;
+      gap: 8px;
+    }
+
+    .kda-fixed-copy strong {
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .kda-fixed-copy span {
+      color: var(--muted);
+      font-size: 9px;
+      line-height: 1.5;
+    }
+
+    .kda-mechanism-line {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(210px, 1.18fr);
+      min-height: 0;
+    }
+
+    .kda-mechanism-step {
+      display: grid;
+      align-content: center;
+      gap: 4px;
+      padding: 8px 14px;
+      border-left: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 8px;
+      line-height: 1.4;
+    }
+
+    .kda-mechanism-step:first-child {
+      border-left: 0;
+    }
+
+    .kda-mechanism-step strong {
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .kda-mechanism-step.forget strong {
+      color: var(--query);
+    }
+
+    .kda-mechanism-step.correct strong {
+      color: var(--score);
+    }
+
+    .kda-mechanism-step.write strong,
+    .kda-mechanism-step.read strong {
+      color: var(--value);
+    }
+
+    .kda-mechanism-step.read {
+      color: var(--text);
+      background: var(--accent-soft);
+    }
+
     .kimi-hybrid-stage {
       display: grid;
       grid-template-rows: 62px minmax(0, 1fr) 72px;
@@ -5015,6 +5323,44 @@
         grid-template-columns: 1fr 1fr;
       }
 
+      .kda-stage.kda-formula-stage {
+        min-height: 780px;
+        grid-template-rows: auto auto auto;
+        overflow-x: hidden;
+      }
+
+      .kda-equation {
+        justify-content: flex-start;
+        gap: 6px;
+        overflow-x: auto;
+        padding-top: 12px;
+        font-size: 16px;
+      }
+
+      .kda-memory-contrast {
+        grid-template-columns: 1fr;
+      }
+
+      .kda-memory-arrow {
+        min-height: 54px;
+      }
+
+      .kda-memory-arrow .sketch-arrow {
+        transform: rotate(90deg);
+      }
+
+      .kda-fixed-visual {
+        grid-template-columns: minmax(150px, 0.9fr) minmax(120px, 1fr);
+      }
+
+      .kda-mechanism-line {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .kda-mechanism-step:nth-child(3) {
+        border-left: 0;
+      }
+
       .archive-strip {
         grid-template-columns: repeat(5, 1fr);
       }
@@ -5781,53 +6127,70 @@
         <div class="chapter-heading">
           <div>
             <p class="eyebrow">Chapter 11 / Kimi Delta Attention</p>
-            <h2>KDA: 从完整档案变成持续更新的工作记忆</h2>
+            <h2>KDA：用固定状态替代大多数层的逐 token KV</h2>
           </div>
-          <p class="chapter-lead">第一个回答：KDA 不再为每个 token 新增 K/V，而是持续更新固定尺寸 recurrent state；历史变长，state shape 不再增长。</p>
+          <p class="chapter-lead">先看 state，再读公式：历史被写进固定的 d<sub>k</sub>×d<sub>v</sub> 矩阵；K3 在 Delta Rule 上增加逐 channel 动态遗忘，让有限状态能够持续更新。</p>
         </div>
 
-        <div class="stage kda-stage">
-          <span class="stage-label">Full token history vs recurrent memory</span>
-          <span class="stage-counter">compression over time</span>
+        <div class="stage kda-stage kda-formula-stage">
+          <span class="stage-label">State update · one attention head</span>
+          <span class="stage-counter">forget · correct · write · read</span>
 
-          <div class="kda-comparison">
-            <article class="kda-card step-reveal" data-show-at="0" data-focus-at="0">
-              <h3>Full Attention · 完整档案</h3>
-              <div class="history-log" aria-label="随 token 数增长的 K/V 历史">
-                <div class="history-entry"><b>t₁</b><span class="k">K₁</span><span class="v">V₁</span></div>
-                <div class="history-entry"><b>t₂</b><span class="k">K₂</span><span class="v">V₂</span></div>
-                <div class="history-entry"><b>t₃</b><span class="k">K₃</span><span class="v">V₃</span></div>
-                <div class="history-entry"><b>t₄</b><span class="k">K₄</span><span class="v">V₄</span></div>
-                <div class="history-entry"><b>t₅</b><span class="k">K₅</span><span class="v">V₅</span></div>
+          <div class="kda-formula-band step-reveal" data-show-at="2" data-focus-at="2">
+            <div class="kda-equation" aria-label="KDA 状态更新公式">
+              <span class="state-symbol">S<sub>t</sub></span>
+              <span>=</span>
+              <span class="term correct" data-label="CORRECT">(I − β<sub>t</sub>k<sub>t</sub>k<sub>t</sub><sup>⊤</sup>)</span>
+              <span class="term forget" data-label="FORGET">Diag(α<sub>t</sub>)S<sub>t−1</sub></span>
+              <span>+</span>
+              <span class="term write" data-label="WRITE">β<sub>t</sub>k<sub>t</sub>v<sub>t</sub><sup>⊤</sup></span>
+            </div>
+            <p class="kda-state-shape"><strong>S<sub>t</sub> ∈ R<sup>d<sub>k</sub>×d<sub>v</sub></sup></strong> · α<sub>t</sub> ∈ (0,1)<sup>d<sub>k</sub></sup> · β<sub>t</sub> ∈ (0,1)</p>
+          </div>
+
+          <div class="kda-memory-contrast">
+            <article class="kda-memory-pane full-cache step-reveal" data-show-at="0" data-focus-at="0">
+              <h3>Full Attention · <b>KV Cache 随 T 增长</b></h3>
+              <div class="kda-kv-stream" role="img" aria-label="每个历史 token 都新增一份 K 和 V">
+                <span class="kda-kv-token"><b>t₁</b><i>K₁</i><em>V₁</em></span>
+                <span class="kda-kv-token"><b>t₂</b><i>K₂</i><em>V₂</em></span>
+                <span class="kda-kv-token"><b>t₃</b><i>K₃</i><em>V₃</em></span>
+                <span class="kda-kv-ellipsis">…</span>
+                <span class="kda-kv-token"><b>t<sub>T−1</sub></b><i>K</i><em>V</em></span>
+                <span class="kda-kv-token"><b>t<sub>T</sub></b><i>K</i><em>V</em></span>
               </div>
-              <p>每来一个 token，就增加一份未来 query 可以直接访问的记录。</p>
+              <p>单层、单 head 的历史存储量：<b>O(T(d<sub>k</sub>+d<sub>v</sub>))</b>。</p>
             </article>
 
-            <div class="kda-transform step-reveal" data-show-at="1">
-              <span class="flow-arrow"></span>
+            <div class="kda-memory-arrow step-reveal" data-show-at="1">
+              <span class="sketch-arrow"></span>
               <strong>UPDATE</strong>
               <span>history → state</span>
             </div>
 
-            <article class="kda-card step-reveal" data-show-at="1" data-focus-at="1">
-              <h3>KDA · Recurrent state</h3>
-              <div class="state-shell">
-                <div class="kda-state-grid" role="img" aria-label="固定大小的 KDA state 矩阵">
+            <article class="kda-memory-pane fixed-state step-reveal" data-show-at="1" data-focus-at="1">
+              <h3>KDA · <b>State shape 不随 T 增长</b></h3>
+              <div class="kda-fixed-visual">
+                <div class="kda-fixed-matrix" role="img" aria-label="固定形状的 KDA recurrent state">
                   <i style="--state-alpha:.12"></i><i style="--state-alpha:.28"></i><i style="--state-alpha:.18"></i><i style="--state-alpha:.34"></i><i style="--state-alpha:.16"></i><i style="--state-alpha:.24"></i>
                   <i style="--state-alpha:.31"></i><i style="--state-alpha:.14"></i><i style="--state-alpha:.36"></i><i style="--state-alpha:.2"></i><i style="--state-alpha:.27"></i><i style="--state-alpha:.11"></i>
                   <i style="--state-alpha:.17"></i><i style="--state-alpha:.38"></i><i style="--state-alpha:.13"></i><i style="--state-alpha:.3"></i><i style="--state-alpha:.21"></i><i style="--state-alpha:.33"></i>
                   <i style="--state-alpha:.35"></i><i style="--state-alpha:.19"></i><i style="--state-alpha:.25"></i><i style="--state-alpha:.15"></i><i style="--state-alpha:.32"></i><i style="--state-alpha:.22"></i>
                 </div>
+                <div class="kda-fixed-copy">
+                  <strong>S<sub>t</sub> ∈ R<sup>d<sub>k</sub>×d<sub>v</sub></sup></strong>
+                  <span>1K / 10K / 1M tokens<br>仍更新同一形状的状态。</span>
+                </div>
               </div>
-              <p>所有历史被压进同一份有限状态；长度继续增加，state shape 保持不变。</p>
+              <p>KDA 层的历史状态量：<b>O(d<sub>k</sub>d<sub>v</sub>)</b>，与 sequence length T 无关。</p>
             </article>
           </div>
 
-          <div class="kda-rule-band">
-            <div class="kda-rule step-reveal" data-show-at="2" data-focus-at="2"><strong>Decay</strong><span>先衰减旧状态，为新信息腾出空间</span></div>
-            <div class="kda-rule step-reveal" data-show-at="2"><strong>Correct</strong><span>修正与新内容冲突的方向</span></div>
-            <div class="kda-rule step-reveal" data-show-at="2"><strong>Write</strong><span>写入当前 token 带来的信息</span></div>
-            <div class="kda-readout step-reveal" data-show-at="3" data-focus-at="3"><strong>Query reads state</strong><span>效率来自压缩历史，不是无损保存全部 token。</span></div>
+          <div class="kda-mechanism-line">
+            <div class="kda-mechanism-step forget step-reveal" data-show-at="2"><strong>① α<sub>t</sub> · channel-wise forget</strong><span>不同 key channel、不同 token 拥有动态保留率；这是 K3 在 Delta Rule 上新增的遗忘。</span></div>
+            <div class="kda-mechanism-step correct step-reveal" data-show-at="2"><strong>② I − β<sub>t</sub>k<sub>t</sub>k<sub>t</sub><sup>⊤</sup></strong><span>写入前先削弱当前 key 方向上的旧关联，允许覆盖而非只累加。</span></div>
+            <div class="kda-mechanism-step write step-reveal" data-show-at="2"><strong>③ + β<sub>t</sub>k<sub>t</sub>v<sub>t</sub><sup>⊤</sup></strong><span>沿当前 key 方向写入新的 value；β<sub>t</sub> 控制修改强度。</span></div>
+            <div class="kda-mechanism-step read step-reveal" data-show-at="3" data-focus-at="3"><strong>READ · o<sub>t</sub> = S<sub>t</sub><sup>⊤</sup>q<sub>t</sub></strong><span>KDA 层不再保存逐 token KV；周期性的 Gated MLA 层仍保留紧凑 latent KV。</span></div>
           </div>
         </div>
       </div>
@@ -6183,10 +6546,10 @@
           "<strong>回答三 · Channel</strong>：Router 从 full-width x 选择 experts；并行的数据分支把 payload 压成 latent z，再执行 dispatch、专家计算与聚合。"
         ],
         [
-          "<strong>完整档案</strong>：Full Attention 为每个历史 token 新增一份 K/V，未来 query 可以直接访问任意记录。",
-          "<strong>工作记忆</strong>：KDA 将历史持续写入同一份 recurrent state，状态 shape 不随 token 数继续增长。",
-          "<strong>Delta update</strong>：先衰减旧状态，再修正冲突方向并写入当前 token。",
-          "<strong>读取边界</strong>：query 直接读取有限 state；效率来自压缩，因此它不是对完整历史的无损替代。"
+          "<strong>逐 token KV</strong>：Full Attention 每来一个 token 都新增 K/V，单层单 head 的历史存储随 T 线性增长。",
+          "<strong>固定状态</strong>：KDA 把历史写进 Sₜ ∈ R^(dₖ×dᵥ)，1K、10K、1M token 都更新同一形状的 state。",
+          "<strong>公式怎么读</strong>：αₜ 先逐 channel 遗忘；Delta Rule 擦除当前 key 方向的旧关联，再写入当前 value。",
+          "<strong>为什么省</strong>：KDA 层从 O(T(dₖ+dᵥ)) 变为 O(dₖdᵥ)；周期性的 Gated MLA 层仍保留紧凑 latent KV。"
         ],
         [
           "<strong>KDA</strong>：多数层高频更新有限工作记忆，避免每一步都重新扫描全部历史。",
