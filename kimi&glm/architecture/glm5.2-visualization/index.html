@@ -3054,6 +3054,7 @@
       background: color-mix(in srgb, currentColor 9%, white);
       font-family: var(--mono);
       font-size: 8px;
+      white-space: nowrap;
       text-align: center;
     }
 
@@ -4884,7 +4885,7 @@
         <div class="chapter-heading">
           <div>
             <p class="eyebrow">Chapter 09 / The scaling problem</p>
-            <h2>当 Agent trace 从 128K 走向 1M，会遇到什么问题？</h2>
+            <h2>Agent trace 从 128K 到 1M，模型会卡在哪里？</h2>
           </div>
           <p class="chapter-lead">先不看 K3 用了哪些模块，只追问三件事：长历史如何承担、深层表示如何保留贡献、模型容量如何增长而不让每个 token 付全价？</p>
         </div>
@@ -4919,10 +4920,10 @@
             <article class="kimi-axis-card depth step-reveal" data-show-at="2" data-focus-at="2">
               <div class="axis-card-header"><strong>跨 Depth</strong><span>deep network</span></div>
               <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>h₁</span><i></i><span>+1</span><i></i><span>h<sub>L</sub></span></div>
-                <p><b>Residual 一直固定 +1 累加。</b>怎样让深层网络重新找到真正有用的早期表示？</p>
+                <div class="axis-mini-flow"><span>早期层</span><i></i><span>累加</span><i></i><span>当前层</span></div>
+                <p><b>Residual 把各层输出等权累加。</b>网络越深，单层贡献越容易被稀释；当前层也无法单独取回某个早期表示。</p>
               </div>
-              <div class="axis-pressure">固定累加 · 早期表示难以单独找回</div>
+              <div class="axis-pressure">等权累加 · 贡献稀释 · 无法按层选择</div>
             </article>
 
             <article class="kimi-axis-card channel step-reveal" data-show-at="3" data-focus-at="3">
@@ -4975,7 +4976,7 @@
             <article class="kimi-axis-card depth step-reveal" data-show-at="2" data-focus-at="2">
               <div class="axis-card-header"><strong>跨 Depth</strong><span>select representations</span></div>
               <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>blocks</span><i></i><span>α</span><i></i><span>h<sub>L</sub></span></div>
+                <div class="axis-mini-flow"><span>早期块</span><i></i><span>选择</span><i></i><span>当前层</span></div>
                 <p><b>AttnRes</b> 把此前 block 变成可寻址 sources，由当前层分配权重并重新组合。</p>
               </div>
               <div class="axis-answer">Attention Residuals</div>
@@ -5120,7 +5121,7 @@
             <p class="eyebrow">Chapter 13 / Attention Residuals</p>
             <h2>AttnRes: 让当前层沿网络深度选择信息</h2>
           </div>
-          <p class="chapter-lead">第二个回答：把固定 +1 的逐层累加改成 depth attention，让当前层按内容选择此前 block，避免单层贡献被持续稀释。</p>
+          <p class="chapter-lead">第二个回答：把 residual 的固定等权累加改成 depth attention，让当前层按内容选择此前 block，避免单层贡献被持续稀释。</p>
         </div>
 
         <div class="stage attnres-stage">
@@ -5416,7 +5417,7 @@
           "<strong>Hybrid role</strong>：KDA 负责可扩展的状态更新，global attention 负责低频的全局内容交互。"
         ],
         [
-          "<strong>普通 residual</strong>：此前输出以固定 +1 权重累加进同一条 hidden stream，越深时单层相对贡献越容易被稀释。",
+          "<strong>普通 residual</strong>：此前输出以固定等权方式累加进同一条 hidden stream，越深时单层相对贡献越容易被稀释。",
           "<strong>Block AttnRes</strong>：网络保留分块表示，把 model depth 变成一组可被重新读取的 sources。",
           "<strong>Content-dependent weights</strong>：当前 token 对不同 depth source 分配 softmax 权重。",
           "<strong>Depth mixture</strong>：当前层接收按内容重新组合的 block representations，而不是固定的逐层累加。"
