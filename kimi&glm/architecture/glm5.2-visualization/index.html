@@ -3063,6 +3063,32 @@
       background: color-mix(in srgb, currentColor 48%, transparent);
     }
 
+    .axis-line-stack {
+      display: grid;
+      gap: 11px;
+    }
+
+    .axis-line {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      align-items: baseline;
+      gap: 14px;
+    }
+
+    .axis-line strong {
+      color: currentColor;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+    }
+
+    .axis-line span {
+      color: var(--text);
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
     .axis-pressure,
     .axis-answer {
       padding: 8px 10px;
@@ -3076,6 +3102,16 @@
 
     .axis-answer {
       font-weight: 700;
+    }
+
+    .axis-plain-result {
+      padding-top: 8px;
+      border-top: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+      color: currentColor;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1.4;
+      text-align: left;
     }
 
     .kimi-thesis-line {
@@ -4929,10 +4965,14 @@
             <article class="kimi-axis-card channel step-reveal" data-show-at="3" data-focus-at="3">
               <div class="axis-card-header"><strong>跨 Channel</strong><span>capacity scaling</span></div>
               <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>Dense</span><i></i><span>width ↑</span><i></i><span>FLOPs ↑</span></div>
-                <p><b>Dense 容量与单 token 成本绑在一起。</b>怎样扩大能力，却不让每个 token 都执行全部参数？<small>不同记忆 channel 是否也该拥有不同的保留节奏？</small></p>
+                <div class="axis-line-stack" aria-label="Dense 扩容带来的单 token 成本">
+                  <div class="axis-line"><strong>模型加宽</strong><span>Dense FFN 放入更多参数</span></div>
+                  <div class="axis-line"><strong>全量执行</strong><span>每个 token 仍经过全部参数</span></div>
+                  <div class="axis-line"><strong>成本同步增长</strong><span>权重读取和 FLOPs 一起上涨</span></div>
+                </div>
+                <p><b>真正的问题：</b>能否把总容量做大，却只让每个 token 调用需要的那部分能力？</p>
               </div>
-              <div class="axis-pressure">容量 ↑ · 权重读取 ↑ · 每 token 计算 ↑</div>
+              <div class="axis-plain-result">总容量要扩，单 token 成本不能等比例扩</div>
             </article>
           </div>
 
@@ -4983,12 +5023,16 @@
             </article>
 
             <article class="kimi-axis-card channel step-reveal" data-show-at="3" data-focus-at="3">
-              <div class="axis-card-header"><strong>跨 Channel</strong><span>route compute</span></div>
+              <div class="axis-card-header"><strong>跨 Channel</strong><span>sparse capacity</span></div>
               <div class="axis-card-body">
-                <div class="axis-mini-flow"><span>token</span><i></i><span>router</span><i></i><span>experts</span></div>
-                <p><b>MoE</b> 只激活选中的专家；KDA 的 <b>channel-wise gate</b> 让不同记忆通道独立保留或遗忘。</p>
+                <div class="axis-line-stack" aria-label="MoE 的稀疏执行过程">
+                  <div class="axis-line"><strong>读取 token</strong><span>Router 判断当前表示需要什么能力</span></div>
+                  <div class="axis-line"><strong>选择专家</strong><span>只路由到少量相关专家</span></div>
+                  <div class="axis-line"><strong>稀疏执行</strong><span>未选专家不参与本次计算</span></div>
+                </div>
+                <p><b>Stable LatentMoE</b> 让总参数继续扩大，而每个 token 的激活量保持稀疏。</p>
               </div>
-              <div class="axis-answer">Stable LatentMoE + channel-wise gates</div>
+              <div class="axis-plain-result">Stable LatentMoE · 只激活选中的专家</div>
             </article>
           </div>
 
@@ -5397,13 +5441,13 @@
           "<strong>上下文持续累积</strong>：一条 agent trace 从需求、代码、工具结果一路走到当前 token，context 可能从 128K 延伸到 1M。",
           "<strong>问题一 · Token</strong>：逐 token KV 状态随长度增长；怎样避免 decode 每一步都读取更长的历史？",
           "<strong>问题二 · Depth</strong>：固定 residual 把此前输出混进单一累计流；当前层怎样重新找到真正有用的早期表示？",
-          "<strong>问题三 · Channel</strong>：怎样扩大模型容量，却不让每个 token 执行全部参数？不同记忆 channel 又该如何独立保留信息？"
+          "<strong>问题三 · Channel</strong>：模型容量越大，Dense FFN 的每 token 权重读取和计算也越大；能否只调用当前 token 需要的能力？"
         ],
         [
           "<strong>共同原则</strong>：K3 避免每一层、每一步都全量搬运历史、层表示和模型参数，把主要信息流改造成压缩、选择与路由。",
           "<strong>回答一 · Token</strong>：KDA 维护固定尺寸 state，Gated MLA 周期性提供全局 token-to-token 交互。",
           "<strong>回答二 · Depth</strong>：Attention Residuals 把此前 block 变成可寻址 sources，由当前层重新分配权重。",
-          "<strong>回答三 · Channel</strong>：Stable LatentMoE 只激活选中的专家；KDA 的 channel-wise gate 让不同记忆通道独立遗忘。"
+          "<strong>回答三 · Channel</strong>：Stable LatentMoE 通过路由只激活少量专家，使总容量扩张而单 token 激活保持稀疏。"
         ],
         [
           "<strong>完整档案</strong>：Full Attention 为每个历史 token 新增一份 K/V，未来 query 可以直接访问任意记录。",
