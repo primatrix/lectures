@@ -1,10 +1,12 @@
-name: Deploy architecture slides
+name: Deploy lecture site
 
 on:
   push:
     branches:
       - main
+      - dev/github-pages-preview
     paths:
+      - 'site/**'
       - 'kimi&glm/architecture/glm5.2-visualization/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
@@ -32,10 +34,16 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload slides
+      - name: Assemble site
+        run: |
+          mkdir -p '_site/kimi-glm/architecture'
+          cp 'site/index.html' '_site/index.html'
+          cp -R 'kimi&glm/architecture/glm5.2-visualization/.' '_site/kimi-glm/architecture/'
+
+      - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
-          path: 'kimi&glm/architecture/glm5.2-visualization'
+          path: '_site'
 
       - name: Deploy
         id: deployment

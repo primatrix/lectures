@@ -2,7 +2,7 @@
 
 > GLM-5.2：@炯轩 · Kimi K3：@brian
 >
-> 在线演示：[GitHub Pages](https://primatrix.github.io/lectures/)
+> 在线演示：[GitHub Pages](https://primatrix.github.io/lectures/kimi-glm/architecture/)
 >
 > 本地文件：[GLM-5.2 & Kimi K3 HTML PPT](./glm5.2-visualization/index.html)
 

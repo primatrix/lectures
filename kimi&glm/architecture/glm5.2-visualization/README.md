@@ -1,6 +1,6 @@
 # GLM-5.2 & Kimi K3 Architecture + Inference Visualization
 
-在线预览：[https://primatrix.github.io/lectures/](https://primatrix.github.io/lectures/)
+在线预览：[https://primatrix.github.io/lectures/kimi-glm/architecture/](https://primatrix.github.io/lectures/kimi-glm/architecture/)
 
 GLM-5.2 与 Kimi K3 共用的单文件 HTML 演示。前 16 章从 Attention 基础逐步建立两种长上下文架构；后 5 章继续用 Roofline、HBM 流量与 Arithmetic Intensity 分析 Prefill、Decode、DSA 和 MTP。
 
