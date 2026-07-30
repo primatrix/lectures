@@ -1,5 +1,7 @@
 # GLM-5.2 & Kimi K3 Architecture Visualization
 
+在线预览：[https://primatrix.github.io/lectures/](https://primatrix.github.io/lectures/)
+
 GLM-5.2 与 Kimi K3 共用的单文件 HTML 演示。前半部分从基础 Attention、Decode 与 KV cache 逐步建立 GLM-5.2 的 MLA、DSA 和 IndexShare；后半部分沿 token、depth、channel 三条信息通道解释 Kimi K3 的 KDA、AttnRes、LatentMoE 与 Native Vision。
 
 ## 本地预览
