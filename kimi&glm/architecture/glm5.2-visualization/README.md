@@ -34,19 +34,20 @@ http://localhost:8080
 
 1. Attention：Activation → Q / K / V
 2. Attention：单行 Query → 单行输出
-3. Decode：新 token 与 5-token KV cache
-4. MHA：1 个 head 扩展为 4 个并行 heads
-5. GQA：4 个 Query heads 共享 2 组 KV
-6. MLA：5 个 token 的完整 KV 与 latent cache 对比
+3. Decode：新 token 与 KV cache
+4. MHA：一条 Attention 路径扩展为多个 heads
+5. GQA：多个 Query heads 共享 K/V
+6. MLA：完整 multi-head KV 与 latent cache
 7. DSA：Indexer、Top-K、Gather 与 Sparse Attention
-8. GLM-5.2：MLA、DSA、IndexShare 与 MoE 的组合优势
-9. Kimi K3：token、depth、channel 三条信息通道
-10. KDA：完整 K/V 历史与 recurrent state
-11. Hybrid Attention：KDA 工作记忆与 Gated MLA 全局查阅
-12. Attention Residuals：沿网络深度选择 block representation
-13. Stable LatentMoE：full-width router 与 latent expert payload
-14. Native Vision：视觉 token 接入同一个 K3 backbone
-15. 总结：从模型架构衔接 Prefill、Decode、Roofline 与 MoE 优化
+8. GLM-5.2：MLA、DSA、IndexShare 与 MoE
+9. 1M Agent trace：token、depth、channel 三类问题
+10. Kimi K3：固定状态、按层重读、低维专家路径
+11. KDA：遗忘、修正、写入与读取
+12. Hybrid Attention：3× KDA + 1× Gated MLA
+13. Attention Residuals：沿网络深度选择表示
+14. Stable LatentMoE：full-width router 与 latent payload
+15. Native Vision：联合训练与标准 VLM 推理
+16. 总结：衔接 Prefill、Decode、Roofline 与 MoE 优化
 
 ## 文件说明
 
@@ -56,7 +57,7 @@ glm5.2-visualization/
 └── README.md    # 本地预览与协作说明
 ```
 
-配套文字讲义位于同级目录的 `../glm5.2.md` 与 `../kimi-k3.md`。
+配套文字讲义位于同级目录的 [`../README.md`](../README.md)。
 
 ## 协作约定
 
