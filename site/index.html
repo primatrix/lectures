@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Primatrix 技术分享索引。">
+  <title>Primatrix Lectures</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: #1f2933;
+      background: #ffffff;
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    main {
+      width: min(860px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 72px 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 36px;
+      line-height: 1.2;
+    }
+
+    .description {
+      margin: 12px 0 48px;
+      color: #667085;
+      font-size: 16px;
+    }
+
+    ol {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      border-top: 1px solid #d0d5dd;
+    }
+
+    li {
+      border-bottom: 1px solid #d0d5dd;
+    }
+
+    a {
+      display: grid;
+      grid-template-columns: 48px 1fr auto;
+      gap: 18px;
+      align-items: center;
+      padding: 24px 0;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    a:hover .title,
+    a:focus-visible .title {
+      color: #087f75;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    a:focus-visible {
+      outline: 2px solid #087f75;
+      outline-offset: 6px;
+    }
+
+    .number {
+      color: #667085;
+      font-family: "SFMono-Regular", "Roboto Mono", monospace;
+      font-size: 14px;
+    }
+
+    .title {
+      display: block;
+      font-size: 20px;
+      font-weight: 650;
+    }
+
+    .summary {
+      display: block;
+      margin-top: 7px;
+      color: #667085;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .open {
+      color: #475467;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 600px) {
+      main {
+        padding: 48px 0;
+      }
+
+      a {
+        grid-template-columns: 36px 1fr;
+      }
+
+      .open {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Lectures</h1>
+    <p class="description">公司内部技术分享索引。</p>
+
+    <ol>
+      <li>
+        <a href="./kimi-glm/architecture/">
+          <span class="number">01</span>
+          <span>
+            <span class="title">GLM-5.2 &amp; Kimi K3 模型架构</span>
+            <span class="summary">Attention、MLA / DSA、KDA、AttnRes、LatentMoE 与 Native Vision</span>
+          </span>
+          <span class="open">查看 →</span>
+        </a>
+      </li>
+    </ol>
+  </main>
+</body>
+</html>

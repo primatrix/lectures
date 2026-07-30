@@ -2,7 +2,9 @@
 
 > GLM-5.2：@炯轩 · Kimi K3：@brian
 >
-> 配套演示：[GLM-5.2 & Kimi K3 HTML PPT](./glm5.2-visualization/index.html)
+> 在线演示：[GitHub Pages](https://primatrix.github.io/lectures/kimi-glm/architecture/)
+>
+> 本地文件：[GLM-5.2 & Kimi K3 HTML PPT](./glm5.2-visualization/index.html)
 
 这份文档不是 PPT 的逐页文字版。PPT 负责建立直觉和控制分享节奏，讲义负责补足推导、设计边界与系统含义。
 
