@@ -20,6 +20,7 @@
 | GLM-5.2 | Chapter 04–08 | MLA、DSA、IndexShare 分别压缩什么？ |
 | Kimi K3 | Chapter 09–15 | K3 如何沿 token、depth、channel 三个方向扩展？ |
 | 系统分析入口 | Chapter 16 | 架构变化最终会落成哪些计算、访存与通信对象？ |
+| Prefill / Decode 性能 | Chapter 17–21 | Roofline、长上下文 KV、DSA 与 MTP 如何改变计算强度？ |
 
 ---
 

@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="color-scheme" content="light">
-  <meta name="description" content="GLM-5.2 与 Kimi K3 架构交互式讲解：从 Attention 基础到长上下文、跨层信息流、LatentMoE 与 Native Vision。">
-  <title>GLM-5.2 & Kimi K3 Architecture</title>
+  <meta name="description" content="GLM-5.2 与 Kimi K3 架构及推理性能交互式讲解：从 Attention、长上下文架构到 Prefill、Decode、Roofline、DSA 与 MTP。">
+  <title>GLM-5.2 & Kimi K3 Architecture + Inference</title>
   <style>
     :root {
       --bg: #f4f8f7;
@@ -4833,6 +4833,399 @@
       border-color: var(--accent);
     }
 
+    /* Prefill / Decode performance chapters */
+    .performance-chapter .source-line {
+      position: absolute;
+      right: 16px;
+      bottom: 11px;
+      z-index: 6;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 8px;
+    }
+
+    .performance-chapter .accent { color: var(--accent); }
+    .performance-chapter .query { color: var(--query); }
+    .performance-chapter .key { color: var(--key); }
+
+    .roofline-concept-stage {
+      display: grid;
+      align-content: center;
+      padding: 48px 42px 32px;
+    }
+
+    .time-derivation {
+      display: grid;
+      grid-template-rows: auto auto auto;
+      gap: 10px;
+    }
+
+    .time-compare {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: stretch;
+      gap: 26px;
+    }
+
+    .time-card {
+      display: grid;
+      grid-template-rows: auto auto auto;
+      gap: 10px;
+      padding: 15px 22px;
+      border-top: 3px solid currentColor;
+      background: rgba(255, 255, 255, 0.64);
+    }
+
+    .time-card.compute { color: var(--query); }
+    .time-card.hbm { color: var(--key); }
+
+    .time-card-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .time-card-heading strong { color: var(--text); font-size: 18px; }
+    .time-card-heading span { font-family: var(--mono); font-size: 10px; }
+
+    .time-fraction {
+      align-self: center;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: 14px;
+      color: var(--text);
+      font-family: var(--mono);
+      text-align: center;
+    }
+
+    .time-fraction span {
+      padding: 10px 9px;
+      border: 1px solid currentColor;
+      background: color-mix(in srgb, currentColor 7%, transparent);
+      font-size: clamp(16px, 1.5vw, 24px);
+    }
+
+    .time-fraction b { color: var(--muted); font-size: 22px; }
+    .time-card-note { color: var(--muted); font-size: 11px; text-align: center; }
+
+    .ratio-derivation {
+      display: grid;
+      grid-template-columns: auto auto auto auto auto;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 9px 18px;
+      border-top: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.62);
+      font-family: var(--mono);
+    }
+
+    .ratio-derivation strong {
+      padding: 7px 11px;
+      border: 1px solid currentColor;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .ratio-derivation span { color: var(--muted-2); }
+
+    .time-verdict {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .time-verdict-side {
+      padding: 7px 13px;
+      border-left: 3px solid currentColor;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .time-verdict-side strong { display: block; color: var(--text); font-size: 14px; }
+    .time-verdict-side.right { border-left: 0; border-right: 3px solid currentColor; text-align: right; }
+    .kernel-time { color: var(--accent); font-family: var(--mono); font-size: 13px; text-align: center; }
+
+    .roofline-stage {
+      padding: 50px 42px 30px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 16px;
+    }
+
+    .gemm-derivation {
+      border-top: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.62);
+    }
+
+    .formula-strip {
+      display: grid;
+      grid-template-columns: 1fr 28px 1fr 28px 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 18px;
+    }
+
+    .formula-item { text-align: center; }
+    .formula-item small { display: block; margin-bottom: 4px; color: var(--muted); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .formula-item strong { display: block; font-family: var(--mono); font-size: clamp(14px, 1.25vw, 20px); font-weight: 700; white-space: nowrap; }
+    .formula-arrow { justify-self: center; color: var(--muted-2); font-family: var(--mono); font-size: 18px; line-height: 1; }
+
+    .machine-derivation {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 7px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .machine-derivation strong { color: var(--text); font-size: 12px; }
+    .machine-derivation .machine-result { color: var(--accent); }
+
+    .phase-lanes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: stretch;
+      min-height: 0;
+    }
+
+    .phase-lane {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 15px;
+      padding: 20px 22px;
+      border-left: 3px solid currentColor;
+      background: rgba(255, 255, 255, 0.62);
+    }
+
+    .phase-lane.prefill { color: var(--query); }
+    .phase-lane.decode { color: var(--key); }
+    .lane-title { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+    .lane-title strong { color: var(--text); font-size: 18px; }
+    .lane-title span { font-family: var(--mono); font-size: 11px; }
+
+    .token-weight-flow {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 56px 132px;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .token-cloud {
+      align-self: stretch;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+      padding: 12px;
+      border: 1px solid currentColor;
+      background: color-mix(in srgb, currentColor 8%, transparent);
+    }
+
+    .decode .token-cloud { grid-template-columns: repeat(4, 1fr); align-self: center; min-height: 74px; }
+    .token-cell { min-height: 10px; border: 1px solid currentColor; background: color-mix(in srgb, currentColor 18%, transparent); }
+    .flow-line { position: relative; height: 1px; background: var(--line-strong); }
+
+    .flow-line::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: 0;
+      width: 7px;
+      height: 7px;
+      border-top: 1px solid var(--muted);
+      border-right: 1px solid var(--muted);
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .weight-block {
+      display: grid;
+      min-height: 104px;
+      place-items: center;
+      border: 1px solid var(--line-strong);
+      color: var(--text);
+      background: var(--surface-2);
+      font-family: var(--mono);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .lane-metric { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 12px; color: var(--text); }
+    .lane-metric span { color: var(--muted); font-size: 12px; }
+    .lane-metric strong { font-family: var(--mono); font-size: clamp(24px, 2.4vw, 38px); line-height: 1; }
+
+    .boundary-verdict { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 18px; }
+    .verdict-side { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+    .verdict-side.right { justify-content: flex-end; text-align: right; }
+    .verdict-mark { width: 10px; height: 10px; transform: rotate(45deg); background: currentColor; }
+    .boundary-gate { padding: 8px 16px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-soft); font-family: var(--mono); font-size: 11px; text-align: center; }
+
+    .model-roofline-stage {
+      padding: 50px 38px 30px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 14px;
+    }
+
+    .model-time-formulas { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    .model-formula-card { padding: 13px 18px; border-top: 3px solid currentColor; background: rgba(255, 255, 255, 0.64); }
+    .model-formula-card.compute { color: var(--query); }
+    .model-formula-card.memory { color: var(--key); }
+    .model-formula-card small { display: block; margin-bottom: 7px; color: var(--muted); font-size: 10px; }
+    .model-formula-card strong { display: block; color: var(--text); font-family: var(--mono); font-size: clamp(13px, 1.25vw, 19px); text-align: center; white-space: nowrap; }
+
+    .model-breakdown {
+      display: grid;
+      grid-template-columns: 1fr 44px 1fr 44px 1fr;
+      align-items: stretch;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .model-metric { display: grid; align-content: center; gap: 7px; padding: 16px 18px; border-left: 3px solid currentColor; background: rgba(255, 255, 255, 0.58); }
+    .model-metric small { color: var(--muted); font-size: 10px; }
+    .model-metric strong { color: var(--text); font-family: var(--mono); font-size: clamp(20px, 2vw, 31px); }
+    .model-metric span { color: var(--muted); font-size: 10px; line-height: 1.45; }
+    .model-metric.total { color: var(--key); }
+    .model-metric.active { color: var(--query); }
+    .model-metric.boundary { color: var(--accent); }
+    .model-arrow { align-self: center; position: relative; height: 1px; background: var(--line-strong); }
+
+    .model-arrow::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-top: 1px solid var(--accent);
+      border-right: 1px solid var(--accent);
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .model-context-band { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 18px; padding-top: 12px; border-top: 1px solid var(--line-strong); }
+    .model-context-side { color: var(--muted); font-size: 11px; }
+    .model-context-side strong { display: block; margin-bottom: 2px; color: var(--text); font-size: 13px; }
+    .model-context-side.right { text-align: right; }
+    .model-caveat { padding: 8px 13px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-soft); font-family: var(--mono); font-size: 11px; text-align: center; }
+
+    .dsa-perf-stage {
+      padding: 50px 38px 30px;
+      display: grid;
+      grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr);
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 14px 34px;
+    }
+
+    .capacity-panel,
+    .traffic-panel { min-height: 0; }
+
+    .panel-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .panel-heading strong { font-size: 17px; }
+    .panel-heading span { color: var(--muted); font-family: var(--mono); font-size: 10px; }
+    .cache-formula { margin-bottom: 9px; padding: 8px 12px; border-left: 2px solid var(--accent); background: var(--accent-soft); }
+    .cache-formula small { display: block; color: var(--muted); font-size: 10px; }
+    .cache-formula strong { display: block; margin-top: 3px; font-family: var(--mono); font-size: 16px; }
+    .topology-list { display: grid; gap: 6px; }
+    .topology-row { display: grid; grid-template-columns: 78px minmax(0, 1fr) 126px; align-items: center; gap: 12px; padding: 6px 10px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.62); }
+    .topology-name strong,
+    .topology-name span { display: block; font-family: var(--mono); }
+    .topology-name strong { font-size: 14px; }
+    .topology-name span { color: var(--muted); font-size: 10px; }
+    .device-strip { display: grid; grid-template-columns: repeat(16, 1fr); gap: 2px; }
+    .device-strip i { height: 16px; border: 1px solid var(--query); background: var(--query-soft); }
+    .tp8 .device-strip i:nth-child(8n),
+    .tp4 .device-strip i:nth-child(4n),
+    .tp1 .device-strip i { border-right: 3px solid var(--accent); }
+    .topology-result { text-align: right; }
+    .topology-result small { display: block; color: var(--muted); font-family: var(--mono); font-size: 8px; }
+    .topology-result strong { display: block; color: var(--query); font-family: var(--mono); font-size: 15px; }
+    .capacity-note { margin: 7px 0 0; color: var(--muted); font-size: 9px; line-height: 1.35; }
+    .capacity-note code { color: var(--text); font-family: var(--mono); }
+
+    .traffic-bars { display: grid; gap: 9px; padding-top: 3px; }
+    .traffic-row { display: grid; grid-template-columns: 108px minmax(0, 1fr) 104px; align-items: center; gap: 14px; }
+    .traffic-label strong { display: block; color: var(--text); font-size: 13px; }
+    .traffic-label span { color: var(--muted); font-size: 10px; }
+    .traffic-track { position: relative; height: 44px; border-bottom: 1px solid var(--line-strong); background: linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size: 20% 100%; }
+    .traffic-bar { position: absolute; inset: 6px auto 6px 0; display: flex; align-items: center; min-width: 4px; padding: 0 9px; overflow: hidden; color: var(--text); font-family: var(--mono); font-size: 9px; white-space: nowrap; }
+    .traffic-bar.weight-ref { width: 100%; border: 1px solid var(--line-strong); background: var(--surface-3); }
+    .traffic-bar.dense { width: 94.4%; border: 1px solid var(--key); background: var(--key-soft); }
+    .traffic-bar.indexer { width: 5.64%; min-width: 0; padding: 0; border: 1px solid var(--score); background: var(--score-soft); }
+    .traffic-bar.topk { left: 5.64%; width: 1.47%; min-width: 0; padding: 0; border: 1px solid var(--value); background: var(--value-soft); }
+    .traffic-value { color: var(--text); font-family: var(--mono); text-align: right; }
+    .traffic-value strong { display: block; font-size: 14px; }
+    .traffic-value small { display: block; margin-top: 2px; color: var(--muted); font-size: 8px; }
+    .reduction-note { margin-left: 122px; padding: 8px 12px; border-left: 2px solid var(--accent); color: var(--muted); font-size: 10px; }
+    .reduction-note strong { color: var(--accent); font-family: var(--mono); font-size: 18px; }
+
+    .context-verdict { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; padding-top: 9px; border-top: 1px solid var(--line-strong); }
+    .context-point { color: var(--muted); font-size: 12px; }
+    .context-point strong { display: block; margin-bottom: 3px; color: var(--text); font-size: 14px; }
+    .context-point.right { text-align: right; }
+    .context-multiplier { padding: 9px 15px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-soft); font-family: var(--mono); font-size: 15px; text-align: center; }
+
+    .mtp-stage {
+      padding: 50px 42px 30px;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 22px;
+    }
+
+    .mtp-flow { display: grid; grid-template-columns: 1fr 70px 1fr; align-items: stretch; gap: 22px; }
+    .mtp-panel { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; gap: 16px; padding: 20px 22px; border-top: 3px solid currentColor; background: rgba(255, 255, 255, 0.62); }
+    .mtp-panel.baseline { color: var(--key); }
+    .mtp-panel.speculative { color: var(--query); }
+    .mtp-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+    .mtp-heading strong { color: var(--text); font-size: 18px; }
+    .mtp-heading span { font-family: var(--mono); font-size: 11px; }
+    .mtp-arrow { align-self: center; position: relative; height: 1px; background: var(--line-strong); }
+
+    .mtp-arrow::after {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 50%;
+      width: 9px;
+      height: 9px;
+      border-top: 1px solid var(--accent);
+      border-right: 1px solid var(--accent);
+      transform: translateY(-50%) rotate(45deg);
+    }
+
+    .mtp-arrow-label { position: absolute; left: 50%; bottom: 12px; color: var(--accent); font-family: var(--mono); font-size: 9px; text-align: center; transform: translateX(-50%); white-space: nowrap; }
+    .sequence-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; align-content: center; }
+    .sequence { display: grid; gap: 4px; }
+    .sequence-label { color: var(--muted); font-family: var(--mono); font-size: 8px; text-align: center; }
+    .candidate-stack { display: grid; gap: 3px; }
+    .candidate { height: 16px; border: 1px solid currentColor; background: color-mix(in srgb, currentColor 14%, transparent); }
+    .candidate.accepted { background: color-mix(in srgb, currentColor 34%, transparent); }
+    .candidate.rejected { opacity: 0.34; background: transparent; }
+    .mtp-metric { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 14px; color: var(--text); }
+    .mtp-metric span { color: var(--muted); font-size: 11px; }
+    .mtp-metric strong { font-family: var(--mono); font-size: clamp(23px, 2.2vw, 34px); }
+    .mtp-bandwidth { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 18px; padding-top: 16px; border-top: 1px solid var(--line-strong); }
+    .bandwidth-side { display: grid; gap: 7px; }
+    .bandwidth-side.right { text-align: right; }
+    .bandwidth-label { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .bandwidth-line { display: flex; align-items: center; gap: 8px; }
+    .bandwidth-side.right .bandwidth-line { justify-content: flex-end; }
+    .bandwidth-pipe { width: 88px; height: 8px; border: 1px solid var(--line-strong); background: var(--surface-3); }
+    .bandwidth-side strong { font-family: var(--mono); font-size: 13px; }
+    .ai-lift { padding: 8px 14px; border: 1px solid var(--accent); color: var(--accent); background: var(--accent-soft); font-family: var(--mono); font-size: 12px; text-align: center; }
+    .mtp-caveat { grid-column: 1 / -1; color: var(--muted); font-size: 10px; text-align: center; }
+
     @media (max-width: 1120px) {
       .tensor-attention-flow,
       .decode-pipeline {
@@ -4888,6 +5281,14 @@
         --control-h: 66px;
       }
 
+      .topbar {
+        grid-template-columns: 1fr auto;
+      }
+
+      .chapter-title {
+        display: none;
+      }
+
       .chapter-shell {
         width: calc(100% - 72px);
       }
@@ -4899,6 +5300,30 @@
 
       .chapter-lead {
         max-width: 880px;
+      }
+
+      .dsa-perf-stage {
+        grid-template-columns: 1fr 1fr;
+        gap: 14px 26px;
+        padding-left: 32px;
+        padding-right: 32px;
+      }
+
+      .dsa-perf-stage .topology-row {
+        grid-template-columns: 64px minmax(0, 1fr);
+      }
+
+      .dsa-perf-stage .topology-result {
+        grid-column: 2;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 8px;
+        text-align: left;
+      }
+
+      .dsa-perf-stage .topology-result small {
+        white-space: normal;
       }
 
       .heads-stage,
@@ -5330,6 +5755,113 @@
         flex-wrap: wrap;
       }
 
+      .performance-chapter .source-line {
+        display: none;
+      }
+
+      .roofline-concept-stage {
+        padding: 48px 18px 28px;
+      }
+
+      .time-compare,
+      .time-verdict,
+      .formula-strip,
+      .phase-lanes,
+      .model-time-formulas,
+      .model-breakdown,
+      .model-context-band,
+      .dsa-perf-stage,
+      .context-verdict,
+      .mtp-flow,
+      .mtp-bandwidth {
+        grid-template-columns: 1fr;
+      }
+
+      .ratio-derivation {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .time-verdict-side.right {
+        border-right: 0;
+        border-left: 3px solid currentColor;
+        text-align: left;
+      }
+
+      .formula-arrow {
+        transform: rotate(90deg);
+      }
+
+      .machine-derivation {
+        flex-wrap: wrap;
+        white-space: normal;
+      }
+
+      .token-weight-flow {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-line,
+      .model-arrow {
+        width: 1px;
+        height: 24px;
+        justify-self: center;
+      }
+
+      .flow-line::after,
+      .model-arrow::after {
+        right: 50%;
+        top: auto;
+        bottom: 0;
+        transform: translateX(50%) rotate(135deg);
+      }
+
+      .model-context-side.right,
+      .context-point.right {
+        text-align: left;
+      }
+
+      .traffic-row {
+        grid-template-columns: 86px 1fr;
+      }
+
+      .traffic-value,
+      .topology-result {
+        grid-column: 2;
+        text-align: left;
+      }
+
+      .reduction-note {
+        margin-left: 0;
+      }
+
+      .topology-row {
+        grid-template-columns: 64px 1fr;
+      }
+
+      .mtp-arrow {
+        width: 1px;
+        height: 30px;
+        justify-self: center;
+      }
+
+      .mtp-arrow::after {
+        right: 50%;
+        top: auto;
+        bottom: 0;
+        transform: translateX(50%) rotate(135deg);
+      }
+
+      .mtp-arrow-label {
+        left: 18px;
+        bottom: 7px;
+        transform: none;
+      }
+
+      .sequence-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
       .legend {
         display: none;
       }
@@ -5354,11 +5886,11 @@
   <header class="topbar">
     <div class="brand">
       <span class="brand-mark">A</span>
-      GLM-5.2 + Kimi K3 / Architecture Lab
+      GLM-5.2 + Kimi K3 / Architecture &amp; Inference
     </div>
     <div class="chapter-title" id="chapter-title">01 · Attention: activation → Q / K / V</div>
     <div class="top-progress">
-      <span id="progress-text">01 / 15</span>
+      <span id="progress-text">01 / 21</span>
       <span class="progress-track" aria-hidden="true"><span class="progress-fill" id="progress-fill"></span></span>
     </div>
   </header>
@@ -5380,6 +5912,11 @@
     <button class="rail-button" type="button" data-target="chapter-14" aria-label="第十四章 Stable LatentMoE"><span class="rail-label">14 / LatentMoE</span></button>
     <button class="rail-button" type="button" data-target="chapter-15" aria-label="第十五章 Native Vision"><span class="rail-label">15 / Native Vision</span></button>
     <button class="rail-button" type="button" data-target="chapter-16" aria-label="第十六章 架构总结"><span class="rail-label">16 / 总结</span></button>
+    <button class="rail-button" type="button" data-target="chapter-17" aria-label="第十七章 Roofline 与 AI"><span class="rail-label">17 / Roofline + AI</span></button>
+    <button class="rail-button" type="button" data-target="chapter-18" aria-label="第十八章 Prefill 与 Decode"><span class="rail-label">18 / Prefill vs Decode</span></button>
+    <button class="rail-button" type="button" data-target="chapter-19" aria-label="第十九章 GLM-5.2 Model Roofline"><span class="rail-label">19 / Model Roofline</span></button>
+    <button class="rail-button" type="button" data-target="chapter-20" aria-label="第二十章 Long Context 与 DSA"><span class="rail-label">20 / Long Context + DSA</span></button>
+    <button class="rail-button" type="button" data-target="chapter-21" aria-label="第二十一章 MTP"><span class="rail-label">21 / MTP</span></button>
   </nav>
 
   <main>
@@ -6388,6 +6925,323 @@
         </div>
       </div>
     </section>
+
+    <section class="chapter performance-chapter" id="chapter-17" data-title="Roofline &amp; Arithmetic Intensity" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 17 / Performance model</p>
+            <h2>Roofline：比较 Compute Time 与 HBM Time</h2>
+          </div>
+          <p class="chapter-lead">Kernel 同时受计算与 HBM 搬运约束。理想重叠下，T<sub>kernel</sub>≈max(T<sub>compute</sub>, T<sub>HBM</sub>)；两者之比即 AI / Machine Balance。</p>
+        </div>
+
+        <div class="stage roofline-concept-stage">
+          <span class="stage-label">Roofline model · ideal compute / memory overlap</span>
+          <span class="stage-counter">T kernel ≈ max(T compute, T HBM)</span>
+
+          <div class="time-derivation">
+            <div class="time-compare">
+              <article class="time-card compute step-reveal" data-show-at="0" data-focus-at="0">
+                <div class="time-card-heading"><strong>Compute Time</strong><span>计算路径</span></div>
+                <div class="time-fraction"><span>FLOPs</span><b>÷</b><span>Peak FLOP/s</span></div>
+                <div class="time-card-note">FLOPs / Peak FLOP/s</div>
+              </article>
+
+              <article class="time-card hbm step-reveal" data-show-at="1" data-focus-at="1">
+                <div class="time-card-heading"><strong>HBM Time</strong><span>访存路径</span></div>
+                <div class="time-fraction"><span>HBM Bytes</span><b>÷</b><span>HBM BW</span></div>
+                <div class="time-card-note">HBM Bytes / HBM Bandwidth</div>
+              </article>
+            </div>
+
+            <div class="ratio-derivation step-reveal" data-show-at="2" data-focus-at="2">
+              <strong>T<sub>compute</sub> / T<sub>HBM</sub></strong><span>=</span>
+              <strong>FLOPs / Bytes</strong><span>÷</span>
+              <strong class="accent">Peak FLOPs / HBM BW</strong>
+            </div>
+
+            <div class="time-verdict step-reveal" data-show-at="3" data-focus-at="3">
+              <div class="time-verdict-side key"><strong>AI &lt; Machine Balance</strong>HBM Time 更长 → HBM-bound</div>
+              <div class="kernel-time">AI = FLOPs / Bytes<br>Machine Balance = Peak / BW</div>
+              <div class="time-verdict-side right query"><strong>AI &gt; Machine Balance</strong>Compute Time 更长 → Compute-bound</div>
+            </div>
+          </div>
+
+          <span class="source-line">MODEL · Roofline · ideal compute / memory overlap</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter performance-chapter" id="chapter-18" data-title="Prefill / Decode Roofline" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 18 / Prefill vs Decode</p>
+            <h2>Prefill 用 Chunk 复用权重；Decode 依靠 Batch</h2>
+          </div>
+          <p class="chapter-lead">权重主导的 FP8 GEMM：Compute≈2NW，HBM≈W×1B，因此 AI≈2N。TPU v7x 的 Machine Balance≈625 FLOP/B，对应 N<sub>boundary</sub>≈313。</p>
+        </div>
+
+        <div class="stage roofline-stage">
+          <span class="stage-label">TPU v7x · FP8 · representative GEMM</span>
+          <span class="stage-counter">W8A8 · weight traffic dominates · activation omitted</span>
+
+          <div class="gemm-derivation step-reveal" data-show-at="0" data-focus-at="0">
+            <div class="formula-strip">
+              <div class="formula-item"><small>Compute</small><strong>≈ 2 × N × W</strong></div>
+              <span class="formula-arrow">÷</span>
+              <div class="formula-item"><small>HBM weight bytes</small><strong>≈ W × 1 Byte</strong></div>
+              <span class="formula-arrow">→</span>
+              <div class="formula-item"><small>Arithmetic Intensity</small><strong>AI ≈ 2N FLOP/B</strong></div>
+            </div>
+            <div class="machine-derivation">
+              <span>TPU v7x official:</span><strong>4.614 PFLOP/s</strong><span>÷</span><strong>7.38 TB/s</strong><span>=</span><strong class="machine-result">625 FLOP/B</strong><span>→</span><strong>N<sub>boundary</sub> ≈ 625 / 2 ≈ 313</strong>
+            </div>
+          </div>
+
+          <div class="phase-lanes">
+            <article class="phase-lane prefill step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="lane-title"><strong>Prefill / Extend</strong><span>ChunkSize = 2048</span></div>
+              <div class="token-weight-flow">
+                <div class="token-cloud" aria-label="64 个小格代表 2048 个 token，每格代表 32 个 token">
+                  <span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span>
+                  <span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span>
+                  <span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span>
+                  <span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span>
+                  <span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span>
+                  <span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span>
+                  <span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span>
+                  <span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span>
+                </div>
+                <span class="flow-line" aria-hidden="true"></span>
+                <div class="weight-block">W<br><small>1× HBM read</small></div>
+              </div>
+              <div class="lane-metric"><span>同一份权重服务 2048 个 token</span><strong>AI ≈ 4096</strong></div>
+            </article>
+
+            <article class="phase-lane decode step-reveal" data-show-at="2" data-focus-at="2">
+              <div class="lane-title"><strong>Decode</strong><span>local batch = B</span></div>
+              <div class="token-weight-flow">
+                <div class="token-cloud" aria-label="B 条请求各产生一个新 token，图中方格为示意">
+                  <span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span>
+                  <span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span><span class="token-cell"></span>
+                </div>
+                <span class="flow-line" aria-hidden="true"></span>
+                <div class="weight-block">W<br><small>shared by batch</small></div>
+              </div>
+              <div class="lane-metric"><span>B 条请求 × 每条 1 个新 token</span><strong>AI ≈ 2B</strong></div>
+            </article>
+          </div>
+
+          <div class="boundary-verdict step-reveal" data-show-at="3" data-focus-at="3">
+            <div class="verdict-side query"><span class="verdict-mark"></span><span><strong>4096 &gt; 625</strong><br>主干 GEMM 更偏 Compute</span></div>
+            <div class="boundary-gate">v7x boundary<br><strong>625 FLOP/B</strong></div>
+            <div class="verdict-side right key"><span><strong>B ≈ 313 才跨线</strong><br>Decode 通常更偏 HBM</span><span class="verdict-mark"></span></div>
+          </div>
+
+          <span class="source-line">SOURCE · Google Cloud TPU7x specifications</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter performance-chapter" id="chapter-19" data-title="GLM-5.2 Model-aware Roofline" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 19 / Model-aware Roofline</p>
+            <h2>GLM-5.2：MoE 稀疏把分界推到千级 Batch</h2>
+          </div>
+          <p class="chapter-lead">Dense GEMM 默认全部权重参与计算。GLM-5.2 常驻完整 expert pool，每个 token 仅激活 Top-8；Roofline 需区分 resident parameters 与 active parameters。</p>
+        </div>
+
+        <div class="stage model-roofline-stage">
+          <span class="stage-label">GLM-5.2 · TP4 · DP4 · EP16 · FP8 weights · perfect EPLB</span>
+          <span class="stage-counter">B = local tokens / Attention DP rank</span>
+
+          <div class="model-time-formulas step-reveal" data-show-at="0" data-focus-at="0">
+            <div class="model-formula-card compute">
+              <small>Model Compute Time</small>
+              <strong>[2B · P<sub>active,eff</sub> + FLOPs<sub>attn</sub>(B,L)] / Peak</strong>
+            </div>
+            <div class="model-formula-card memory">
+              <small>Model HBM Time</small>
+              <strong>[P<sub>resident</sub> + B · KVBytes(L)] / HBM BW</strong>
+            </div>
+          </div>
+
+          <div class="model-breakdown">
+            <article class="model-metric total step-reveal" data-show-at="1" data-focus-at="1">
+              <small>HBM · resident W / device</small>
+              <strong>49.9 GB</strong>
+              <span>45.3GB routed experts + 18.4GB non-expert / TP4</span>
+            </article>
+            <span class="model-arrow step-reveal" data-show-at="1" aria-hidden="true"></span>
+            <article class="model-metric active step-reveal" data-show-at="1" data-focus-at="1">
+              <small>Compute · effective active params</small>
+              <strong>≈ 10.3B / token</strong>
+              <span>4.6B dense/shared + 2 routed experts × 2.83B；2 = Top8 × DP4 / EP16</span>
+            </article>
+            <span class="model-arrow step-reveal" data-show-at="2" aria-hidden="true"></span>
+            <article class="model-metric boundary step-reveal" data-show-at="2" data-focus-at="2">
+              <small>Weight-only boundary</small>
+              <strong>≈ 1.5K local</strong>
+              <span>625 × 49.9 / (2 × 10.3)；对应 global batch ≈ 6.1K</span>
+            </article>
+          </div>
+
+          <div class="model-context-band step-reveal" data-show-at="3" data-focus-at="3">
+            <div class="model-context-side"><strong>Attention Compute</strong>FLOPs ↑ · Boundary ↓</div>
+            <div class="model-caveat">Dense ≈ 313<br>MoE weight-only ≈ 1.5K</div>
+            <div class="model-context-side right"><strong>KV Streaming</strong>HBM Bytes ↑ · AI ↓</div>
+          </div>
+
+          <span class="source-line">ASSUMPTIONS · perfect EPLB · 1× resident-W stream · FP8 ≈ 1B / parameter</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter performance-chapter" id="chapter-20" data-title="Long Context HBM + DSA" data-steps="5">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 20 / Long-context decode</p>
+            <h2>Long Context 放大 KV 读取；DSA 把流量压低 13.3×</h2>
+          </div>
+          <p class="chapter-lead">TP↓ 可提高 Attention DP 与 global capacity，但 local batch 仍≤8。128K context 将历史 KV 纳入 HBM 流量：AI=Compute/(W+KV)，计算密度进一步下降。</p>
+        </div>
+
+        <div class="stage dsa-perf-stage">
+          <span class="stage-label">GLM-5.2 · 16 logical devices · EP16 · no CP · FP8 cache</span>
+          <span class="stage-counter">Attention DP = 16 / TP</span>
+
+          <section class="capacity-panel step-reveal" data-show-at="0" data-focus-at="0">
+            <div class="panel-heading"><strong>DP Attention 能提高 global batch</strong><span>103.1GB / logical device</span></div>
+            <div class="cache-formula">
+              <small>128K cache / sequence / device</small>
+              <strong>5.889GB latent + 0.352GB index = 6.241GB</strong>
+            </div>
+            <div class="topology-list step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="topology-row tp8">
+                <div class="topology-name"><strong>TP=8</strong><span>DP=2</span></div>
+                <div class="device-strip" aria-label="16 devices 分为 2 个 DP rank，每组 TP8"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="topology-result"><small>W/dev 47.6GB · local≤8</small><strong>global ≤ 16</strong></div>
+              </div>
+              <div class="topology-row tp4">
+                <div class="topology-name"><strong>TP=4</strong><span>DP=4</span></div>
+                <div class="device-strip" aria-label="16 devices 分为 4 个 DP rank，每组 TP4"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="topology-result"><small>W/dev 49.9GB · local≤8</small><strong>global ≤ 32</strong></div>
+              </div>
+              <div class="topology-row tp1">
+                <div class="topology-name"><strong>TP=1</strong><span>DP=16</span></div>
+                <div class="device-strip" aria-label="16 devices 分为 16 个 DP rank，每组 TP1"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="topology-result"><small>W/dev 63.7GB · local≤6</small><strong>global ≤ 96</strong></div>
+              </div>
+            </div>
+            <p class="capacity-note"><code>W/device ≈ 45.3GB experts + 18.4GB / TP</code> · theoretical ceiling; runtime reserve excluded.</p>
+          </section>
+
+          <section class="traffic-panel">
+            <div class="panel-heading"><strong>TP4：per-device 流量</strong><span>system aggregate</span></div>
+            <div class="traffic-bars">
+              <div class="traffic-row step-reveal" data-show-at="2" data-focus-at="2">
+                <div class="traffic-label"><strong>Resident W</strong><span>capacity reference</span></div>
+                <div class="traffic-track"><div class="traffic-bar weight-ref">weights / device</div></div>
+                <div class="traffic-value"><strong>49.9 GB</strong><small>system ≈ 798 GB</small></div>
+              </div>
+              <div class="traffic-row step-reveal" data-show-at="2" data-focus-at="2">
+                <div class="traffic-label"><strong>非 DSA</strong><span>scan all latent</span></div>
+                <div class="traffic-track"><div class="traffic-bar dense">128K latent KV</div></div>
+                <div class="traffic-value"><strong>47.1 GB</strong><small>system ≈ 754 GB / step</small></div>
+              </div>
+              <div class="traffic-row step-reveal" data-show-at="3" data-focus-at="3">
+                <div class="traffic-label"><strong>DSA</strong><span>scan + Top-K</span></div>
+                <div class="traffic-track">
+                  <div class="traffic-bar indexer" aria-label="Indexer scan 2.816 GB per device"></div>
+                  <div class="traffic-bar topk" aria-label="Top-K latent 0.736 GB per device"></div>
+                </div>
+                <div class="traffic-value"><strong>3.55 GB</strong><small>system ≈ 56.8 GB / step</small></div>
+              </div>
+              <div class="reduction-note step-reveal" data-show-at="3"><strong>13.3× less KV</strong> · TP4 replicated · 16-device aggregate</div>
+            </div>
+          </section>
+
+          <div class="context-verdict step-reveal" data-show-at="4" data-focus-at="4">
+            <div class="context-point"><strong>Attention DP ↑</strong>Global capacity：16 → 32 → 96</div>
+            <div class="context-multiplier">AI = Compute / (W + KV)<br><strong>DSA: KV ÷ 13.3</strong></div>
+            <div class="context-point right"><strong>Local batch ≤ 6–8</strong>每个 output token 均需读取 128K 历史 KV</div>
+          </div>
+
+          <span class="source-line">SOURCE · GLM-5.2 config · TPU7x specifications · FP8 cache estimate</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter performance-chapter" id="chapter-21" data-title="MTP: more tokens per target forward" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 21 / Multi-token prediction</p>
+            <h2>MTP：一次 Forward 验证更多 Token</h2>
+          </div>
+          <p class="chapter-lead">MTP 在一次 target forward 中验证 K 个候选：请求 batch 不变，并行 token 增加，权重复用率与 GEMM 计算强度同步提升。</p>
+        </div>
+
+        <div class="stage mtp-stage">
+          <span class="stage-label">Illustrative verification length = 4 · local batch = 8</span>
+          <span class="stage-counter">tokens per forward: 8 → 32</span>
+
+          <div class="mtp-flow">
+            <article class="mtp-panel baseline step-reveal" data-show-at="0" data-focus-at="0">
+              <div class="mtp-heading"><strong>普通 Decode</strong><span>8 × 1 token</span></div>
+              <div class="sequence-grid" aria-label="8 条 sequence，每条验证 1 个 token">
+                <div class="sequence"><span class="sequence-label">S₁</span><span class="candidate-stack"><i class="candidate"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₂</span><span class="candidate-stack"><i class="candidate"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₃</span><span class="candidate-stack"><i class="candidate"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₄</span><span class="candidate-stack"><i class="candidate"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₅</span><span class="candidate-stack"><i class="candidate"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₆</span><span class="candidate-stack"><i class="candidate"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₇</span><span class="candidate-stack"><i class="candidate"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₈</span><span class="candidate-stack"><i class="candidate"></i></span></div>
+              </div>
+              <div class="mtp-metric"><span>一次权重读取服务 8 个 token</span><strong>AI ≈ 16</strong></div>
+            </article>
+
+            <div class="mtp-arrow step-reveal" data-show-at="1" aria-hidden="true"><span class="mtp-arrow-label">verify 4 candidates</span></div>
+
+            <article class="mtp-panel speculative step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="mtp-heading"><strong>MTP Verification</strong><span>8 × 4 candidates</span></div>
+              <div class="sequence-grid" aria-label="8 条 sequence，每条并行验证 4 个候选 token">
+                <div class="sequence"><span class="sequence-label">S₁</span><span class="candidate-stack"><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate rejected"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₂</span><span class="candidate-stack"><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate rejected"></i><i class="candidate rejected"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₃</span><span class="candidate-stack"><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate accepted"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₄</span><span class="candidate-stack"><i class="candidate accepted"></i><i class="candidate rejected"></i><i class="candidate rejected"></i><i class="candidate rejected"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₅</span><span class="candidate-stack"><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate rejected"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₆</span><span class="candidate-stack"><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate rejected"></i><i class="candidate rejected"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₇</span><span class="candidate-stack"><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate rejected"></i></span></div>
+                <div class="sequence"><span class="sequence-label">S₈</span><span class="candidate-stack"><i class="candidate accepted"></i><i class="candidate accepted"></i><i class="candidate rejected"></i><i class="candidate rejected"></i></span></div>
+              </div>
+              <div class="mtp-metric"><span>一次权重读取服务 32 个候选 token</span><strong>AI ≈ 64</strong></div>
+            </article>
+          </div>
+
+          <div class="mtp-bandwidth step-reveal" data-show-at="2" data-focus-at="2">
+            <div class="bandwidth-side">
+              <span class="bandwidth-label">普通 Decode</span>
+              <div class="bandwidth-line"><span class="bandwidth-pipe"></span><strong>1× weights → 1 token</strong></div>
+            </div>
+            <div class="ai-lift">4× tokens<br>AI 16 → 64</div>
+            <div class="bandwidth-side right">
+              <span class="bandwidth-label">MTP target forward</span>
+              <div class="bandwidth-line"><strong>≈1× weights → up to 4 tokens</strong><span class="bandwidth-pipe"></span></div>
+            </div>
+            <div class="mtp-caveat step-reveal" data-show-at="3" data-focus-at="3">收益边界 · Verification fusion · KV reuse · Acceptance length · 请求 batch 不变</div>
+          </div>
+
+          <span class="source-line">ILLUSTRATION · verify K=4 · schematic acceptance</span>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer class="control-dock" aria-label="演示控制">
@@ -6506,6 +7360,37 @@
           "<strong>GLM-5.2</strong>：先用 MLA 压缩逐 token 历史，再由 DSA 选择核心 Attention 真正读取的位置。",
           "<strong>Kimi K3</strong>：用 recurrent/global hybrid、depth attention 与 latent experts 改造三条信息通道。",
           "<strong>Architecture → systems</strong>：下一步要把 state、selection、routing 和 communication 分别映射到 Prefill、Decode 与 TPU Roofline。"
+        ],
+        [
+          "<strong>Compute Time</strong> · FLOPs / Peak FLOP/s",
+          "<strong>HBM Time</strong> · HBM Bytes / HBM Bandwidth",
+          "<strong>Time Ratio</strong> · Tcompute / THBM = AI / Machine Balance",
+          "<strong>Bound</strong> · AI &lt; Machine Balance → HBM；AI &gt; Machine Balance → Compute"
+        ],
+        [
+          "<strong>Dense GEMM</strong> · AI≈2N · v7x Machine Balance≈625 FLOP/B · Nboundary≈313",
+          "<strong>Prefill</strong> · N=2048 → AI≈4096",
+          "<strong>Decode</strong> · N=local batch B → AI≈2B",
+          "<strong>Crossover</strong> · Prefill ≫ 313；Decode 通常 ≪ 313"
+        ],
+        [
+          "<strong>Model Roofline</strong> · Compute uses active params；HBM uses resident W + KV",
+          "<strong>TP4 / DP4 / EP16</strong> · Resident W≈49.9GB/device · Pactive,eff≈10.3B/token",
+          "<strong>Weight-only</strong> · Bboundary≈1.5K local ≈ 6.1K global",
+          "<strong>Corrections</strong> · Attention FLOPs lower boundary；KV streaming lowers AI"
+        ],
+        [
+          "<strong>128K Cache</strong> · 6.241GB / sequence / device",
+          "<strong>Attention DP</strong> · Global capacity 16 → 32 → 96；local ≤ 6–8",
+          "<strong>TP4 / Device</strong> · Resident W≈49.9GB；Dense KV≈47.1GB/step",
+          "<strong>DSA</strong> · 47.1 → 3.55GB/device/step · 13.3× less KV",
+          "<strong>Long Context</strong> · AI denominator：W → W + KV"
+        ],
+        [
+          "<strong>Decode</strong> · 8 tokens/forward · AI≈16",
+          "<strong>MTP Verify</strong> · 8 × 4 = 32 candidate tokens/forward",
+          "<strong>Weight Reuse</strong> · ≈1× weight stream · AI≈16 → 64",
+          "<strong>Efficiency</strong> · Fusion × KV reuse × acceptance length"
         ]
       ];
 
