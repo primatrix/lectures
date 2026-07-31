@@ -2,7 +2,7 @@
 
 在线预览：[https://primatrix.github.io/lectures/kimi-glm/architecture/](https://primatrix.github.io/lectures/kimi-glm/architecture/)
 
-GLM-5.2 与 Kimi K3 共用的单文件 HTML 演示。前 16 章从 Attention 基础逐步建立两种长上下文架构；后 5 章继续用 Roofline、HBM 流量与 Arithmetic Intensity 分析 Prefill、Decode、DSA 和 MTP。
+GLM-5.2 与 Kimi K3 共用的单文件 HTML 演示。前 18 章从 Attention 基础逐步建立两种长上下文架构；Chapter 19 先给出 TPU v7x 的硬件基线，后 5 章再用 Roofline、HBM 流量与 Arithmetic Intensity 分析 Prefill、Decode、DSA 和 MTP。
 
 ## 本地预览
 
@@ -42,19 +42,25 @@ http://localhost:8080
 6. MLA：完整 multi-head KV 与 latent cache
 7. DSA：Indexer、Top-K、Gather 与 Sparse Attention
 8. GLM-5.2：MLA、DSA、IndexShare 与 MoE
-9. 1M Agent trace：token、depth、channel 三类问题
-10. Kimi K3：固定状态、按层重读、低维专家路径
-11. KDA：遗忘、修正、写入与读取
-12. Hybrid Attention：3× KDA + 1× Gated MLA
-13. Attention Residuals：沿网络深度选择表示
-14. Stable LatentMoE：full-width router 与 latent payload
-15. Native Vision：联合训练与标准 VLM 推理
-16. 总结：衔接 Prefill、Decode、Roofline 与 MoE 优化
-17. Roofline：Compute Time、HBM Time 与 Arithmetic Intensity
-18. Prefill / Decode：Chunk 与 Batch 的权重复用差异
-19. GLM-5.2 Model Roofline：resident 与 active parameters
-20. Long Context：Attention DP、KV 流量与 DSA
-21. MTP：增加一次 target forward 的并行 token 数
+9. Scaling information flow：sequence、depth、width 的扩展问题与 K3 的三个回答
+10. Why Linear Attention：为什么 Softmax 历史不能提前压进固定状态
+11. Fixed-state memory：固定状态为什么还需要遗忘与覆盖
+12. KDA：遗忘、修正、写入与读取
+13. Hybrid Attention：3× KDA + 1× Gated MLA
+14. Why AttnRes：标准 residual 的固定等权聚合问题
+15. AttnRes Q/K/V：沿 depth axis 的矩阵计算
+16. Block AttnRes：沿 K3 Figure 2 的红色 w/α 路径理解跨 block 读取与 12-layer 配置
+17. LatentMoE：896 / Top-16 与 routed width 7168 → 3584
+18. 总结：衔接 Prefill、Decode、Roofline 与 MoE 优化
+19. TPU v7x：官方芯片架构与单芯片算力、HBM、ICI 基线
+20. Roofline：Compute Time、HBM Time 与 Arithmetic Intensity
+21. Prefill / Decode：Chunk 与 Batch 的权重复用差异
+22. GLM-5.2 Model Roofline：resident 与 active parameters
+23. Long Context：Attention DP、KV 流量与 DSA
+24. MTP：增加一次 target forward 的并行 token 数
+25. MoE Cost Model：16K token、EP=32 下的 Compute、HBM 与 ICI 单层理论下界
+26. Fused MoE Pipeline：按 expert wave 重叠 ICI、HBM DMA、MXU 与 VPU/VMEM
+27. Measured Overlap：性能收益来自跨引擎重叠，当前瓶颈仍是 ICI 带宽与延迟
 
 ## 文件说明
 
@@ -80,7 +86,7 @@ glm5.2-visualization/
 ## 提交前检查
 
 1. 使用本地静态服务器打开页面。
-2. 从 Chapter 01 逐步播放到 Chapter 21。
+2. 从 Chapter 01 逐步播放到 Chapter 27。
 3. 确认所有 tensor 的 token 数、shape 标签和视觉行列一致。
 4. 确认左右方向键、上下方向键、空格和导航按钮均能正常工作。
 5. 确认浏览器控制台没有 JavaScript 错误。

@@ -2973,6 +2973,183 @@
       grid-template-rows: repeat(3, minmax(0, 1fr));
     }
 
+    .information-flow-scale {
+      display: grid;
+      grid-template-columns: auto minmax(80px, 1fr) auto;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 2px 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+
+    .information-flow-scale i {
+      position: relative;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(20, 125, 117, 0.18), rgba(20, 125, 117, 0.82));
+    }
+
+    .information-flow-scale i::after {
+      content: "";
+      position: absolute;
+      top: -3px;
+      right: 0;
+      width: 6px;
+      height: 6px;
+      border-top: 1px solid var(--accent);
+      border-right: 1px solid var(--accent);
+      transform: rotate(45deg);
+    }
+
+    .information-flow-scale strong {
+      color: var(--accent);
+      font-size: 13px;
+      letter-spacing: 0;
+    }
+
+    .kimi-map-stage.combined-info-stage {
+      grid-template-rows: 64px minmax(0, 1fr) 42px;
+      gap: 10px;
+      padding-top: 44px;
+      padding-bottom: 30px;
+    }
+
+    .combined-info-stage .problem-axis-row {
+      grid-template-columns: 116px minmax(300px, 0.8fr) minmax(500px, 1.2fr);
+      gap: 22px;
+      padding: 9px 6px;
+    }
+
+    .dimension-question {
+      margin: 0;
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 650;
+      line-height: 1.5;
+    }
+
+    .dimension-question b {
+      color: var(--axis-color);
+      font-weight: 780;
+    }
+
+    .dimension-answer {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(170px, 0.7fr) minmax(260px, 1.3fr);
+      align-items: center;
+      gap: 16px;
+      padding-left: 20px;
+      border-left: 1px solid color-mix(in srgb, currentColor 42%, var(--line));
+    }
+
+    .combined-info-stage .dimension-answer.step-reveal {
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    .combined-info-stage .dimension-answer.step-reveal.is-visible {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .combined-info-stage .dimension-answer.is-current,
+    .combined-info-stage .information-flow-scale.is-current {
+      border-color: color-mix(in srgb, currentColor 42%, var(--line)) !important;
+      box-shadow: none;
+    }
+
+    .dimension-answer-copy {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .dimension-answer-copy strong {
+      color: currentColor;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .dimension-answer-copy span {
+      color: var(--text);
+    }
+
+    .depth-source-mini {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) 24px minmax(74px, 1.1fr);
+      align-items: center;
+      gap: 6px;
+      color: var(--score);
+      font-family: var(--mono);
+      font-size: 9px;
+    }
+
+    .depth-source-mini span {
+      min-height: 34px;
+      display: grid;
+      place-items: center;
+      border-bottom: 2px solid currentColor;
+      background: color-mix(in srgb, currentColor 7%, white);
+      text-align: center;
+    }
+
+    .depth-source-mini b {
+      color: currentColor;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .depth-source-mini strong {
+      min-height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      border-radius: 50%;
+      background: var(--score-soft);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .sparse-width-mini {
+      display: grid;
+      grid-template-columns: minmax(54px, 0.7fr) 20px minmax(62px, 0.86fr) 20px minmax(110px, 1.45fr);
+      align-items: center;
+      gap: 6px;
+      color: var(--value);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .sparse-width-mini span {
+      min-height: 38px;
+      display: grid;
+      place-items: center;
+      border-bottom: 2px solid currentColor;
+      background: color-mix(in srgb, currentColor 7%, white);
+    }
+
+    .sparse-width-mini strong {
+      min-height: 46px;
+      display: grid;
+      place-items: center;
+      border: 1px solid currentColor;
+      background: var(--value-soft);
+      font-size: 11px;
+      line-height: 1.25;
+    }
+
+    .sparse-width-mini b {
+      color: currentColor;
+      font-size: 15px;
+    }
+
     .problem-axis-row {
       --axis-color: var(--accent);
       min-height: 0;
@@ -3051,6 +3228,60 @@
       border-top: 1px solid currentColor;
       border-right: 1px solid currentColor;
       transform: rotate(45deg);
+    }
+
+    .sequence-dimension-sketch {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      align-items: center;
+      gap: 8px;
+      padding-top: 22px;
+    }
+
+    .sequence-dimension-sketch::before {
+      content: "LONG-CONTEXT TOKEN MIXING";
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: var(--muted-2);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+    }
+
+    .sequence-dimension-sketch::after {
+      content: "";
+      position: absolute;
+      z-index: 0;
+      top: 54px;
+      right: 16px;
+      left: 16px;
+      height: 1px;
+      background: color-mix(in srgb, currentColor 58%, transparent);
+    }
+
+    .sequence-dimension-sketch span {
+      position: relative;
+      z-index: 1;
+      min-height: 38px;
+      display: grid;
+      place-items: center;
+      border-bottom: 2px solid currentColor;
+      color: var(--muted);
+      background: color-mix(in srgb, currentColor 6%, white);
+      font-size: 10px;
+      font-weight: 650;
+    }
+
+    .sequence-dimension-sketch span.ellipsis {
+      border-bottom-color: var(--line-strong);
+      color: var(--muted-2);
+      background: transparent;
+    }
+
+    .sequence-dimension-sketch span.current {
+      color: currentColor;
+      background: var(--query-soft);
     }
 
     .kv-cache-sketch {
@@ -3732,6 +3963,468 @@
       color: var(--accent);
     }
 
+    .linearize-stage,
+    .linear-memory-stage {
+      padding: 48px 42px 30px;
+    }
+
+    .linearize-stage {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) 44px;
+      gap: 10px;
+    }
+
+    .linearize-flow {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 86px minmax(0, 1fr);
+      align-items: stretch;
+    }
+
+    .linear-attention-side {
+      min-width: 0;
+      display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr) auto;
+      align-content: stretch;
+      gap: 10px;
+      padding: 8px 26px 6px;
+    }
+
+    .linear-attention-side.linear {
+      border-left: 1px solid var(--line-strong);
+    }
+
+    .linear-side-heading {
+      display: grid;
+      gap: 5px;
+    }
+
+    .linear-side-heading small {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.11em;
+    }
+
+    .linear-side-heading h3 {
+      margin: 0;
+      color: var(--text);
+      font-size: clamp(20px, 1.65vw, 27px);
+      line-height: 1.25;
+    }
+
+    .linear-equation {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(22px, 2vw, 32px);
+      white-space: nowrap;
+    }
+
+    .linear-equation .softmax-term {
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .linear-equation .state-term {
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .softmax-history-visual,
+    .linear-state-visual {
+      min-height: 0;
+      display: grid;
+      align-content: center;
+      gap: 10px;
+    }
+
+    .query-to-history {
+      display: grid;
+      grid-template-columns: 68px minmax(0, 1fr);
+      align-items: center;
+      gap: 18px;
+    }
+
+    .linear-query-node {
+      width: 60px;
+      height: 60px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--query);
+      border-radius: 50%;
+      color: var(--query);
+      background: var(--query-soft);
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .history-score-bank {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+      padding-top: 24px;
+    }
+
+    .history-score-bank::before {
+      content: "qₜ 到来后，分别计算每个位置的权重";
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: var(--danger);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .history-score-bank::after {
+      content: "";
+      position: absolute;
+      top: 52px;
+      right: 0;
+      left: -18px;
+      z-index: 0;
+      height: 1px;
+      background: color-mix(in srgb, var(--danger) 48%, transparent);
+    }
+
+    .history-kv {
+      position: relative;
+      z-index: 1;
+      min-height: 60px;
+      display: grid;
+      grid-template-rows: 1fr 1fr;
+      border: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, 0.88);
+      font-family: var(--mono);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .history-kv i,
+    .history-kv b {
+      display: grid;
+      place-items: center;
+      font-style: normal;
+    }
+
+    .history-kv i {
+      color: var(--key);
+      background: var(--key-soft);
+    }
+
+    .history-kv b {
+      color: var(--value);
+      border-top: 1px solid var(--line);
+      background: var(--value-soft);
+    }
+
+    .history-kv.ellipsis {
+      place-items: center;
+      border: 0;
+      color: var(--muted-2);
+      background: transparent;
+      font-size: 18px;
+    }
+
+    .linear-side-result {
+      margin: 0;
+      padding-top: 8px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .linear-side-result strong {
+      color: var(--danger);
+    }
+
+    .linear-associative-arrow {
+      align-self: center;
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .linear-associative-arrow b {
+      color: var(--accent);
+      font-size: 30px;
+      font-weight: 500;
+    }
+
+    .state-build-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 28px 118px;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .state-summands {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .state-summand {
+      min-height: 50px;
+      display: grid;
+      place-items: center;
+      border-bottom: 2px solid var(--accent);
+      color: var(--muted);
+      background: color-mix(in srgb, var(--accent) 6%, white);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .state-summand.ellipsis {
+      border-bottom-color: var(--line-strong);
+      background: transparent;
+    }
+
+    .state-build-arrow {
+      color: var(--accent);
+      font-size: 24px;
+      text-align: center;
+    }
+
+    .fixed-state-matrix {
+      position: relative;
+      width: 118px;
+      height: 94px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+      gap: 3px;
+      padding: 26px 12px 10px;
+      border: 1px solid var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .fixed-state-matrix::before {
+      content: "Sₜ";
+      position: absolute;
+      top: 5px;
+      left: 10px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .fixed-state-matrix i {
+      border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+      background: color-mix(in srgb, var(--accent) var(--cell-alpha, 12%), white);
+    }
+
+    .state-read-row {
+      display: grid;
+      grid-template-columns: 68px 30px 118px 30px 68px;
+      align-items: center;
+      justify-content: end;
+      gap: 8px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 17px;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .state-read-row span:first-child,
+    .state-read-row span:last-child {
+      min-height: 44px;
+      display: grid;
+      place-items: center;
+      border-bottom: 2px solid currentColor;
+      background: color-mix(in srgb, currentColor 7%, white);
+      white-space: nowrap;
+    }
+
+    .linearize-thesis {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 18px;
+      min-height: 44px;
+      padding: 8px 0 0;
+      border-top: 1px solid var(--line-strong);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .linearize-thesis strong {
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .linear-memory-stage {
+      display: grid;
+      grid-template-rows: minmax(210px, 0.92fr) minmax(0, 1.08fr);
+      gap: 18px;
+    }
+
+    .linearize-stage .step-reveal.is-current,
+    .linear-memory-stage .step-reveal.is-current {
+      box-shadow: none;
+    }
+
+    .cache-state-contrast {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 92px minmax(0, 1fr);
+      align-items: center;
+      padding: 10px 46px 18px;
+      border-bottom: 1px solid var(--line-strong);
+    }
+
+    .cache-state-side {
+      min-width: 0;
+      display: grid;
+      gap: 14px;
+    }
+
+    .cache-state-side h3 {
+      margin: 0;
+      color: var(--text);
+      font-size: 19px;
+    }
+
+    .cache-state-side p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .growing-kv-line {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      align-items: end;
+      gap: 7px;
+      min-height: 86px;
+    }
+
+    .growing-kv-line span {
+      min-height: var(--kv-height, 42px);
+      display: grid;
+      place-items: center;
+      border-bottom: 2px solid var(--danger);
+      color: var(--muted);
+      background: color-mix(in srgb, var(--danger) 6%, white);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .growing-kv-line span.ellipsis {
+      border-bottom-color: var(--line-strong);
+      background: transparent;
+    }
+
+    .cache-state-arrow {
+      display: grid;
+      justify-items: center;
+      gap: 5px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .cache-state-arrow b {
+      color: var(--accent);
+      font-size: 28px;
+      font-weight: 500;
+    }
+
+    .fixed-state-side {
+      grid-template-columns: 136px minmax(0, 1fr);
+      align-items: center;
+      gap: 18px;
+    }
+
+    .fixed-state-side .fixed-state-matrix {
+      width: 136px;
+      height: 116px;
+    }
+
+    .memory-rule-list {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: repeat(3, minmax(0, 1fr));
+      padding: 0 28px;
+    }
+
+    .memory-rule-row {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 210px minmax(320px, 0.82fr) minmax(0, 1.18fr);
+      align-items: center;
+      gap: 24px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .memory-rule-row:last-child {
+      border-bottom: 0;
+    }
+
+    .memory-rule-row h3 {
+      margin: 0;
+      color: var(--row-color, var(--text));
+      font-size: 19px;
+    }
+
+    .memory-rule-formula {
+      color: var(--row-color, var(--text));
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(20px, 1.7vw, 28px);
+      white-space: nowrap;
+    }
+
+    .memory-rule-row p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.48;
+    }
+
+    .memory-rule-row p strong {
+      color: var(--text);
+    }
+
+    .memory-rule-row.naive {
+      --row-color: var(--danger);
+    }
+
+    .memory-rule-row.gla {
+      --row-color: var(--query);
+    }
+
+    .memory-rule-row.delta-question {
+      --row-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 6%, transparent);
+    }
+
+    .memory-rule-row.delta-question .memory-rule-formula {
+      font-family: var(--sans);
+      font-size: 18px;
+      font-weight: 750;
+      white-space: normal;
+    }
+
     .kda-stage {
       display: grid;
       grid-template-rows: minmax(0, 1fr) auto;
@@ -3987,6 +4680,14 @@
       letter-spacing: 0.045em;
     }
 
+    .kda-tikz-figure figcaption .kda-delta-form {
+      color: var(--accent);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
     .kda-tikz-figure figcaption strong {
       color: var(--accent);
       font-size: 11px;
@@ -4009,7 +4710,7 @@
       border-left: 1px solid var(--line);
       color: var(--muted);
       background: transparent;
-      font-size: 10px;
+      font-size: 12px;
       line-height: 1.42;
     }
 
@@ -4037,7 +4738,7 @@
     .kda-module-item strong {
       color: currentColor;
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 12px;
       line-height: 1.2;
     }
 
@@ -4179,23 +4880,462 @@
       color: var(--key);
     }
 
-    .attnres-stage {
+    .attnres-problem-stage,
+    .attnres-matrix-stage,
+    .attnres-block-stage {
       display: grid;
-      grid-template-rows: minmax(0, 1fr) 76px;
-      gap: 12px;
-      padding: 48px 34px 30px;
+      gap: 14px;
+      padding: 50px 38px 28px;
     }
 
-    .attnres-figure {
+    .attnres-problem-stage {
+      grid-template-rows: minmax(0, 1fr) 70px;
+    }
+
+    .attnres-problem-layout {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.22fr) minmax(350px, 0.78fr);
+      gap: 38px;
+      align-items: stretch;
+    }
+
+    .residual-unroll {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 22px;
+      padding: 10px 4px 8px;
+    }
+
+    .residual-unroll-formula {
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(24px, 2.1vw, 34px);
+      line-height: 1.25;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .residual-unroll-formula .unit-weight {
+      color: var(--danger);
+    }
+
+    .residual-source-flow {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 48px 66px 38px minmax(124px, 0.56fr);
+      align-items: center;
+      gap: 12px;
+    }
+
+    .residual-source-list {
+      display: grid;
+      align-content: center;
+      gap: 16px;
+    }
+
+    .residual-source {
+      display: grid;
+      grid-template-columns: 164px minmax(44px, 1fr) 72px;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .residual-source strong {
+      color: var(--text);
+      font-size: 16px;
+      font-weight: 680;
+    }
+
+    .residual-source i {
+      position: relative;
+      height: 1px;
+      background: var(--line-strong);
+    }
+
+    .residual-source i::after {
+      content: "";
+      position: absolute;
+      top: -3px;
+      right: 0;
+      width: 6px;
+      height: 6px;
+      border-top: 1px solid var(--muted);
+      border-right: 1px solid var(--muted);
+      transform: rotate(45deg);
+    }
+
+    .residual-source b {
+      color: var(--danger);
+      font-family: var(--mono);
+      font-size: 13px;
+      text-align: right;
+    }
+
+    .residual-flow-arrow {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 24px;
+      text-align: center;
+    }
+
+    .residual-sum-node {
+      width: 64px;
+      height: 64px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--danger);
+      border-radius: 50%;
+      color: var(--danger);
+      background: color-mix(in srgb, var(--danger) 6%, white);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+    }
+
+    .residual-output {
+      display: grid;
+      align-content: center;
+      gap: 7px;
+      min-height: 92px;
+      padding-left: 16px;
+      border-left: 2px solid var(--danger);
+    }
+
+    .residual-output strong {
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 25px;
+    }
+
+    .residual-output span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .residual-problem-list {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--line-strong);
+    }
+
+    .residual-problem-row {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      align-content: center;
+      gap: 12px;
+      padding: 12px 4px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .residual-problem-row:last-child {
+      border-bottom: 0;
+    }
+
+    .residual-problem-row > strong {
+      color: var(--danger);
+      font-family: var(--mono);
+      font-size: 15px;
+    }
+
+    .residual-problem-copy {
+      display: grid;
+      gap: 5px;
+    }
+
+    .residual-problem-copy strong {
+      color: var(--text);
+      font-size: 17px;
+    }
+
+    .residual-problem-copy span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .attnres-problem-thesis,
+    .attnres-matrix-thesis,
+    .attnres-block-thesis {
+      display: grid;
+      align-items: center;
+      border-top: 1px solid var(--line-strong);
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .attnres-problem-thesis strong,
+    .attnres-matrix-thesis strong,
+    .attnres-block-thesis strong {
+      color: var(--accent);
+    }
+
+    .attnres-matrix-stage {
+      grid-template-rows: 54px minmax(0, 1fr) 42px 66px;
+      gap: 10px;
+      padding-left: 30px;
+      padding-right: 30px;
+    }
+
+    .attnres-axis-analogy {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-top: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .attnres-axis-line {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      padding: 8px 16px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .attnres-axis-line + .attnres-axis-line {
+      border-left: 1px solid var(--line);
+    }
+
+    .attnres-axis-line strong {
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .attnres-axis-line.depth strong {
+      color: var(--score);
+    }
+
+    .attnres-matrix-flow {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(210px, 1.15fr) 32px minmax(210px, 1.15fr) 28px minmax(76px, 0.42fr) 32px minmax(82px, 0.48fr) 32px minmax(100px, 0.56fr);
+      align-items: center;
+      gap: 8px;
+    }
+
+    .attnres-matrix-block {
+      min-width: 0;
+      display: grid;
+      align-content: center;
+      gap: 8px;
+    }
+
+    .attnres-matrix-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .attnres-matrix-title strong {
+      font-size: 18px;
+    }
+
+    .attnres-matrix-title span {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .depth-representation-matrix {
+      display: grid;
+      gap: 4px;
+      padding: 6px 0;
+      border-top: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      color: var(--value);
+    }
+
+    .depth-representation-matrix.key-matrix {
+      color: var(--key);
+    }
+
+    .depth-matrix-row {
+      min-height: 32px;
+      display: grid;
+      grid-template-columns: 92px repeat(6, minmax(10px, 1fr));
+      align-items: stretch;
+      gap: 4px;
+    }
+
+    .depth-matrix-row > strong {
+      display: grid;
+      align-items: center;
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 620;
+    }
+
+    .depth-matrix-row i {
+      display: block;
+      border: 1px solid color-mix(in srgb, currentColor 44%, white);
+      background: color-mix(in srgb, currentColor var(--cell-alpha, 16%), white);
+    }
+
+    .attnres-operator {
+      display: grid;
+      justify-items: center;
+      gap: 5px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      line-height: 1.25;
+      text-align: center;
+    }
+
+    .attnres-operator b {
+      color: var(--score);
+      font-size: 22px;
+      font-weight: 500;
+    }
+
+    .pseudo-query,
+    .depth-score-vector,
+    .depth-alpha-vector {
+      display: grid;
+      align-content: center;
+      gap: 7px;
+      color: var(--query);
+    }
+
+    .pseudo-query strong,
+    .depth-score-vector strong,
+    .depth-alpha-vector strong {
+      color: var(--text);
+      font-size: 15px;
+      text-align: center;
+    }
+
+    .pseudo-query span,
+    .depth-score-vector span,
+    .depth-alpha-vector span {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-align: center;
+    }
+
+    .pseudo-query-cells {
+      display: grid;
+      grid-template-columns: repeat(2, 18px);
+      grid-auto-rows: 18px;
+      justify-content: center;
+      gap: 3px;
+      padding: 10px 0;
+      border-top: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+    }
+
+    .pseudo-query-cells i {
+      border: 1px solid color-mix(in srgb, currentColor 42%, white);
+      background: color-mix(in srgb, currentColor 14%, white);
+    }
+
+    .depth-score-cells,
+    .depth-alpha-cells {
+      display: grid;
+      gap: 5px;
+      padding: 9px 7px;
+      border-top: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+    }
+
+    .depth-score-vector {
+      color: var(--score);
+    }
+
+    .depth-alpha-vector {
+      color: var(--accent);
+    }
+
+    .depth-score-cells i,
+    .depth-alpha-cells i {
+      min-height: 28px;
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, currentColor 40%, white);
+      background: color-mix(in srgb, currentColor var(--cell-alpha, 12%), white);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-style: normal;
+    }
+
+    .attnres-readout {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: center;
+      gap: 18px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .attnres-readout-formula {
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 22px;
+      white-space: nowrap;
+    }
+
+    .attnres-readout-example {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      text-align: right;
+    }
+
+    .attnres-readout-example strong {
+      color: var(--accent);
+    }
+
+    .attnres-matrix-thesis {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      text-align: left;
+    }
+
+    .attnres-matrix-thesis span {
+      min-width: 0;
+      padding: 0 16px;
+      border-left: 1px solid var(--line);
+    }
+
+    .attnres-matrix-thesis span:first-child {
+      border-left: 0;
+    }
+
+    .attnres-block-stage {
+      grid-template-rows: minmax(0, 1fr) 70px;
+    }
+
+    .attnres-k3-layout {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(390px, 0.92fr) minmax(0, 1.08fr);
+      gap: 32px;
+    }
+
+    .k3-attnres-paper {
       min-height: 0;
       display: grid;
       grid-template-rows: minmax(0, 1fr) auto;
-      gap: 5px;
+      gap: 6px;
       margin: 0;
+      padding-right: 28px;
+      border-right: 1px solid var(--line);
       overflow: hidden;
     }
 
-    .attnres-figure img {
+    .k3-attnres-paper img {
       width: 100%;
       height: 100%;
       min-height: 0;
@@ -4205,99 +5345,369 @@
       background: #fff;
     }
 
-    .attnres-figure figcaption {
-      margin: 0;
+    .k3-attnres-paper figcaption {
       color: var(--muted);
       font-family: var(--mono);
       font-size: 9px;
       text-align: right;
     }
 
-    .attnres-figure figcaption a {
+    .k3-attnres-paper figcaption a {
       color: var(--accent);
       text-decoration: none;
     }
 
-    .attnres-takeaways {
+    .k3-attnres-reading {
+      min-height: 0;
       display: grid;
-      grid-template-columns: minmax(0, 0.84fr) minmax(0, 0.92fr) minmax(0, 1.24fr);
-      border-top: 1px solid var(--line);
+      grid-template-rows: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid var(--line-strong);
     }
 
-    .attnres-takeaway {
+    .k3-attnres-row {
+      min-height: 0;
       display: grid;
-      align-content: center;
-      gap: 4px;
-      padding: 9px 14px;
-      border-left: 1px solid var(--line);
+      grid-template-columns: 116px minmax(0, 1fr);
+      align-items: center;
+      gap: 18px;
+      padding: 8px 4px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .k3-attnres-row:last-child {
+      border-bottom: 0;
+    }
+
+    .k3-attnres-mark {
+      display: grid;
+      justify-items: center;
+      gap: 5px;
+      color: var(--score);
+      font-family: var(--mono);
+      text-align: center;
+    }
+
+    .k3-attnres-mark strong {
+      font-size: 26px;
+      line-height: 1;
+    }
+
+    .k3-attnres-mark span {
       color: var(--muted);
-      font-size: 10px;
+      font-size: 9px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .k3-attnres-row.intra .k3-attnres-mark {
+      color: var(--text);
+    }
+
+    .k3-attnres-row.config .k3-attnres-mark {
+      color: var(--accent);
+    }
+
+    .k3-attnres-copy {
+      display: grid;
+      gap: 6px;
+    }
+
+    .k3-attnres-copy strong {
+      color: var(--text);
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    .k3-attnres-copy span {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .k3-attnres-config-line {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 12px;
+      flex-wrap: wrap;
+    }
+
+    .k3-attnres-config-line b {
+      color: var(--accent);
+      font-size: 18px;
+    }
+
+    .k3-attnres-row.is-current {
+      border-color: var(--line) !important;
+      box-shadow: none;
+    }
+
+    .attnres-block-layout {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: 160px minmax(0, 1fr);
+      gap: 22px;
+    }
+
+    .attnres-granularity {
+      display: grid;
+      grid-template-rows: repeat(2, minmax(0, 1fr));
+      border-top: 1px solid var(--line-strong);
+    }
+
+    .attnres-granularity-row {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 154px minmax(0, 1fr) 46px 110px;
+      align-items: center;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .attnres-granularity-label {
+      display: grid;
+      gap: 4px;
+    }
+
+    .attnres-granularity-label strong {
+      color: var(--text);
+      font-size: 18px;
+    }
+
+    .attnres-granularity-label span {
+      color: var(--muted);
+      font-size: 12px;
       line-height: 1.4;
     }
 
-    .attnres-takeaway:first-child {
-      border-left: 0;
+    .depth-source-strip {
+      position: relative;
+      display: grid;
+      align-items: end;
+      gap: 8px;
+      padding: 18px 10px 12px;
     }
 
-    .attnres-takeaway strong {
+    .depth-source-strip.full {
+      grid-template-columns: repeat(9, minmax(0, 1fr));
+    }
+
+    .depth-source-strip.block {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .depth-source-strip::before {
+      content: "";
+      position: absolute;
+      right: 10px;
+      bottom: 11px;
+      left: 10px;
+      height: 1px;
+      background: var(--line-strong);
+    }
+
+    .depth-source-tick {
+      position: relative;
+      z-index: 1;
+      min-height: 58px;
+      display: grid;
+      align-content: end;
+      justify-items: center;
+      gap: 5px;
+      color: var(--score);
+      text-align: center;
+    }
+
+    .depth-source-tick::after {
+      content: "";
+      width: 3px;
+      height: 26px;
+      background: currentColor;
+    }
+
+    .depth-source-tick strong {
       color: var(--text);
       font-family: var(--mono);
       font-size: 11px;
     }
 
-    .latent-moe-stage {
-      display: grid;
-      grid-template-rows: 58px minmax(0, 1fr) 76px;
-      gap: 14px;
-      padding: 48px 42px 30px;
+    .depth-source-tick span {
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.25;
     }
 
-    .latent-cost-line {
+    .depth-source-tick.current {
+      color: var(--key);
+    }
+
+    .depth-source-merge {
+      color: var(--score);
+      font-size: 26px;
+      text-align: center;
+    }
+
+    .depth-current-module {
+      min-height: 72px;
       display: grid;
-      grid-template-columns: minmax(210px, 0.9fr) 1fr 1fr;
+      place-items: center;
+      border-left: 2px solid var(--score);
+      color: var(--score);
+      background: var(--score-soft);
+      font-size: 13px;
+      font-weight: 720;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    .k3-block-config {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 170px minmax(0, 1fr);
+      align-items: center;
+      gap: 22px;
+    }
+
+    .k3-block-copy {
+      display: grid;
+      gap: 7px;
+    }
+
+    .k3-block-copy strong {
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 17px;
+    }
+
+    .k3-block-copy span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .k3-block-strip {
+      display: grid;
+      grid-template-columns: 84px repeat(7, minmax(72px, 1fr)) minmax(72px, 0.75fr);
+      align-items: stretch;
+      min-height: 92px;
+      border-top: 2px solid var(--accent);
+      border-bottom: 2px solid var(--accent);
+    }
+
+    .k3-block-segment {
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 5px;
+      padding: 8px 5px;
+      border-left: 1px solid var(--line-strong);
+      color: var(--muted);
+      background: color-mix(in srgb, var(--accent) 4%, white);
+      text-align: center;
+    }
+
+    .k3-block-segment:first-child {
+      border-left: 0;
+      color: var(--score);
+      background: var(--score-soft);
+    }
+
+    .k3-block-segment:last-child {
+      color: var(--key);
+      background: var(--key-soft);
+    }
+
+    .k3-block-segment strong {
+      color: currentColor;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .k3-block-segment span {
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .attnres-block-thesis {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    .attnres-block-thesis b {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 500;
+    }
+
+    .attnres-problem-thesis.is-current,
+    .attnres-matrix-thesis.is-current,
+    .attnres-block-thesis.is-current,
+    .k3-block-config.is-current {
+      border-color: var(--line-strong) !important;
+      box-shadow: none;
+    }
+
+    .latent-moe-stage {
+      display: grid;
+      grid-template-rows: 68px minmax(0, 1fr) 100px;
+      gap: 14px;
+      padding: 44px 42px 24px;
+    }
+
+    .latent-scale-line {
+      display: grid;
+      grid-template-columns: minmax(250px, 0.72fr) minmax(0, 1.28fr);
       align-items: center;
       border-top: 1px solid var(--line-strong);
       border-bottom: 1px solid var(--line);
     }
 
-    .latent-cost-question,
-    .latent-cost-term {
+    .latent-scale-number,
+    .latent-scale-copy {
       min-width: 0;
       height: 100%;
       display: grid;
       align-content: center;
-      gap: 3px;
-      padding: 8px 14px;
+      gap: 4px;
+      padding: 10px 18px;
     }
 
-    .latent-cost-term {
+    .latent-scale-copy {
       border-left: 1px solid var(--line);
     }
 
-    .latent-cost-question strong {
-      color: var(--text);
-      font-size: 13px;
-    }
-
-    .latent-cost-question span,
-    .latent-cost-term span {
-      color: var(--muted);
-      font-size: 10px;
-      line-height: 1.35;
-    }
-
-    .latent-cost-term strong {
-      color: var(--danger);
+    .latent-scale-number strong {
+      color: var(--value);
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 18px;
+    }
+
+    .latent-scale-number span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .latent-scale-copy strong {
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .latent-scale-copy span {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
     }
 
     .latent-paper-layout {
       min-height: 0;
       display: grid;
-      grid-template-columns: minmax(310px, 0.76fr) minmax(0, 1.24fr);
+      grid-template-columns: minmax(330px, 0.78fr) minmax(0, 1.22fr);
       align-items: stretch;
-      gap: 26px;
+      gap: 30px;
     }
 
     .latent-paper-figure {
@@ -4312,7 +5722,7 @@
     .latent-paper-figure img {
       width: 100%;
       height: 100%;
-      max-height: 332px;
+      max-height: 356px;
       display: block;
       object-fit: contain;
       object-position: center;
@@ -4322,7 +5732,7 @@
       padding: 5px 16px 0 0;
       color: var(--muted-2);
       font-family: var(--mono);
-      font-size: 9px;
+      font-size: 11px;
       line-height: 1.4;
     }
 
@@ -4342,11 +5752,10 @@
     .latent-reading-row {
       min-width: 0;
       display: grid;
-      grid-template-columns: 116px minmax(0, 1fr);
+      grid-template-columns: minmax(0, 1fr);
       align-content: center;
-      align-items: center;
-      gap: 14px;
-      padding: 11px 4px 11px 14px;
+      gap: 6px;
+      padding: 10px 16px 10px 18px;
       border-top: 1px solid var(--line);
       color: var(--muted);
     }
@@ -4365,36 +5774,30 @@
       box-shadow: inset 3px 0 0 currentColor;
     }
 
-    .latent-reading-row .lane-name {
-      display: grid;
-      gap: 3px;
+    .latent-reading-row .lane-sentence {
       color: currentColor;
-      font-family: var(--mono);
-      font-size: 10px;
-      letter-spacing: 0.045em;
-    }
-
-    .latent-reading-row .lane-name strong {
-      font-size: 12px;
+      font-size: 15px;
+      font-weight: 780;
+      line-height: 1.35;
     }
 
     .latent-reading-row .lane-copy {
       display: grid;
-      gap: 5px;
+      gap: 4px;
     }
 
     .latent-reading-row .lane-formula {
       color: var(--text);
       font-family: var(--mono);
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 750;
       white-space: nowrap;
     }
 
     .latent-reading-row .lane-detail {
       color: var(--muted);
-      font-size: 11px;
-      line-height: 1.42;
+      font-size: 12px;
+      line-height: 1.4;
     }
 
     .latent-reading-row.router {
@@ -4409,62 +5812,54 @@
       color: var(--query);
     }
 
-    .latent-footer {
+    .latent-metrics {
       min-height: 0;
       display: grid;
-      grid-template-columns: minmax(0, 1.5fr) minmax(260px, 0.9fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       border-top: 1px solid var(--line-strong);
       border-bottom: 1px solid var(--line);
     }
 
-    .latent-stable-line {
-      min-width: 0;
-      display: grid;
-      grid-template-columns: auto repeat(3, minmax(0, 1fr));
-      align-items: center;
-      gap: 12px;
-      padding: 8px 14px;
-      color: var(--muted);
-      font-size: 10px;
-      line-height: 1.4;
-    }
-
-    .latent-stable-line > strong {
-      color: var(--score);
-      font-family: var(--mono);
-      font-size: 12px;
-    }
-
-    .latent-stable-line span {
-      min-width: 0;
-      padding-left: 10px;
-      border-left: 1px solid var(--line);
-    }
-
-    .latent-stable-line span b {
-      display: block;
-      color: var(--text);
-      font-family: var(--mono);
-      font-size: 10px;
-    }
-
-    .latent-payoff {
+    .latent-metric {
       min-width: 0;
       display: grid;
       align-content: center;
-      gap: 4px;
-      padding: 8px 14px;
-      border-left: 1px solid var(--line);
-      color: var(--text);
-      background: var(--value-soft);
-      font-size: 10px;
-      line-height: 1.4;
+      gap: 5px;
+      padding: 12px 18px;
     }
 
-    .latent-payoff strong {
-      color: var(--value);
+    .latent-metric + .latent-metric {
+      border-left: 1px solid var(--line);
+    }
+
+    .latent-metric span {
+      color: var(--muted-2);
       font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.045em;
+      text-transform: uppercase;
+    }
+
+    .latent-metric strong {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 18px;
+      line-height: 1.15;
+    }
+
+    .latent-metric b {
+      color: var(--value);
+      font-weight: 800;
+    }
+
+    .latent-metric small {
+      color: var(--muted);
       font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .latent-metric.is-net {
+      background: var(--value-soft);
     }
 
     .native-vision-stage {
@@ -4474,21 +5869,21 @@
       padding: 50px 36px 24px;
     }
 
-    #chapter-15 .eyebrow {
+    #chapter-17 .eyebrow {
       font-size: 14px;
     }
 
-    #chapter-15 h2 {
+    #chapter-17 h2 {
       font-size: clamp(30px, 2.35vw, 42px);
     }
 
-    #chapter-15 .chapter-lead {
+    #chapter-17 .chapter-lead {
       font-size: clamp(15px, 1.22vw, 18px);
       line-height: 1.48;
     }
 
-    #chapter-15 .stage-label,
-    #chapter-15 .stage-counter {
+    #chapter-17 .stage-label,
+    #chapter-17 .stage-counter {
       font-size: 13px;
     }
 
@@ -4833,6 +6228,148 @@
       border-color: var(--accent);
     }
 
+    .tpu7x-intro-stage {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr);
+      padding: 48px 42px 28px;
+    }
+
+    .tpu7x-hardware-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(400px, 0.82fr);
+      align-items: stretch;
+      gap: 28px;
+    }
+
+    .tpu7x-arch-figure {
+      min-height: 0;
+      margin: 0;
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      align-items: center;
+      padding-right: 26px;
+      border-right: 1px solid var(--line);
+    }
+
+    .tpu7x-arch-figure img {
+      width: 100%;
+      height: 100%;
+      max-height: 342px;
+      display: block;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .tpu7x-arch-figure figcaption {
+      padding-top: 6px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .tpu7x-arch-figure figcaption a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .tpu7x-spec-sheet {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: repeat(4, minmax(0, 1fr));
+      border-top: 1px solid var(--line-strong);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .tpu7x-spec-row {
+      min-width: 0;
+      display: grid;
+      grid-template-columns: minmax(126px, 0.72fr) repeat(2, minmax(0, 1fr));
+      align-items: center;
+      gap: 12px;
+      padding: 10px 8px 10px 14px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .tpu7x-spec-row:first-child {
+      border-top: 0;
+    }
+
+    .tpu7x-spec-row.step-reveal {
+      transform: none;
+    }
+
+    .tpu7x-spec-row.step-reveal.is-current {
+      border-color: var(--line) !important;
+      background: color-mix(in srgb, currentColor 7%, transparent);
+      box-shadow: inset 3px 0 0 currentColor;
+    }
+
+    .tpu7x-spec-label {
+      display: grid;
+      gap: 4px;
+      color: currentColor;
+    }
+
+    .tpu7x-spec-label strong {
+      color: currentColor;
+      font-size: 15px;
+    }
+
+    .tpu7x-spec-label span {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .tpu7x-spec-value {
+      min-width: 0;
+      display: grid;
+      gap: 2px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 23px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .tpu7x-spec-value small {
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .tpu7x-spec-row.chip {
+      color: var(--score);
+    }
+
+    .tpu7x-spec-row.compute {
+      color: var(--query);
+    }
+
+    .tpu7x-spec-row.hbm {
+      color: var(--key);
+    }
+
+    .tpu7x-spec-row.ici {
+      color: var(--value);
+    }
+
+    .tpu7x-spec-row.ici .tpu7x-spec-value {
+      grid-column: span 2;
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: baseline;
+      gap: 12px;
+    }
+
+    .tpu7x-spec-row.ici .tpu7x-spec-value small {
+      max-width: 250px;
+    }
+
     /* Prefill / Decode performance chapters */
     .performance-chapter .source-line {
       position: absolute;
@@ -4847,6 +6384,261 @@
     .performance-chapter .accent { color: var(--accent); }
     .performance-chapter .query { color: var(--query); }
     .performance-chapter .key { color: var(--key); }
+
+    .moe-cost-stage {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 12px;
+      padding: 48px 42px 28px;
+    }
+
+    .moe-cost-population {
+      display: grid;
+      grid-template-columns: auto 20px auto 20px auto;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 8px 0 12px;
+      border-bottom: 1px solid var(--line-strong);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .moe-cost-population span {
+      display: grid;
+      gap: 2px;
+      text-align: center;
+    }
+
+    .moe-cost-population strong {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 20px;
+    }
+
+    .moe-cost-population b {
+      color: var(--accent);
+      font-size: 20px;
+    }
+
+    .moe-cost-table {
+      width: 100%;
+      align-self: stretch;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .moe-cost-table th,
+    .moe-cost-table td {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .moe-cost-table thead th {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .moe-cost-table tbody th {
+      color: var(--text);
+      font-size: 17px;
+    }
+
+    .moe-cost-table tbody th span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.35;
+    }
+
+    .moe-cost-table td.value {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 24px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .moe-cost-table td.value small {
+      margin-left: 4px;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .moe-cost-table td.formula {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .moe-cost-table tr.compute-row th {
+      box-shadow: inset 3px 0 0 var(--query);
+    }
+
+    .moe-cost-table tr.hbm-row th {
+      box-shadow: inset 3px 0 0 var(--key);
+    }
+
+    .moe-cost-table tr.ici-row {
+      background: color-mix(in srgb, var(--value) 8%, transparent);
+    }
+
+    .moe-cost-table tr.ici-row th {
+      box-shadow: inset 3px 0 0 var(--value);
+    }
+
+    .moe-cost-table tr.ici-row td.value {
+      color: var(--value);
+    }
+
+    .moe-cost-verdict {
+      display: grid;
+      grid-template-columns: auto auto minmax(0, 1fr);
+      align-items: center;
+      gap: 24px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--line-strong);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .moe-cost-verdict strong {
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 18px;
+      white-space: nowrap;
+    }
+
+    .moe-cost-verdict strong b {
+      color: var(--value);
+    }
+
+    .moe-cost-verdict span:last-child {
+      padding-left: 24px;
+      border-left: 1px solid var(--line);
+      line-height: 1.45;
+    }
+
+    .fused-moe-stage {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 48px 42px 28px;
+    }
+
+    .fused-moe-figure {
+      min-height: 0;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .fused-moe-figure img {
+      display: block;
+      width: auto;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      margin: 0 auto;
+    }
+
+    .fused-moe-figure.pipeline img {
+      width: 100%;
+    }
+
+    .fused-moe-figure.measured img {
+      width: auto;
+      max-width: 94%;
+      height: clamp(210px, 39vh, 280px);
+      max-height: 100%;
+    }
+
+    .fused-moe-outcomes {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      border-top: 1px solid var(--line-strong);
+    }
+
+    .fused-moe-outcome {
+      min-width: 0;
+      padding: 9px 16px 8px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.42;
+    }
+
+    .fused-moe-outcome + .fused-moe-outcome {
+      border-left: 1px solid var(--line);
+    }
+
+    .fused-moe-outcome b {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .fused-moe-outcome strong {
+      color: var(--accent);
+    }
+
+    .fused-moe-outcome.bottleneck strong {
+      color: var(--danger);
+    }
+
+    .fused-moe-sequence {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-top: 1px solid var(--line-strong);
+    }
+
+    .fused-moe-step {
+      min-width: 0;
+      padding: 8px 12px 7px;
+      border-left: 1px solid var(--line);
+    }
+
+    .fused-moe-step:first-child {
+      border-left: 0;
+    }
+
+    .fused-moe-step b {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+    }
+
+    .fused-moe-step strong {
+      display: block;
+      margin-bottom: 3px;
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .fused-moe-step span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.4;
+    }
 
     .roofline-concept-stage {
       display: grid;
@@ -5263,9 +7055,13 @@
       }
 
       .kimi-map-stage,
+      .linearize-stage,
+      .linear-memory-stage,
       .kda-stage,
       .kimi-hybrid-stage,
-      .attnres-stage,
+      .attnres-problem-stage,
+      .attnres-matrix-stage,
+      .attnres-block-stage,
       .latent-moe-stage,
       .native-vision-stage,
       .architecture-summary-stage {
@@ -5386,6 +7182,24 @@
       .kda-comparison {
         grid-template-columns: 1fr 54px 1fr;
         gap: 9px;
+      }
+
+      .linear-attention-side {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+
+      .linearize-flow {
+        grid-template-columns: minmax(0, 1fr) 62px minmax(0, 1fr);
+      }
+
+      .state-summands {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .memory-rule-row {
+        grid-template-columns: 170px minmax(280px, 0.9fr) minmax(0, 1.1fr);
+        gap: 18px;
       }
     }
 
@@ -5535,9 +7349,13 @@
       }
 
       .kimi-map-stage,
+      .linearize-stage,
+      .linear-memory-stage,
       .kda-stage,
       .kimi-hybrid-stage,
-      .attnres-stage,
+      .attnres-problem-stage,
+      .attnres-matrix-stage,
+      .attnres-block-stage,
       .latent-moe-stage,
       .native-vision-stage,
       .architecture-summary-stage {
@@ -5579,7 +7397,6 @@
 
       .kimi-axis-grid,
       .kda-comparison,
-      .attnres-stage,
       .model-summary-grid,
       .systems-contract {
         grid-template-columns: 1fr;
@@ -5587,6 +7404,51 @@
 
       .kda-transform {
         min-height: 44px;
+      }
+
+      .linearize-flow,
+      .cache-state-contrast {
+        grid-template-columns: 1fr;
+      }
+
+      .linear-attention-side.linear {
+        border-top: 1px solid var(--line-strong);
+        border-left: 0;
+      }
+
+      .linear-associative-arrow {
+        min-height: 52px;
+        grid-template-columns: auto auto auto;
+        align-items: center;
+      }
+
+      .linear-memory-stage {
+        min-height: 1080px;
+        grid-template-rows: auto auto;
+      }
+
+      .cache-state-contrast {
+        gap: 18px;
+        padding: 12px 14px 20px;
+      }
+
+      .cache-state-arrow {
+        grid-template-columns: auto auto auto;
+        align-items: center;
+      }
+
+      .fixed-state-side {
+        grid-template-columns: 140px minmax(0, 1fr);
+      }
+
+      .memory-rule-list {
+        padding: 0;
+      }
+
+      .memory-rule-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 16px 4px;
       }
 
       .kda-rule-band {
@@ -5642,23 +7504,86 @@
         transform: rotate(90deg);
       }
 
-      .attnres-stage {
-        min-height: 720px;
-        grid-template-rows: minmax(360px, auto) auto;
+      .attnres-problem-stage,
+      .attnres-block-stage {
+        min-height: 1180px;
       }
 
-      .attnres-takeaways {
+      .attnres-matrix-stage {
+        min-height: 1580px;
+      }
+
+      .attnres-problem-layout,
+      .attnres-axis-analogy,
+      .attnres-matrix-flow,
+      .attnres-k3-layout,
+      .k3-block-config {
         grid-template-columns: 1fr;
       }
 
-      .attnres-takeaway {
-        min-height: 62px;
+      .k3-attnres-paper {
+        min-height: 520px;
+        padding-right: 0;
+        padding-bottom: 16px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .attnres-axis-line + .attnres-axis-line {
         border-top: 1px solid var(--line);
         border-left: 0;
       }
 
-      .attnres-takeaway:first-child {
+      .attnres-matrix-flow {
+        gap: 16px;
+      }
+
+      .attnres-operator {
+        min-height: 34px;
+        grid-template-columns: auto auto auto;
+        align-items: center;
+      }
+
+      .attnres-readout {
+        position: static;
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+
+      .attnres-readout-example {
+        text-align: center;
+      }
+
+      .attnres-matrix-thesis {
+        grid-template-columns: 1fr;
+      }
+
+      .attnres-matrix-thesis span {
+        padding: 10px 2px;
+        border-top: 1px solid var(--line);
+        border-left: 0;
+      }
+
+      .attnres-matrix-thesis span:first-child {
         border-top: 0;
+      }
+
+      .attnres-granularity-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 14px 0;
+      }
+
+      .depth-current-module {
+        min-height: 54px;
+      }
+
+      .k3-block-strip {
+        min-width: 920px;
+      }
+
+      .k3-block-config {
+        overflow-x: auto;
       }
 
       .latent-moe-stage {
@@ -5666,13 +7591,13 @@
         grid-template-rows: auto auto auto;
       }
 
-      .latent-cost-line,
+      .latent-scale-line,
       .latent-paper-layout,
-      .latent-footer {
+      .latent-metrics {
         grid-template-columns: 1fr;
       }
 
-      .latent-cost-term {
+      .latent-scale-copy {
         border-top: 1px solid var(--line);
         border-left: 0;
       }
@@ -5684,21 +7609,10 @@
       }
 
       .latent-reading-row {
-        grid-template-columns: 96px minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr);
       }
 
-      .latent-stable-line {
-        grid-template-columns: 1fr;
-      }
-
-      .latent-stable-line span {
-        padding-top: 5px;
-        padding-left: 0;
-        border-top: 1px solid var(--line);
-        border-left: 0;
-      }
-
-      .latent-payoff {
+      .latent-metric + .latent-metric {
         border-top: 1px solid var(--line);
         border-left: 0;
       }
@@ -5753,6 +7667,35 @@
 
       .answer-principle {
         flex-wrap: wrap;
+      }
+
+      .tpu7x-intro-stage {
+        min-height: 1120px;
+        grid-template-rows: auto auto;
+      }
+
+      .tpu7x-hardware-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tpu7x-arch-figure {
+        min-height: 420px;
+        padding-right: 0;
+        padding-bottom: 14px;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .tpu7x-spec-row {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .tpu7x-spec-label {
+        grid-column: 1 / -1;
+      }
+
+      .tpu7x-spec-row.ici .tpu7x-spec-value {
+        grid-column: 1 / -1;
       }
 
       .performance-chapter .source-line {
@@ -5890,7 +7833,7 @@
     </div>
     <div class="chapter-title" id="chapter-title">01 · Attention: activation → Q / K / V</div>
     <div class="top-progress">
-      <span id="progress-text">01 / 21</span>
+      <span id="progress-text">01 / 27</span>
       <span class="progress-track" aria-hidden="true"><span class="progress-fill" id="progress-fill"></span></span>
     </div>
   </header>
@@ -5904,19 +7847,25 @@
     <button class="rail-button" type="button" data-target="chapter-6" aria-label="第六章 MLA"><span class="rail-label">06 / MLA</span></button>
     <button class="rail-button" type="button" data-target="chapter-7" aria-label="第七章 DSA"><span class="rail-label">07 / DSA</span></button>
     <button class="rail-button" type="button" data-target="chapter-8" aria-label="第八章 GLM-5.2"><span class="rail-label">08 / GLM-5.2</span></button>
-    <button class="rail-button" type="button" data-target="chapter-9" aria-label="第九章 长程 Agent 的三个问题"><span class="rail-label">09 / 三个问题</span></button>
-    <button class="rail-button" type="button" data-target="chapter-10" aria-label="第十章 Kimi K3 的三个回答"><span class="rail-label">10 / 三个回答</span></button>
-    <button class="rail-button" type="button" data-target="chapter-11" aria-label="第十一章 KDA"><span class="rail-label">11 / KDA</span></button>
-    <button class="rail-button" type="button" data-target="chapter-12" aria-label="第十二章 Hybrid Attention"><span class="rail-label">12 / Hybrid</span></button>
-    <button class="rail-button" type="button" data-target="chapter-13" aria-label="第十三章 Attention Residuals"><span class="rail-label">13 / AttnRes</span></button>
-    <button class="rail-button" type="button" data-target="chapter-14" aria-label="第十四章 Stable LatentMoE"><span class="rail-label">14 / LatentMoE</span></button>
-    <button class="rail-button" type="button" data-target="chapter-15" aria-label="第十五章 Native Vision"><span class="rail-label">15 / Native Vision</span></button>
-    <button class="rail-button" type="button" data-target="chapter-16" aria-label="第十六章 架构总结"><span class="rail-label">16 / 总结</span></button>
-    <button class="rail-button" type="button" data-target="chapter-17" aria-label="第十七章 Roofline 与 AI"><span class="rail-label">17 / Roofline + AI</span></button>
-    <button class="rail-button" type="button" data-target="chapter-18" aria-label="第十八章 Prefill 与 Decode"><span class="rail-label">18 / Prefill vs Decode</span></button>
-    <button class="rail-button" type="button" data-target="chapter-19" aria-label="第十九章 GLM-5.2 Model Roofline"><span class="rail-label">19 / Model Roofline</span></button>
-    <button class="rail-button" type="button" data-target="chapter-20" aria-label="第二十章 Long Context 与 DSA"><span class="rail-label">20 / Long Context + DSA</span></button>
-    <button class="rail-button" type="button" data-target="chapter-21" aria-label="第二十一章 MTP"><span class="rail-label">21 / MTP</span></button>
+    <button class="rail-button" type="button" data-target="chapter-9" aria-label="第九章 信息流的三个扩展维度与对应机制"><span class="rail-label">09 / 三维信息流</span></button>
+    <button class="rail-button" type="button" data-target="chapter-10" aria-label="第十章 从 Softmax 到 Linear Attention"><span class="rail-label">10 / Why Linear</span></button>
+    <button class="rail-button" type="button" data-target="chapter-11" aria-label="第十一章 固定状态的记忆管理"><span class="rail-label">11 / Fixed State</span></button>
+    <button class="rail-button" type="button" data-target="chapter-12" aria-label="第十二章 KDA"><span class="rail-label">12 / KDA</span></button>
+    <button class="rail-button" type="button" data-target="chapter-13" aria-label="第十三章 Hybrid Attention"><span class="rail-label">13 / Hybrid</span></button>
+    <button class="rail-button" type="button" data-target="chapter-14" aria-label="第十四章 标准残差的问题"><span class="rail-label">14 / Why AttnRes</span></button>
+    <button class="rail-button" type="button" data-target="chapter-15" aria-label="第十五章 Attention Residuals 的矩阵计算"><span class="rail-label">15 / AttnRes QKV</span></button>
+    <button class="rail-button" type="button" data-target="chapter-16" aria-label="第十六章 Block Attention Residuals"><span class="rail-label">16 / Block AttnRes</span></button>
+    <button class="rail-button" type="button" data-target="chapter-17" aria-label="第十七章 LatentMoE"><span class="rail-label">17 / LatentMoE</span></button>
+    <button class="rail-button" type="button" data-target="chapter-18" aria-label="第十八章 架构总结"><span class="rail-label">18 / 总结</span></button>
+    <button class="rail-button" type="button" data-target="chapter-19" aria-label="第十九章 TPU v7x 硬件基线"><span class="rail-label">19 / TPU v7x</span></button>
+    <button class="rail-button" type="button" data-target="chapter-20" aria-label="第二十章 Roofline 与 AI"><span class="rail-label">20 / Roofline + AI</span></button>
+    <button class="rail-button" type="button" data-target="chapter-21" aria-label="第二十一章 Prefill 与 Decode"><span class="rail-label">21 / Prefill vs Decode</span></button>
+    <button class="rail-button" type="button" data-target="chapter-22" aria-label="第二十二章 GLM-5.2 Model Roofline"><span class="rail-label">22 / Model Roofline</span></button>
+    <button class="rail-button" type="button" data-target="chapter-23" aria-label="第二十三章 Long Context 与 DSA"><span class="rail-label">23 / Long Context + DSA</span></button>
+    <button class="rail-button" type="button" data-target="chapter-24" aria-label="第二十四章 MTP"><span class="rail-label">24 / MTP</span></button>
+    <button class="rail-button" type="button" data-target="chapter-25" aria-label="第二十五章 MoE 单层 Cost Model"><span class="rail-label">25 / MoE Cost</span></button>
+    <button class="rail-button" type="button" data-target="chapter-26" aria-label="第二十六章 Fused MoE 流水"><span class="rail-label">26 / Fused MoE</span></button>
+    <button class="rail-button" type="button" data-target="chapter-27" aria-label="第二十七章 Fused MoE 实测重叠"><span class="rail-label">27 / Overlap</span></button>
   </nav>
 
   <main>
@@ -6353,244 +8302,239 @@
       </div>
     </section>
 
-    <section class="chapter" id="chapter-9" data-title="Kimi K3: what breaks when an agent trace keeps growing" data-steps="4">
+    <section class="chapter" id="chapter-9" data-title="Kimi K3: what breaks across three scaling axes" data-steps="2">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 09 / The scaling problem</p>
-            <h2>1M Agent trace：模型会卡在哪里？</h2>
+            <p class="eyebrow">Chapter 09 / Scaling information flow</p>
+            <h2>模型沿三个维度 Scale，会遇到什么问题？</h2>
           </div>
-          <p class="chapter-lead">先不看 K3 的模块名，只看规模扩大后出现的三类瓶颈：长历史要搬更多 KV，深层 residual 难以选择早期表示，Dense 扩容会抬高每 token 成本。</p>
+          <p class="chapter-lead">先不从 K3 的模块名倒推问题。沿 sequence length、network depth 与 model width 扩展标准 Transformer，会分别放大状态容量、残差稀释和单 token 激活成本。</p>
         </div>
 
-        <div class="stage kimi-map-stage problem-map-stage">
-          <span class="stage-label">One long-running agent trace</span>
-          <span class="stage-counter">context keeps accumulating</span>
+        <div class="stage kimi-map-stage combined-info-stage">
+          <span class="stage-label">Three complementary dimensions</span>
+          <span class="stage-counter">one question → three mechanisms</span>
 
-          <div class="agent-trace step-reveal" data-show-at="0" data-focus-at="0" aria-label="长程 agent 任务中的信息轨迹">
-            <div class="trace-scale"><span>context accumulates</span><i></i><strong>128K → 1M</strong></div>
-            <div class="trace-events">
-              <span class="trace-chip">读取需求</span>
-              <span class="trace-chip">浏览代码</span>
-              <span class="trace-chip">执行工具</span>
-              <span class="trace-chip">观察画面</span>
-              <span class="trace-chip">定位错误</span>
-              <span class="trace-chip">修改实现</span>
-              <span class="trace-chip current">当前 token</span>
-            </div>
+          <div class="information-flow-scale step-reveal" data-show-at="0" data-focus-at="0">
+            <span>SEQUENCE · DEPTH · WIDTH ↑</span>
+            <i></i>
+            <strong>WHAT BREAKS FIRST?</strong>
           </div>
 
           <div class="problem-axis-list">
-            <article class="problem-axis-row history step-reveal" data-show-at="1" data-focus-at="1">
-              <h3 class="problem-axis-label">跨 Token：</h3>
-              <p class="problem-axis-copy"><b>Context 越长，KV Cache 越大。</b>Decode 的每一步都要加载更长的历史，容量、访存和延迟随长度增长。</p>
-              <div class="problem-axis-sketch kv-cache-sketch" role="img" aria-label="当前 Query 读取随上下文增长的 KV Cache">
-                <div class="kv-query-box">q<sub>now</sub></div>
-                <span class="sketch-arrow"></span>
-                <div class="kv-cache-bank">
-                  <span class="kv-pair"><i>K₁</i><b>V₁</b></span>
-                  <span class="kv-pair"><i>K₂</i><b>V₂</b></span>
-                  <span class="kv-pair ellipsis">…</span>
-                  <span class="kv-pair"><i>Kₜ₋₁</i><b>Vₜ₋₁</b></span>
-                  <span class="kv-pair current"><i>Kₜ</i><b>Vₜ</b></span>
+            <article class="problem-axis-row history">
+              <h3 class="problem-axis-label">Sequence：</h3>
+              <p class="dimension-question"><b>上下文长度 L 增长时，</b>逐 token KV Cache 随 L 线性变大；Decode 每一步读取的历史也更长，HBM 容量、带宽与延迟一起承压。</p>
+              <div class="dimension-answer step-reveal" data-show-at="1" data-focus-at="1">
+                <div class="dimension-answer-copy">
+                  <strong>Hybrid Attention</strong>
+                  <span>高效长程混合 + 选择性高容量注意力</span>
                 </div>
-              </div>
-            </article>
-
-            <article class="problem-axis-row depth step-reveal" data-show-at="2" data-focus-at="2">
-              <h3 class="problem-axis-label">跨 Depth：</h3>
-              <p class="problem-axis-copy"><b>Residual 逐层累加。</b>网络越深，早期表示越容易混进累计流；当前层很难单独选择真正有用的早期信息。</p>
-              <div class="problem-axis-sketch residual-sketch" role="img" aria-label="三个带跳连和加法节点的 residual block">
-                <span class="residual-endpoint">h₀</span>
-                <div class="residual-units">
-                  <div class="residual-unit"><i class="residual-skip"></i><span class="residual-layer">Layer 1</span><b class="residual-add">+</b></div>
-                  <div class="residual-unit"><i class="residual-skip"></i><span class="residual-layer">Layer 2</span><b class="residual-add">+</b></div>
-                  <div class="residual-unit"><i class="residual-skip"></i><span class="residual-layer">Layer 3</span><b class="residual-add">+</b></div>
-                </div>
-                <span class="residual-endpoint">h₃</span>
-              </div>
-            </article>
-
-            <article class="problem-axis-row channel step-reveal" data-show-at="3" data-focus-at="3">
-              <h3 class="problem-axis-label">跨 Channel：</h3>
-              <p class="problem-axis-copy"><b>Dense 扩容会让每个 token 执行更多参数。</b>能否把能力拆成多个专家，只激活与当前 token 相关的少数路径？</p>
-              <div class="problem-axis-sketch moe-sketch" role="img" aria-label="Token 经过 Router 只路由到少量 MoE 专家">
-                <div class="moe-token">token</div>
-                <span class="sketch-arrow"></span>
-                <div class="moe-router">Router</div>
-                <div class="moe-branch"><i></i><i></i><i></i><i></i></div>
-                <div class="moe-experts">
-                  <span class="moe-expert selected"><b>Expert 1</b><em>selected</em></span>
-                  <span class="moe-expert"><b>Expert 2</b><em>idle</em></span>
-                  <span class="moe-expert selected"><b>Expert 3</b><em>selected</em></span>
-                  <span class="moe-expert"><b>Expert 4</b><em>idle</em></span>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <div class="kimi-thesis-line problem-thesis step-reveal hard-reveal" data-show-at="3">
-            <span>核心问题：</span><strong>怎样让有效信息留下来</strong><span>，又不让状态 / 访存 / 计算随 scale 一起失控？</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="chapter" id="chapter-10" data-title="Kimi K3: three answers to the scaling problem" data-steps="4">
-      <div class="chapter-shell">
-        <div class="chapter-heading">
-          <div>
-            <p class="eyebrow">Chapter 10 / Kimi K3 answers</p>
-            <h2>K3 的回答：固定状态、按层重读、低维专家路径</h2>
-          </div>
-          <p class="chapter-lead">第 9 页提出的三个 scaling 问题，在 K3 里分别落到 token、depth、channel 三条信息流；每一条都避免“规模变大就全量付费”。</p>
-        </div>
-
-        <div class="stage kimi-map-stage answer-map-stage">
-          <span class="stage-label">Three problems → three mechanisms</span>
-          <span class="stage-counter">state · depth attention · latent experts</span>
-
-          <div class="answer-principle answer-principle-line step-reveal" data-show-at="0" data-focus-at="0">
-            <span>问题页问：历史、深层表示、模型容量扩大后，怎样不让每个 token 全量付费？</span>
-            <i>→</i>
-            <strong>K3 的共同回答是：先压缩，再按内容选择</strong>
-          </div>
-
-          <div class="problem-axis-list">
-            <article class="problem-axis-row history step-reveal" data-show-at="1" data-focus-at="1">
-              <h3 class="problem-axis-label">跨 Token：</h3>
-              <p class="problem-axis-copy"><b>KDA 把长历史持续写进固定尺寸 state。</b>主干按 3× KDA + 1× Gated MLA 交替：高频路径不再保存逐 token KV，周期性的全局注意力保留紧凑 latent KV。</p>
-              <div class="problem-axis-sketch token-answer-sketch" role="img" aria-label="长 token 历史被 KDA 压缩进固定尺寸循环状态，并周期性经过 Gated MLA 全局注意力">
-                <div class="token-history-line"><span>t₁</span><span>t₂</span><span>…</span><span>t</span></div>
-                <span class="sketch-arrow"></span>
-                <div class="kda-state-node" aria-hidden="true">
-                  <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-                </div>
-                <span class="sketch-arrow"></span>
-                <div class="hybrid-cadence-mini" aria-hidden="true">
+                <div class="hybrid-cadence-mini" aria-label="三层 KDA 后接一层 Gated MLA">
                   <span>KDA</span><span>KDA</span><span>KDA</span><span>Gated MLA</span>
                 </div>
               </div>
             </article>
 
-            <article class="problem-axis-row depth step-reveal" data-show-at="2" data-focus-at="2">
-              <h3 class="problem-axis-label">跨 Depth：</h3>
-              <p class="problem-axis-copy"><b>Block AttnRes 把不同深度的表示变成可寻址 sources。</b>当前层用 learned query <b>w</b> 生成权重 α，按内容重读 embedding、前序 blocks 与当前 partial sum。</p>
-              <div class="problem-axis-sketch" role="img" aria-label="Embedding、前序 block 和当前 partial sum 扇入 Attention Residual 权重节点，再送入当前层">
-                <svg class="attnres-answer-svg" viewBox="0 0 560 96" aria-hidden="true">
-                  <defs>
-                    <marker id="attnres-arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M0,0 L6,3 L0,6 Z" fill="var(--score)"></path>
-                    </marker>
-                  </defs>
-                  <text class="micro" x="177" y="12">DEPTH SOURCES</text>
-                  <rect class="source" x="4" y="58" width="78" height="25"></rect>
-                  <rect class="source" x="94" y="58" width="78" height="25"></rect>
-                  <rect class="source" x="184" y="58" width="78" height="25"></rect>
-                  <rect class="source" x="274" y="58" width="90" height="25"></rect>
-                  <text x="43" y="74">Embedding</text>
-                  <text x="133" y="74">Block n−2</text>
-                  <text x="223" y="74">Block n−1</text>
-                  <text x="319" y="74">partial sum</text>
-                  <path class="mix-line" d="M43 58 L408 38"></path>
-                  <path class="mix-line" d="M133 58 L408 38"></path>
-                  <path class="mix-line" d="M223 58 L408 38"></path>
-                  <path class="mix-line" d="M319 58 L408 38"></path>
-                  <rect class="query" x="382" y="2" width="52" height="18"></rect>
-                  <text class="strong" x="408" y="14">learned w</text>
-                  <path class="mix-line" d="M408 20 L408 29"></path>
-                  <circle class="query" cx="408" cy="38" r="13"></circle>
-                  <text class="strong" x="408" y="41">α</text>
-                  <path class="output-line" d="M421 38 L472 38" marker-end="url(#attnres-arrow)"></path>
-                  <rect class="target" x="478" y="24" width="76" height="28"></rect>
-                  <text class="strong" x="516" y="41">Current layer</text>
-                  <text class="micro" x="408" y="92">softmax over depth</text>
-                </svg>
+            <article class="problem-axis-row depth">
+              <h3 class="problem-axis-label">Depth：</h3>
+              <p class="dimension-question"><b>层数 D 增长时，</b>PreNorm residual 以固定权重累加所有层输出；hidden state 持续增长，而单层贡献在累计流中逐渐被稀释。</p>
+              <div class="dimension-answer step-reveal" data-show-at="1" data-focus-at="1">
+                <div class="dimension-answer-copy">
+                  <strong>Attention Residuals</strong>
+                  <span>沿网络深度选择性取回 representation</span>
+                </div>
+                <div class="depth-source-mini" aria-label="从 embedding 和此前 blocks 中选择表示">
+                  <span>Embedding</span><span>Block n−2</span><span>Block n−1</span><b>→</b><strong>α<br>select</strong>
+                </div>
               </div>
             </article>
 
-            <article class="problem-axis-row channel step-reveal" data-show-at="3" data-focus-at="3">
-              <h3 class="problem-axis-label">跨 Channel：</h3>
-              <p class="problem-axis-copy"><b>Router 读取 full-width x；W↓ 只压缩送往专家的 payload。</b>两条路径并行：routing scores 从 x 选 expert，latent z 再被 dispatch、计算与聚合；RMSNorm / SiTU-GLU 稳住数值，QB 对齐专家负载。</p>
-              <div class="problem-axis-sketch" role="img" aria-label="Router 从完整 token x 计算选路；并行的降维分支把 x 压成 latent payload z，再发送给选中的 routed experts">
-                <svg class="latent-moe-answer-svg" viewBox="0 0 590 108" aria-hidden="true">
-                  <defs>
-                    <marker id="latent-arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M0,0 L6,3 L0,6 Z" fill="var(--value)"></path>
-                    </marker>
-                    <marker id="shared-arrow" viewBox="0 0 6 6" refX="5" refY="3" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                      <path d="M0,0 L6,3 L0,6 Z" fill="var(--accent)"></path>
-                    </marker>
-                  </defs>
-                  <rect class="routed-node" x="4" y="40" width="50" height="26"></rect>
-                  <text class="strong" x="29" y="56">x [d]</text>
-                  <circle class="routed-node" cx="76" cy="53" r="4"></circle>
-                  <path class="shared-line" d="M54 53 L76 53 L76 18 L125 18" marker-end="url(#shared-arrow)"></path>
-                  <rect class="shared-node" x="130" y="5" width="105" height="26"></rect>
-                  <text class="strong" x="182" y="17">Shared experts</text>
-                  <text class="micro" x="182" y="26">full width d</text>
-                  <path class="shared-line" d="M235 18 L548 18 L548 46" marker-end="url(#shared-arrow)"></path>
-
-                  <path class="path-line" d="M76 53 L105 53" marker-end="url(#latent-arrow)"></path>
-                  <rect class="routed-node" x="111" y="40" width="62" height="26"></rect>
-                  <text class="strong" x="142" y="52">W↓</text>
-                  <text class="micro" x="142" y="61">d → ℓ</text>
-                  <path class="path-line" d="M173 53 L187 53" marker-end="url(#latent-arrow)"></path>
-                  <rect class="routed-node" x="193" y="40" width="62" height="26"></rect>
-                  <text class="strong" x="224" y="52">z [ℓ]</text>
-                  <text class="micro" x="224" y="61">payload</text>
-                  <path class="path-line" d="M255 53 L273 53" marker-end="url(#latent-arrow)"></path>
-
-                  <rect class="expert-node" x="279" y="31" width="34" height="18"></rect>
-                  <rect class="expert-node" x="317" y="31" width="34" height="18"></rect>
-                  <rect class="expert-node" x="279" y="56" width="34" height="18"></rect>
-                  <rect class="expert-node" x="317" y="56" width="34" height="18"></rect>
-                  <text x="296" y="43">E1</text><text x="334" y="43">E2</text>
-                  <text x="296" y="68">E3</text><text x="334" y="68">E4</text>
-
-                  <path class="path-line" d="M76 57 L76 91 L181 91" marker-end="url(#latent-arrow)"></path>
-                  <rect class="routed-node" x="187" y="78" width="74" height="26"></rect>
-                  <text class="strong" x="224" y="90">Router</text>
-                  <text class="micro" x="224" y="99">QB bias · reads x[d]</text>
-                  <path class="router-control-line" d="M261 91 L269 91 L269 72 L278 72" marker-end="url(#latent-arrow)"></path>
-
-                  <path class="path-line" d="M351 53 L369 53" marker-end="url(#latent-arrow)"></path>
-                  <rect class="routed-node" x="375" y="40" width="76" height="26"></rect>
-                  <text class="strong" x="413" y="52">RMSNorm</text>
-                  <text class="micro" x="413" y="61">stable combine</text>
-                  <path class="path-line" d="M451 53 L469 53" marker-end="url(#latent-arrow)"></path>
-                  <rect class="routed-node" x="475" y="40" width="56" height="26"></rect>
-                  <text class="strong" x="503" y="52">W↑</text>
-                  <text class="micro" x="503" y="61">ℓ → d</text>
-                  <path class="path-line" d="M531 53 L541 53" marker-end="url(#latent-arrow)"></path>
-                  <circle class="routed-node" cx="550" cy="53" r="10"></circle>
-                  <text class="strong" x="550" y="56">+</text>
-                  <path class="path-line" d="M560 53 L582 53" marker-end="url(#latent-arrow)"></path>
-                </svg>
+            <article class="problem-axis-row channel">
+              <h3 class="problem-axis-label">Width：</h3>
+              <p class="dimension-question"><b>模型宽度与容量增长时，</b>若仍采用 Dense 激活，每个 token 的 FLOPs、activation、权重读取与跨卡通信都会同步增加。</p>
+              <div class="dimension-answer step-reveal" data-show-at="1" data-focus-at="1">
+                <div class="dimension-answer-copy">
+                  <strong>Stable LatentMoE</strong>
+                  <span>稀疏 channel mixing · 16 / 896 routed experts</span>
+                </div>
+                <div class="sparse-width-mini" aria-label="Token 经 Router 只激活 896 个专家中的 16 个">
+                  <span>token</span><b>→</b><span>Router</span><b>→</b><strong>16 / 896<br>experts</strong>
+                </div>
               </div>
             </article>
           </div>
 
-          <div class="kimi-thesis-line problem-thesis step-reveal hard-reveal" data-show-at="3">
-            <span>一一对应：</span><strong>逐 token KV → 固定状态</strong><span>·</span><strong>等权残差 → 按深度注意</strong><span>·</span><strong>full-width 选路 → latent payload</strong>
+          <div class="kimi-thesis-line problem-thesis step-reveal hard-reveal" data-show-at="1">
+            <strong>K3 用三种互补机制，让 information access 随 sequence、depth、width 三个维度一起扩展。</strong>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="chapter" id="chapter-11" data-title="KDA: read the recurrent-state update" data-steps="5">
+    <section class="chapter" id="chapter-10" data-title="Linear Attention: why history can become a recurrent state" data-steps="3">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 11 / Kimi Delta Attention</p>
-            <h2>KDA：固定状态如何遗忘、修正、写入和读取</h2>
+            <p class="eyebrow">Chapter 10 / Why Linear Attention</p>
+            <h2>Softmax 为什么让 Attention 必须保留整段历史？</h2>
           </div>
-          <p class="chapter-lead">每个 token 都更新同一个 d<sub>k</sub>×d<sub>v</sub> 状态。按实际计算顺序读：先对旧状态做 channel-wise 遗忘，再修正当前 key 方向，写入新的 value，最后由 query 读取。</p>
+          <p class="chapter-lead">关键不只是计算量。当前 query 到来之后，Softmax 才能决定每个历史 key 的权重；因此历史 K/V 无法提前合并成一个与 query 无关的固定状态。</p>
+        </div>
+
+        <div class="stage linearize-stage">
+          <span class="stage-label">From pairwise lookup to associative state</span>
+          <span class="stage-counter">为什么历史不能预先聚合？</span>
+
+          <div class="linearize-flow">
+            <article class="linear-attention-side softmax step-reveal" data-show-at="0" data-focus-at="0">
+              <div class="linear-side-heading">
+                <small>STANDARD SOFTMAX ATTENTION</small>
+                <h3>当前 query 必须重新访问每个历史位置</h3>
+              </div>
+              <div class="linear-equation">o<sub>t</sub> = <span class="softmax-term">softmax</span>(q<sub>t</sub>K<sup>⊤</sup>)V</div>
+              <div class="softmax-history-visual">
+                <div class="query-to-history">
+                  <div class="linear-query-node">qₜ</div>
+                  <div class="history-score-bank">
+                    <span class="history-kv"><i>k₁</i><b>v₁</b></span>
+                    <span class="history-kv"><i>k₂</i><b>v₂</b></span>
+                    <span class="history-kv ellipsis">…</span>
+                    <span class="history-kv"><i>k<sub>t−1</sub></i><b>v<sub>t−1</sub></b></span>
+                    <span class="history-kv"><i>k<sub>t</sub></i><b>v<sub>t</sub></b></span>
+                  </div>
+                </div>
+              </div>
+              <p class="linear-side-result"><strong>Softmax 把 q<sub>t</sub> 与每个 k<sub>i</sub> 绑定在一起：</strong>q<sub>t</sub> 没来之前，无法预先得到最终权重。</p>
+            </article>
+
+            <div class="linear-associative-arrow step-reveal" data-show-at="1" data-focus-at="1">
+              <span>换成可分解的<br>similarity kernel</span>
+              <b>→</b>
+              <span>利用矩阵结合律</span>
+            </div>
+
+            <article class="linear-attention-side linear step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="linear-side-heading">
+                <small>LINEAR ATTENTION · NORMALIZATION OMITTED</small>
+                <h3>历史可以在 query 到来前压进状态</h3>
+              </div>
+              <div class="linear-equation">o<sub>t</sub> = φ(q<sub>t</sub>)<sup>⊤</sup><span class="state-term">[Σ φ(k<sub>i</sub>)v<sub>i</sub><sup>⊤</sup>]</span></div>
+              <div class="linear-state-visual">
+                <div class="state-build-row">
+                  <div class="state-summands">
+                    <span class="state-summand">φ(k₁)v₁ᵀ</span>
+                    <span class="state-summand ellipsis">…</span>
+                    <span class="state-summand">φ(kₜ)vₜᵀ</span>
+                  </div>
+                  <span class="state-build-arrow">→</span>
+                  <div class="fixed-state-matrix" aria-label="固定大小的矩阵状态 S_t">
+                    <i></i><i></i><i></i><i></i><i></i>
+                    <i></i><i></i><i></i><i></i><i></i>
+                    <i></i><i></i><i></i><i></i><i></i>
+                    <i></i><i></i><i></i><i></i><i></i>
+                  </div>
+                </div>
+                <div class="state-read-row"><span>qₜ</span><b>→</b><span>Sₜ</span><b>→</b><span>oₜ</span></div>
+              </div>
+              <p class="linear-side-result"><strong style="color: var(--accent);">S<sub>t</sub> 是 query-independent 的历史汇总：</strong>新的 query 只读取状态，不再逐项扫描历史 K/V。</p>
+            </article>
+          </div>
+
+          <div class="linearize-thesis step-reveal hard-reveal" data-show-at="2" data-focus-at="2">
+            <strong>TAKEAWAY</strong>
+            <span>Linear Attention 的关键不是字面删除 Softmax，而是把 token 两两匹配改写成<strong>可结合、可递推的状态读写</strong>。</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-11" data-title="Linear Attention: fixed state needs memory management" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 11 / Fixed-state memory</p>
+            <h2>历史压进固定状态后，有限记忆应该怎样更新？</h2>
+          </div>
+          <p class="chapter-lead">固定状态让 KDA 层不再维护随长度 L 增长的逐 token KV，但容量有限的状态会不断接收新信息：旧关联何时遗忘，冲突内容又如何覆盖？</p>
+        </div>
+
+        <div class="stage linear-memory-stage">
+          <span class="stage-label">The benefit — and the new problem</span>
+          <span class="stage-counter">cache growth → finite-state memory management</span>
+
+          <div class="cache-state-contrast step-reveal" data-show-at="0" data-focus-at="0">
+            <div class="cache-state-side">
+              <h3>Softmax Attention · KV 随 L 增长</h3>
+              <div class="growing-kv-line">
+                <span style="--kv-height: 34px;">KV₁</span>
+                <span style="--kv-height: 42px;">KV₂</span>
+                <span style="--kv-height: 50px;">KV₃</span>
+                <span class="ellipsis">…</span>
+                <span style="--kv-height: 66px;">KV<sub>t−2</sub></span>
+                <span style="--kv-height: 74px;">KV<sub>t−1</sub></span>
+                <span style="--kv-height: 82px;">KV<sub>t</sub></span>
+              </div>
+              <p>每个历史 token 都留下独立 K/V；容量与 Decode 读取量持续增长。</p>
+            </div>
+
+            <div class="cache-state-arrow">
+              <span>预聚合历史</span>
+              <b>→</b>
+              <span>固定大小</span>
+            </div>
+
+            <div class="cache-state-side fixed-state-side">
+              <div class="fixed-state-matrix" aria-label="固定大小的矩阵状态 S_t">
+                <i></i><i></i><i></i><i></i><i></i>
+                <i></i><i></i><i></i><i></i><i></i>
+                <i></i><i></i><i></i><i></i><i></i>
+                <i></i><i></i><i></i><i></i><i></i>
+              </div>
+              <div>
+                <h3>Linear Attention · 固定状态 Sₜ</h3>
+                <p>无论上下文多长，KDA 层都更新同一个 d<sub>k</sub>×d<sub>v</sub> recurrent state。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="memory-rule-list">
+            <article class="memory-rule-row naive step-reveal" data-show-at="1" data-focus-at="1">
+              <h3>朴素 Linear Attention</h3>
+              <div class="memory-rule-formula">S<sub>t</sub> = S<sub>t−1</sub> + k<sub>t</sub>v<sub>t</sub><sup>⊤</sup></div>
+              <p><strong>只会继续累加。</strong>旧信息不会主动消失；相同 key 方向出现新 value 时，新旧关联会叠在一起。</p>
+            </article>
+
+            <article class="memory-rule-row gla step-reveal" data-show-at="2" data-focus-at="2">
+              <h3>GLA · 门控遗忘</h3>
+              <div class="memory-rule-formula">S<sub>t</sub> = G<sub>t</sub> ⊙ S<sub>t−1</sub> + k<sub>t</sub>v<sub>t</sub><sup>⊤</sup></div>
+              <p><strong>通过输入相关 Gate 主动遗忘。</strong>Gate 根据当前输入，控制旧状态各部分的保留比例。</p>
+            </article>
+
+            <article class="memory-rule-row delta-question step-reveal hard-reveal" data-show-at="3" data-focus-at="3">
+              <h3>KDA 要继续解决什么？</h3>
+              <div class="memory-rule-formula">当前 key 的旧映射与新 value 冲突时，能否直接纠正旧答案？</div>
+              <p>不仅整体衰减状态，还要先检查状态在 k<sub>t</sub> 方向上已经存了什么，<strong>再根据新旧差值定向覆盖。</strong></p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-12" data-title="KDA: read the recurrent-state update" data-steps="5">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 12 / Kimi Delta Attention</p>
+            <h2>KDA：先遗忘，再纠正当前 key，最后写入</h2>
+          </div>
+          <p class="chapter-lead">KDA 把固定状态当作可修改的关联记忆：先决定旧状态保留多少，再削弱当前 key 对应的旧映射，写入新的 key → value 关联，最后由 query 读取。</p>
         </div>
 
         <div class="stage kda-stage kda-tikz-stage">
           <span class="stage-label">KDA state update · one attention head</span>
-          <span class="stage-counter">state → forget → correct → write → read</span>
+          <span class="stage-counter">forget → correct → write → read</span>
 
           <figure class="kda-tikz-figure">
             <div class="kda-tikz-canvas">
@@ -6601,8 +8545,8 @@
               <span class="kda-tikz-highlight read step-reveal" data-label="④ READ" data-show-at="4" data-focus-at="4"></span>
             </div>
             <figcaption>
-              <span>每个 token 到来时：S<sub>t−1</sub> → S<sub>t</sub>，覆盖更新同一个 recurrent state</span>
-              <strong>state 始终是 d<sub>k</sub> × d<sub>v</sub>，不随序列长度 T 增长</strong>
+              <span>每个 token 都覆盖更新同一个 d<sub>k</sub>×d<sub>v</sub> recurrent state</span>
+              <span class="kda-delta-form step-reveal" data-show-at="4" data-focus-at="4">等价地：S<sub>t</sub> = S̄<sub>t</sub> + β<sub>t</sub>k<sub>t</sub>(v<sub>t</sub> − S̄<sub>t</sub><sup>⊤</sup>k<sub>t</sub>)<sup>⊤</sup></span>
             </figcaption>
           </figure>
 
@@ -6613,7 +8557,7 @@
             </div>
             <div class="kda-module-item correct step-reveal" data-show-at="0" data-focus-at="2">
               <strong>② CORRECT · I − β<sub>t</sub>k<sub>t</sub>k<sub>t</sub><sup>⊤</sup></strong>
-              <span>压低当前 key 方向上的旧关联，<b>为同一方向的新内容腾出空间。</b></span>
+              <span>压低状态沿当前 key 方向给出的旧响应，<b>先移除会与新 value 冲突的部分。</b></span>
             </div>
             <div class="kda-module-item write step-reveal" data-show-at="0" data-focus-at="3">
               <strong>③ WRITE · + β<sub>t</sub>k<sub>t</sub>v<sub>t</sub><sup>⊤</sup></strong>
@@ -6621,18 +8565,18 @@
             </div>
             <div class="kda-module-item read step-reveal" data-show-at="0" data-focus-at="4">
               <strong>④ READ · o<sub>t</sub> = S<sub>t</sub><sup>⊤</sup>q<sub>t</sub></strong>
-              <span>query 从更新后的状态中读取输出，<b>无需回看一条随 T 增长的状态列表。</b></span>
+              <span>query 从更新后的状态中读取；等价式说明 KDA <b>只写入新目标与旧预测之间的差值。</b></span>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="chapter" id="chapter-12" data-title="Hybrid Attention: 3 KDA plus 1 Gated MLA" data-steps="3">
+    <section class="chapter" id="chapter-13" data-title="Hybrid Attention: 3 KDA plus 1 Gated MLA" data-steps="3">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 12 / Hybrid Attention</p>
+            <p class="eyebrow">Chapter 13 / Hybrid Attention</p>
             <h2>Hybrid Attention: 3 个 KDA 后接 1 个 Gated MLA</h2>
           </div>
           <p class="chapter-lead">论文中的一个 Hybrid block 由三组 KDA + Stable LatentMoE，再接一组 Gated MLA + Stable LatentMoE；整条主干重复这一排布，末尾再追加一层 Gated MLA。</p>
@@ -6687,191 +8631,307 @@
       </div>
     </section>
 
-    <section class="chapter" id="chapter-13" data-title="AttnRes: attend over model depth" data-steps="3">
+    <section class="chapter" id="chapter-14" data-title="Why AttnRes: residual aggregation becomes a depth bottleneck" data-steps="3">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 13 / Attention Residuals</p>
-            <h2>AttnRes: 让当前层沿网络深度选择信息</h2>
+            <p class="eyebrow">Chapter 14 / Why Attention Residuals</p>
+            <h2>Residual 保住了梯度，却把深度信息等权混在一起</h2>
           </div>
-          <p class="chapter-lead">第二个回答：把 residual 的固定等权累加改成 depth attention，让当前层按内容选择此前 block，避免单层贡献被持续稀释。</p>
+          <p class="chapter-lead">PreNorm residual 仍然是重要的优化通道；问题在于它同时承担了信息聚合：embedding 与此前模块输出都以固定权重 1 进入同一个 hidden state。</p>
         </div>
 
-        <div class="stage attnres-stage">
-          <span class="stage-label">Standard Residual · Full AttnRes · Block AttnRes</span>
-          <span class="stage-counter">official architecture overview</span>
+        <div class="stage attnres-problem-stage">
+          <span class="stage-label">Standard PreNorm residual · unrolled across depth</span>
+          <span class="stage-counter">identity highway ≠ selective information access</span>
 
-          <figure class="attnres-figure step-reveal" data-show-at="0">
-            <img src="./assets/attention-residuals-overview.png" alt="MoonshotAI Attention Residuals 架构图，对比标准残差、Full Attention Residuals 与 Block Attention Residuals">
-            <figcaption>Source: <a href="https://github.com/MoonshotAI/Attention-Residuals" target="_blank" rel="noreferrer">MoonshotAI / Attention-Residuals · overview.png</a></figcaption>
-          </figure>
+          <div class="attnres-problem-layout">
+            <div class="residual-unroll step-reveal" data-show-at="0" data-focus-at="0">
+              <div class="residual-unroll-formula">
+                h<sub>l</sub> = h<sub>1</sub> +
+                <span class="unit-weight">1·</span>f<sub>1</sub>(h<sub>1</sub>) +
+                <span class="unit-weight">1·</span>f<sub>2</sub>(h<sub>2</sub>) + ··· +
+                <span class="unit-weight">1·</span>f<sub>l−1</sub>(h<sub>l−1</sub>)
+              </div>
 
-          <div class="attnres-takeaways">
-            <div class="attnres-takeaway step-reveal" data-show-at="0" data-focus-at="0"><strong>(a) Standard Residuals</strong><span>每个子层输出以固定单位权重加入同一条 residual stream。</span></div>
-            <div class="attnres-takeaway step-reveal" data-show-at="1" data-focus-at="1"><strong>(b) Full AttnRes</strong><span>每层用 learned w 生成 α，对全部早期表示做 depth attention。</span></div>
-            <div class="attnres-takeaway step-reveal" data-show-at="2" data-focus-at="2"><strong>(c) Block AttnRes</strong><span>层内仍做普通 residual；只在 block representations 之间做 attention，把状态量从 O(Ld) 降到 O(Nd)。</span></div>
+              <div class="residual-source-flow" role="img" aria-label="Embedding 和此前所有模块输出都以固定权重一进入同一个 residual sum">
+                <div class="residual-source-list">
+                  <div class="residual-source"><strong>Embedding h₁</strong><i></i><b>weight = 1</b></div>
+                  <div class="residual-source"><strong>Layer 1 output</strong><i></i><b>weight = 1</b></div>
+                  <div class="residual-source"><strong>Layer 2 output</strong><i></i><b>weight = 1</b></div>
+                  <div class="residual-source"><strong>Earlier outputs …</strong><i></i><b>weight = 1</b></div>
+                </div>
+                <span class="residual-flow-arrow">→</span>
+                <span class="residual-sum-node">Σ</span>
+                <span class="residual-flow-arrow">→</span>
+                <div class="residual-output">
+                  <strong>h<sub>l</sub></strong>
+                  <span>此前信息已经混进<br>一个累计状态</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="residual-problem-list step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="residual-problem-row">
+                <strong>01</strong>
+                <div class="residual-problem-copy">
+                  <strong>当前层没有选择权</strong>
+                  <span>无论当前任务真正需要哪一层，所有历史输出的系数都固定为 1。</span>
+                </div>
+              </div>
+              <div class="residual-problem-row">
+                <strong>02</strong>
+                <div class="residual-problem-copy">
+                  <strong>来源被不可逆地混在一起</strong>
+                  <span>后续层只拿到累计后的 h<sub>l−1</sub>，不能单独取回某个早期表示。</span>
+                </div>
+              </div>
+              <div class="residual-problem-row">
+                <strong>03</strong>
+                <div class="residual-problem-copy">
+                  <strong>网络越深，新贡献越容易被稀释</strong>
+                  <span>累计状态的 magnitude 持续增长，当前层新增输出在总和中的相对占比下降。</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="attnres-problem-thesis step-reveal hard-reveal" data-show-at="2" data-focus-at="2">
+            <span>Residual 适合做梯度高速路，但不是理想的深度信息检索器：<strong>当前模块需要能够问“此前哪些表示现在最有用？”</strong></span>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="chapter" id="chapter-14" data-title="Stable LatentMoE: shrink only the routed expert path" data-steps="5">
+    <section class="chapter" id="chapter-15" data-title="AttnRes QKV: attention over the depth axis" data-steps="4">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 14 / Stable LatentMoE</p>
-            <h2>LatentMoE 只压缩专家路径，省下带宽换更多专家</h2>
+            <p class="eyebrow">Chapter 15 / AttnRes Q · K · V</p>
+            <h2>AttnRes 把 Depth 当成 Attention 的 source axis</h2>
           </div>
-          <p class="chapter-lead">不是把整个模型变窄，也不是先压缩再 Router：Router 与 shared experts 仍读取完整 x[d]；只有 routed payload、专家计算和 All-to-All 进入更窄的 latent space ℓ。</p>
+          <p class="chapter-lead">普通 Attention 让当前 token 在历史 token 中选择；AttnRes 不跨 token，而是让当前模块在同一个 token 的 embedding 与此前层表示中选择。</p>
+        </div>
+
+        <div class="stage attnres-matrix-stage">
+          <span class="stage-label">Single-head depth attention · one token at one current module</span>
+          <span class="stage-counter">V → normalize as K → score with wₗ → softmax → weighted V</span>
+
+          <div class="attnres-axis-analogy">
+            <div class="attnres-axis-line">
+              <strong>Token Attention</strong>
+              <span>q<sub>t</sub> 在历史 token positions 中选择</span>
+            </div>
+            <div class="attnres-axis-line depth">
+              <strong>Attention Residuals</strong>
+              <span>w<sub>l</sub> 在此前 depth representations 中选择</span>
+            </div>
+          </div>
+
+          <div class="attnres-matrix-flow">
+            <div class="attnres-matrix-block step-reveal" data-show-at="0" data-focus-at="0">
+              <div class="attnres-matrix-title"><strong>Values · V</strong><span>[4 × d]</span></div>
+              <div class="depth-representation-matrix" aria-label="由 embedding 和三个此前层输出组成的 value 矩阵">
+                <div class="depth-matrix-row"><strong>v₀ · Embed</strong><i style="--cell-alpha:12%"></i><i style="--cell-alpha:30%"></i><i style="--cell-alpha:18%"></i><i style="--cell-alpha:38%"></i><i style="--cell-alpha:20%"></i><i style="--cell-alpha:26%"></i></div>
+                <div class="depth-matrix-row"><strong>v₁ · Layer 1</strong><i style="--cell-alpha:34%"></i><i style="--cell-alpha:14%"></i><i style="--cell-alpha:28%"></i><i style="--cell-alpha:20%"></i><i style="--cell-alpha:40%"></i><i style="--cell-alpha:12%"></i></div>
+                <div class="depth-matrix-row"><strong>v₂ · Layer 2</strong><i style="--cell-alpha:18%"></i><i style="--cell-alpha:42%"></i><i style="--cell-alpha:16%"></i><i style="--cell-alpha:32%"></i><i style="--cell-alpha:22%"></i><i style="--cell-alpha:36%"></i></div>
+                <div class="depth-matrix-row"><strong>v₃ · Layer 3</strong><i style="--cell-alpha:40%"></i><i style="--cell-alpha:24%"></i><i style="--cell-alpha:36%"></i><i style="--cell-alpha:14%"></i><i style="--cell-alpha:30%"></i><i style="--cell-alpha:18%"></i></div>
+              </div>
+            </div>
+
+            <div class="attnres-operator step-reveal" data-show-at="1"><span>row-wise</span><b>→</b><span>RMSNorm</span></div>
+
+            <div class="attnres-matrix-block step-reveal" data-show-at="1" data-focus-at="1">
+              <div class="attnres-matrix-title"><strong>Keys · K</strong><span>RMSNorm(V)</span></div>
+              <div class="depth-representation-matrix key-matrix" aria-label="对 value 矩阵逐行 RMSNorm 得到用于打分的 key">
+                <div class="depth-matrix-row"><strong>k₀</strong><i style="--cell-alpha:18%"></i><i style="--cell-alpha:30%"></i><i style="--cell-alpha:22%"></i><i style="--cell-alpha:34%"></i><i style="--cell-alpha:24%"></i><i style="--cell-alpha:28%"></i></div>
+                <div class="depth-matrix-row"><strong>k₁</strong><i style="--cell-alpha:34%"></i><i style="--cell-alpha:18%"></i><i style="--cell-alpha:28%"></i><i style="--cell-alpha:22%"></i><i style="--cell-alpha:38%"></i><i style="--cell-alpha:16%"></i></div>
+                <div class="depth-matrix-row"><strong>k₂</strong><i style="--cell-alpha:22%"></i><i style="--cell-alpha:38%"></i><i style="--cell-alpha:18%"></i><i style="--cell-alpha:30%"></i><i style="--cell-alpha:24%"></i><i style="--cell-alpha:34%"></i></div>
+                <div class="depth-matrix-row"><strong>k₃</strong><i style="--cell-alpha:38%"></i><i style="--cell-alpha:26%"></i><i style="--cell-alpha:34%"></i><i style="--cell-alpha:18%"></i><i style="--cell-alpha:30%"></i><i style="--cell-alpha:22%"></i></div>
+              </div>
+            </div>
+
+            <div class="attnres-operator step-reveal" data-show-at="1"><b>×</b><span>dot product</span></div>
+
+            <div class="pseudo-query step-reveal" data-show-at="1" data-focus-at="1">
+              <strong>Query · w<sub>l</sub></strong>
+              <div class="pseudo-query-cells"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+              <span>[d] · learned<br>per current module</span>
+            </div>
+
+            <div class="attnres-operator step-reveal" data-show-at="1"><b>→</b><span>K w<sub>l</sub></span></div>
+
+            <div class="depth-score-vector step-reveal" data-show-at="1" data-focus-at="1">
+              <strong>Scores</strong>
+              <div class="depth-score-cells"><i>s₀</i><i>s₁</i><i>s₂</i><i>s₃</i></div>
+              <span>[4] · one per depth source</span>
+            </div>
+
+            <div class="attnres-operator step-reveal" data-show-at="2"><b>→</b><span>softmax<br>over depth</span></div>
+
+            <div class="depth-alpha-vector step-reveal" data-show-at="2" data-focus-at="2">
+              <strong>Weights · α</strong>
+              <div class="depth-alpha-cells"><i style="--cell-alpha:12%">.10</i><i style="--cell-alpha:18%">.15</i><i style="--cell-alpha:24%">.20</i><i style="--cell-alpha:58%">.55</i></div>
+              <span>[4] · sum = 1 · 示意</span>
+            </div>
+          </div>
+
+          <div class="attnres-readout step-reveal" data-show-at="2" data-focus-at="2">
+            <span class="attnres-readout-formula">h<sub>l</sub> = V<sup>⊤</sup>α = Σ<sub>i</sub> α<sub>i→l</sub>v<sub>i</sub></span>
+            <span class="attnres-readout-example"><strong>示意：</strong>h<sub>l</sub> = .10v₀ + .15v₁ + .20v₂ + .55v₃</span>
+          </div>
+
+          <div class="attnres-matrix-thesis step-reveal hard-reveal" data-show-at="3" data-focus-at="3">
+            <span><strong>Q：</strong>w<sub>l</sub> 是当前模块学习到的 pseudo-query，不来自 W<sub>Q</sub>x。</span>
+            <span><strong>K / V：</strong>来自同一个 token 的此前 depth representations；K 归一化后只负责打分。</span>
+            <span><strong>Input-dependent：</strong>w<sub>l</sub> 固定，但每个 token 的 K/V 不同，因此 α 仍随内容变化。</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-16" data-title="Kimi K3 Block AttnRes: depth access in the real architecture" data-steps="1">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 16 / Block AttnRes in Kimi K3</p>
+            <h2>K3 用 Block AttnRes，把 93 层组织成可选择的深度来源</h2>
+          </div>
+          <p class="chapter-lead">直接看 K3 架构：黑线负责 block 内的 residual 累加；红色 w / α 路径让当前模块读取 embedding、此前 block outputs 和当前 partial block。</p>
+        </div>
+
+        <div class="stage attnres-block-stage">
+          <span class="stage-label">Kimi K3 Technical Report · Figure 2</span>
+          <span class="stage-counter">read the red AttnRes paths from right to left</span>
+
+          <div class="attnres-k3-layout">
+            <figure class="k3-attnres-paper">
+              <img src="./assets/kimi-k3-figure2-hybrid-block.png" alt="Kimi K3 Figure 2 中的主干 block，红色 w 和 alpha 连线表示各模块通过 Block Attention Residuals 读取跨 block 表示">
+              <figcaption>Source: <a href="https://arxiv.org/abs/2607.24653" target="_blank" rel="noreferrer">Kimi K3 Technical Report · Figure 2 · cropped</a></figcaption>
+            </figure>
+
+            <div class="k3-attnres-reading">
+              <div class="k3-attnres-row">
+                <div class="k3-attnres-mark"><strong>w / α</strong><span>inter-block</span></div>
+                <div class="k3-attnres-copy">
+                  <strong>红线：当前模块沿 Depth 选择来源</strong>
+                  <span>每个 KDA、Gated MLA 和 LatentMoE 模块都有 learned pseudo-query w；α 对 embedding、此前 block outputs 和当前 partial block 加权。</span>
+                </div>
+              </div>
+
+              <div class="k3-attnres-row intra">
+                <div class="k3-attnres-mark"><strong>+</strong><span>intra-block</span></div>
+                <div class="k3-attnres-copy">
+                  <strong>黑线：Block 内仍然保留普通 Residual</strong>
+                  <span>模块输出先进入当前 block 的 partial sum；跨 block 才使用 AttnRes，因此不需要保存每一层作为长期 source。</span>
+                </div>
+              </div>
+
+              <div class="k3-attnres-row config">
+                <div class="k3-attnres-mark"><strong>8</strong><span>network blocks</span></div>
+                <div class="k3-attnres-copy">
+                  <strong>K3 的工程配置：完整 Block 包含 12 层</strong>
+                  <div class="k3-attnres-config-line">
+                    <b>93 = 7 × 12 + 9</b>
+                    <span>8 network blocks</span>
+                    <span>+ embedding source = 9 depth sources</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="attnres-block-thesis">
+            <span><strong>Full AttnRes：</strong>逐层选择更细，但必须保持所有历史输出存活，memory / cross-stage communication 为 O(Ld)。</span>
+            <b>→</b>
+            <span><strong>K3 Block AttnRes：</strong>用 8 个 block-level sources 换取 O(Nd) 状态，同时保留跨深度选择能力。</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter" id="chapter-17" data-title="LatentMoE: make Top-16 affordable" data-steps="1">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 17 / LatentMoE</p>
+            <h2>LatentMoE：把 Top‑16 专家路径压到半宽</h2>
+          </div>
+          <p class="chapter-lead">K3 的 896 个 routed experts 中，每个 token 选择 16 个。专家池很稀疏，但 Top‑16 仍会同时放大专家计算与跨卡 payload；K3 只把 routed path 从 d=7168 压到 ℓ=3584。</p>
         </div>
 
         <div class="stage latent-moe-stage">
-          <span class="stage-label">Decision stays in d · specialist payload moves in ℓ</span>
-          <span class="stage-counter">bottleneck → route → two paths → stabilize → reinvest</span>
+          <span class="stage-label">896 routed experts · Top‑16 · routed width 7168 → 3584</span>
+          <span class="stage-counter">scale width → compress routed path → quantify savings</span>
 
-          <div class="latent-cost-line step-reveal" data-show-at="0" data-focus-at="0">
-            <div class="latent-cost-question">
-              <strong>为什么 Top-k 增大后，MoE 不再“便宜”？</strong>
-              <span>稀疏只控制 FLOPs；Serving 还要为权重读取和跨卡 token 搬运付费。</span>
+          <div class="latent-scale-line">
+            <div class="latent-scale-number">
+              <strong>896 experts · Top‑16</strong>
+              <span>每个 token 只激活 1 / 56 的 routed expert pool</span>
             </div>
-            <div class="latent-cost-term">
-              <strong>HBM weight bytes ∝ K · d · m</strong>
-              <span>低 batch / 低延迟时，每个激活专家都要读取 d×m 级别的权重。</span>
-            </div>
-            <div class="latent-cost-term">
-              <strong>All-to-All bytes ∝ tokens · K · d</strong>
-              <span>高吞吐 Expert Parallel 中，每条 routed payload 都带着完整 d 维 token。</span>
+            <div class="latent-scale-copy">
+              <strong>真正的系统问题：一个 token 同时走 16 条专家路径</strong>
+              <span>Top‑k 越高，Expert GEMM、专家权重读取和 EP All‑to‑All payload 越大。</span>
             </div>
           </div>
 
           <div class="latent-paper-layout">
-            <figure class="latent-paper-figure step-reveal" data-show-at="0">
+            <figure class="latent-paper-figure">
               <img src="./assets/kimi-k3-figure2-stable-latentmoe.png" alt="Kimi K3 Figure 2 中 Stable LatentMoE 的 shared experts、Router、routed experts、Norm 和线性投影结构">
               <figcaption>Source: <a href="https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf" target="_blank" rel="noreferrer">Kimi K3 Technical Report · Figure 2</a></figcaption>
             </figure>
 
-            <div class="latent-reading" aria-label="Stable LatentMoE 的三条并行信息路径">
-              <div class="latent-reading-row router step-reveal" data-show-at="1" data-focus-at="1">
-                <span class="lane-name"><strong>ROUTER</strong><span>decision · d 维</span></span>
+            <div class="latent-reading" aria-label="LatentMoE 的 routed expert 数据路径">
+              <div class="latent-reading-row router">
+                <span class="lane-sentence">Router 仍读取完整的 7168 维输入，再选择 Top‑16 专家。</span>
                 <span class="lane-copy">
-                  <span class="lane-formula">x[d] → Sigmoid(W<sub>r</sub>x) → Top-k indices + weights</span>
-                  <span class="lane-detail">Router 从完整表示做选择；<b>W↓ 不在 Router 前面</b>，压缩不会削弱选路所见的信息。</span>
+                  <span class="lane-formula">x[7168] → Router → Top‑16 indices + weights</span>
+                  <span class="lane-detail">Router 直接读取 full-width x；W↓ 与 Router 是并行分支，不是先压缩再选路。</span>
                 </span>
               </div>
-              <div class="latent-reading-row routed step-reveal" data-show-at="2" data-focus-at="2">
-                <span class="lane-name"><strong>ROUTED</strong><span>payload · ℓ 维</span></span>
+              <div class="latent-reading-row routed">
+                <span class="lane-sentence">被选中的专家只接收压缩后的 3584 维 activation。</span>
                 <span class="lane-copy">
-                  <span class="lane-formula">x[d] → W↓ → z[ℓ] → dispatch → E<sub>i</sub> → combine → RMSNorm → W↑</span>
-                  <span class="lane-detail">真正跨卡发送并进入 routed experts 的是 z[ℓ]；专家权重和通信宽度都从 d 缩到 ℓ。</span>
+                  <span class="lane-formula">x[7168] → W↓ → z[3584] → All‑to‑All → 16 experts</span>
+                  <span class="lane-detail">跨设备发送并进入 routed experts 的是半宽 z；每个专家的三组 FFN 权重也改在 ℓ=3584 上计算。</span>
                 </span>
               </div>
-              <div class="latent-reading-row shared step-reveal" data-show-at="2" data-focus-at="2">
-                <span class="lane-name"><strong>SHARED</strong><span>common · d 维</span></span>
+              <div class="latent-reading-row shared">
+                <span class="lane-sentence">16 个专家先在 latent space 聚合，再一次投影回 7168 维主干。</span>
                 <span class="lane-copy">
-                  <span class="lane-formula">x[d] → Σ E<sub>shared</sub>(x) ───────────────┐</span>
-                  <span class="lane-detail">公共变换保持 full width；它与 W↑ 后的 routed output 都回到 d 维，再相加得到 y[d]。</span>
+                  <span class="lane-formula">Σ p<sub>i</sub>E<sub>i</sub>(z) → W↑ → y<sub>routed</sub>[7168]</span>
+                  <span class="lane-detail">2 个 shared experts 始终走独立的 full-width d→d 路径，不参与 latent 压缩。</span>
                 </span>
               </div>
             </div>
           </div>
 
-          <div class="latent-footer">
-            <div class="latent-stable-line step-reveal" data-show-at="3" data-focus-at="3">
-              <strong>为什么叫 Stable</strong>
-              <span><b>RMSNorm</b>在 W↑ 前固定 routed aggregate 的尺度</span>
-              <span><b>SiTU-GLU</b>限制专家 FFN 的极端乘法激活</span>
-              <span><b>QB</b>训练时按分位数更新选路 bias；不是一条新数据路径</span>
+          <div class="latent-metrics">
+            <div class="latent-metric">
+              <span>Top‑16 routed expert body</span>
+              <strong>2.114G → 1.057G <b>−50%</b></strong>
+              <small>FLOPs / token = 6 × 16 × width × 3072</small>
             </div>
-            <div class="latent-payoff step-reveal hard-reveal" data-show-at="4" data-focus-at="4">
-              <strong>routed width: d → ℓ</strong>
-              <span>权重读取与 All-to-All payload 约按 ℓ/d 缩小；省下的成本可以换成更大的 expert pool 和更高 Top-k。</span>
+            <div class="latent-metric is-net">
+              <span>including one W↓ + W↑</span>
+              <strong>2.114G → 1.160G <b>−45%</b></strong>
+              <small>净计算量；不含 Router、shared experts 与 elementwise ops</small>
+            </div>
+            <div class="latent-metric">
+              <span>EP routed payload / selected expert</span>
+              <strong>7168 → 3584 <b>−50%</b></strong>
+              <small>dispatch 与 combine 的 activation elements 均减半</small>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section class="chapter" id="chapter-15" data-title="Native Vision: training changes, VLM inference stays familiar" data-steps="5">
+    <section class="chapter" id="chapter-18" data-title="GLM-5.2 and Kimi K3: architecture becomes a systems contract" data-steps="1">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 15 / Native multimodality</p>
-            <h2>Native Vision：联合训练，标准推理</h2>
-          </div>
-          <p class="chapter-lead">MoonViT-V2 相比前代主要改变训练方式：视觉塔与 K3 从头共享单一 next-token loss。推理时仍由 ViT 理解图像，经 projector 转成视觉 embedding，再与文本 embedding 一起交给 K3。</p>
-        </div>
-
-        <div class="stage native-vision-stage">
-          <span class="stage-label">训练创新 · 推理路径保持熟悉</span>
-          <span class="stage-counter">单一目标 → 联合反传 → 从头训练 → 视觉 embedding 入模</span>
-
-          <div class="native-training-claim step-reveal" data-show-at="0" data-focus-at="0">
-            <div class="native-claim-old">
-              <strong>前代 / 常见 VLM · 视觉塔先单独预训练，再做模态对齐</strong>
-              <span>视觉编码器、projector 与语言模型通常分阶段训练。</span>
-            </div>
-            <div class="native-claim-new">
-              <strong>MoonViT-V2 · 视觉塔与语言主干从头联合训练</strong>
-              <span>同一个 next-token loss 贯穿视觉理解、特征投影和文本预测。</span>
-            </div>
-          </div>
-
-          <div class="native-paper-layout">
-            <figure class="native-paper-figure step-reveal" data-show-at="0">
-              <img src="./assets/kimi-k3-figure2-vision-path.png" alt="Kimi K3 Figure 2 中视觉输入经过 MoonViT-V2 和 MLP projector 进入 Embedding 的路径">
-              <figcaption>Source: <a href="https://github.com/MoonshotAI/Kimi-K3/blob/main/k3_tech_report.pdf" target="_blank" rel="noreferrer">Kimi K3 Technical Report · Figure 2</a></figcaption>
-            </figure>
-
-            <div class="native-reading" aria-label="同一个 next-token loss 如何训练 MoonViT-V2、projector 与 K3 backbone">
-              <div class="native-reading-row train step-reveal" data-show-at="1" data-focus-at="1">
-                <span class="vision-lane-name"><strong>单一 NEXT-TOKEN LOSS</strong><span>共同优化目标</span></span>
-                <span class="vision-lane-copy">
-                  <span class="vision-lane-formula">视觉 token 与文字一起作为上下文，模型仍然预测下一个文本 token</span>
-                  <span class="vision-lane-detail">预测错误只形成一份 next-token loss；这份 loss 既约束最终的文本生成，也会反向塑造前面的视觉表示。</span>
-                </span>
-              </div>
-              <div class="native-reading-row gradient step-reveal" data-show-at="2" data-focus-at="2">
-                <span class="vision-lane-name"><strong>端到端联合训练</strong><span>全部参与更新</span></span>
-                <span class="vision-lane-copy">
-                  <span class="vision-lane-formula">loss 的梯度同时更新 K3、MLP projector 和 MoonViT-V2</span>
-                  <span class="vision-lane-detail">不是冻结 text backbone 后只训练 ViT 或 adapter；视觉塔和语言主干从预训练开始就在同一个任务中共同学习。</span>
-                </span>
-              </div>
-              <div class="native-reading-row scratch step-reveal" data-show-at="3" data-focus-at="3">
-                <span class="vision-lane-name"><strong>MoonViT-V2 从头训练</strong><span>不沿用 SigLIP 初始化</span></span>
-                <span class="vision-lane-copy">
-                  <span class="vision-lane-formula">不先训练一套对比学习视觉编码器，再把它接到语言模型上</span>
-                  <span class="vision-lane-detail">论文观察到从头联合训练的梯度更稳定；视觉表示也会直接围绕 OCR、文字和细粒度结构理解形成。</span>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="native-shared-stream step-reveal hard-reveal" data-show-at="4" data-focus-at="4">
-            <div class="native-stream-label">
-              <strong>推理仍是标准 VLM</strong>
-              <span>训练方式改变，但视觉输入进入语言模型的数据流没有改变。</span>
-            </div>
-            <div class="native-stream-sequence">
-              <span class="visual-token">图片 / 视频</span><span>→</span>
-              <span>MoonViT-V2</span><span>→</span>
-              <span>MLP projector</span><span>→</span>
-              <span class="text-token">视觉 embedding</span>
-            </div>
-            <div class="native-stream-payoff">
-              <strong>进入文本主干推理</strong>
-              <span>视觉 embedding 被插入文本 embedding 序列，之后由同一个 K3 backbone 继续推理。</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="chapter" id="chapter-16" data-title="GLM-5.2 and Kimi K3: architecture becomes a systems contract" data-steps="3">
-      <div class="chapter-shell">
-        <div class="chapter-heading">
-          <div>
-            <p class="eyebrow">Chapter 16 / Architecture → systems</p>
+            <p class="eyebrow">Chapter 18 / Architecture → systems</p>
             <h2>两种长上下文路线，一条系统分析主线</h2>
           </div>
           <p class="chapter-lead">架构没有消灭成本，而是把 dense cost 重组为 cache、state、selection、routing 与通信；这些新成本需要在 Prefill 和 Decode 中分别分析。</p>
@@ -6882,7 +8942,7 @@
           <span class="stage-counter">state · selection · routing</span>
 
           <div class="model-summary-grid">
-            <article class="model-summary-card step-reveal" data-show-at="0" data-focus-at="0">
+            <article class="model-summary-card">
               <h3>GLM-5.2 · 压缩历史，再选择读取</h3>
               <div class="model-summary-flow">
                 <div class="summary-module"><strong>MLA</strong><span>每个历史 token 保存更紧凑的 latent KV。</span></div>
@@ -6893,28 +8953,29 @@
               <p>系统重点：latent cache、Indexer/Top-K、Gather、routing 与 expert communication。</p>
             </article>
 
-            <article class="model-summary-card step-reveal" data-show-at="1" data-focus-at="1">
+            <article class="model-summary-card">
               <h3>Kimi K3 · 沿三条轴选择信息</h3>
               <div class="model-summary-flow">
                 <div class="summary-module"><strong>KDA + MLA</strong><span>工作记忆更新与周期性全局查阅互补。</span></div>
                 <div class="summary-module"><strong>AttnRes</strong><span>当前 token 按内容重新组合 block representations。</span></div>
                 <div class="summary-module"><strong>LatentMoE</strong><span>router 看完整输入，experts 处理更窄 payload。</span></div>
-                <div class="summary-module"><strong>Native Vision</strong><span>visual tokens 与文本进入同一个 backbone。</span></div>
               </div>
-              <p>系统重点：recurrent state、depth reads、latent dispatch、expert balance 与视觉序列长度。</p>
+              <p>系统重点：recurrent state、depth reads、latent dispatch 与 expert balance。</p>
             </article>
           </div>
 
-          <div class="systems-contract step-reveal hard-reveal" data-show-at="2" data-focus-at="2">
+          <div class="systems-contract">
             <div class="contract-card"><strong>Prefill</strong><span>并行处理长序列：关注矩阵计算、state scan、Top-K 与批量通信。</span></div>
             <div class="contract-card"><strong>Decode</strong><span>逐 token 执行：关注 cache/state 读取、weight streaming、launch 与通信延迟。</span></div>
             <div class="contract-card"><strong>Roofline → MoE</strong><span>把 FLOPs、HBM bytes 与 collective bytes 映射到具体模块，再决定优化位置。</span></div>
           </div>
 
-          <div class="reference-row step-reveal" data-show-at="2" aria-label="参考资料">
+          <div class="reference-row" aria-label="参考资料">
             <span>References</span>
             <a href="https://z.ai/blog/glm-5.2" target="_blank" rel="noreferrer">GLM-5.2</a>
             <a href="https://arxiv.org/abs/2607.24653" target="_blank" rel="noreferrer">Kimi K3</a>
+            <a href="https://arxiv.org/abs/2006.16236" target="_blank" rel="noreferrer">Linear Attention</a>
+            <a href="https://arxiv.org/abs/2312.06635" target="_blank" rel="noreferrer">GLA</a>
             <a href="https://arxiv.org/abs/2510.26692" target="_blank" rel="noreferrer">Kimi Linear</a>
             <a href="https://arxiv.org/abs/2603.15031" target="_blank" rel="noreferrer">AttnRes</a>
             <a href="https://github.com/MoonshotAI/Attention-Residuals" target="_blank" rel="noreferrer">AttnRes GitHub</a>
@@ -6926,11 +8987,59 @@
       </div>
     </section>
 
-    <section class="chapter performance-chapter" id="chapter-17" data-title="Roofline &amp; Arithmetic Intensity" data-steps="4">
+    <section class="chapter performance-chapter" id="chapter-19" data-title="TPU v7x: the hardware baseline behind Roofline" data-steps="1">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 17 / Performance model</p>
+            <p class="eyebrow">Chapter 19 / TPU v7x hardware</p>
+            <h2>TPU v7x：Roofline 的硬件基线</h2>
+          </div>
+          <p class="chapter-lead">后面的性能分析统一采用单芯片峰值：TensorCore 决定计算上限，HBM 决定权重和状态的供给速度，ICI 决定跨芯片 collective 与 MoE token routing 的搬运上限。</p>
+        </div>
+
+        <div class="stage tpu7x-intro-stage">
+          <span class="stage-label">Ironwood · single-chip peak specifications</span>
+          <span class="stage-counter">compute → HBM → ICI → Roofline</span>
+
+          <div class="tpu7x-hardware-grid">
+            <figure class="tpu7x-arch-figure">
+              <img src="./assets/tpu7x-ironwood-architecture.png" alt="Google Cloud TPU7x Ironwood 官方架构图：两个 logic chiplet、两个 TensorCore、四个 SparseCore、HBM3E 与 ICI">
+              <figcaption>Source: <a href="https://docs.cloud.google.com/tpu/docs/tpu7x?hl=zh-cn" target="_blank" rel="noreferrer">Google Cloud TPU7x (Ironwood) · System architecture</a></figcaption>
+            </figure>
+
+            <div class="tpu7x-spec-sheet" aria-label="TPU v7x 单芯片关键规格">
+              <div class="tpu7x-spec-row chip">
+                <span class="tpu7x-spec-label"><strong>单芯片结构</strong><span>2 × logic chiplet；各连接 96 GiB HBM</span></span>
+                <span class="tpu7x-spec-value">2<small>TensorCore</small></span>
+                <span class="tpu7x-spec-value">4<small>SparseCore</small></span>
+              </div>
+              <div class="tpu7x-spec-row compute">
+                <span class="tpu7x-spec-label"><strong>峰值矩阵算力</strong><span>per chip</span></span>
+                <span class="tpu7x-spec-value">2307<small>TFLOP/s · BF16</small></span>
+                <span class="tpu7x-spec-value">4614<small>TFLOP/s · FP8</small></span>
+              </div>
+              <div class="tpu7x-spec-row hbm">
+                <span class="tpu7x-spec-label"><strong>高带宽内存</strong><span>capacity / bandwidth</span></span>
+                <span class="tpu7x-spec-value">192<small>GiB · HBM capacity</small></span>
+                <span class="tpu7x-spec-value">7380<small>GB/s · HBM bandwidth</small></span>
+              </div>
+              <div class="tpu7x-spec-row ici">
+                <span class="tpu7x-spec-label"><strong>芯片间互连 ICI</strong><span>3D torus</span></span>
+                <span class="tpu7x-spec-value">1200<small>GB/s · bidirectional / chip</small></span>
+              </div>
+            </div>
+          </div>
+
+          <span class="source-line">SOURCE · Google Cloud TPU7x specifications · JAX Scaling Book</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter performance-chapter" id="chapter-20" data-title="Roofline &amp; Arithmetic Intensity" data-steps="4">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 20 / Performance model</p>
             <h2>Roofline：比较 Compute Time 与 HBM Time</h2>
           </div>
           <p class="chapter-lead">Kernel 同时受计算与 HBM 搬运约束。理想重叠下，T<sub>kernel</sub>≈max(T<sub>compute</sub>, T<sub>HBM</sub>)；两者之比即 AI / Machine Balance。</p>
@@ -6973,11 +9082,11 @@
       </div>
     </section>
 
-    <section class="chapter performance-chapter" id="chapter-18" data-title="Prefill / Decode Roofline" data-steps="4">
+    <section class="chapter performance-chapter" id="chapter-21" data-title="Prefill / Decode Roofline" data-steps="4">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 18 / Prefill vs Decode</p>
+            <p class="eyebrow">Chapter 21 / Prefill vs Decode</p>
             <h2>Prefill 用 Chunk 复用权重；Decode 依靠 Batch</h2>
           </div>
           <p class="chapter-lead">权重主导的 FP8 GEMM：Compute≈2NW，HBM≈W×1B，因此 AI≈2N。TPU v7x 的 Machine Balance≈625 FLOP/B，对应 N<sub>boundary</sub>≈313。</p>
@@ -7045,11 +9154,11 @@
       </div>
     </section>
 
-    <section class="chapter performance-chapter" id="chapter-19" data-title="GLM-5.2 Model-aware Roofline" data-steps="4">
+    <section class="chapter performance-chapter" id="chapter-22" data-title="GLM-5.2 Model-aware Roofline" data-steps="4">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 19 / Model-aware Roofline</p>
+            <p class="eyebrow">Chapter 22 / Model-aware Roofline</p>
             <h2>GLM-5.2：MoE 稀疏把分界推到千级 Batch</h2>
           </div>
           <p class="chapter-lead">Dense GEMM 默认全部权重参与计算。GLM-5.2 常驻完整 expert pool，每个 token 仅激活 Top-8；Roofline 需区分 resident parameters 与 active parameters。</p>
@@ -7101,11 +9210,11 @@
       </div>
     </section>
 
-    <section class="chapter performance-chapter" id="chapter-20" data-title="Long Context HBM + DSA" data-steps="5">
+    <section class="chapter performance-chapter" id="chapter-23" data-title="Long Context HBM + DSA" data-steps="5">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 20 / Long-context decode</p>
+            <p class="eyebrow">Chapter 23 / Long-context decode</p>
             <h2>Long Context 放大 KV 读取；DSA 把流量压低 13.3×</h2>
           </div>
           <p class="chapter-lead">TP↓ 可提高 Attention DP 与 global capacity，但 local batch 仍≤8。128K context 将历史 KV 纳入 HBM 流量：AI=Compute/(W+KV)，计算密度进一步下降。</p>
@@ -7177,11 +9286,11 @@
       </div>
     </section>
 
-    <section class="chapter performance-chapter" id="chapter-21" data-title="MTP: more tokens per target forward" data-steps="4">
+    <section class="chapter performance-chapter" id="chapter-24" data-title="MTP: more tokens per target forward" data-steps="4">
       <div class="chapter-shell">
         <div class="chapter-heading">
           <div>
-            <p class="eyebrow">Chapter 21 / Multi-token prediction</p>
+            <p class="eyebrow">Chapter 24 / Multi-token prediction</p>
             <h2>MTP：一次 Forward 验证更多 Token</h2>
           </div>
           <p class="chapter-lead">MTP 在一次 target forward 中验证 K 个候选：请求 batch 不变，并行 token 增加，权重复用率与 GEMM 计算强度同步提升。</p>
@@ -7239,6 +9348,156 @@
           </div>
 
           <span class="source-line">ILLUSTRATION · verify K=4 · schematic acceptance</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter performance-chapter" id="chapter-25" data-title="MoE cost model: compute, HBM and ICI" data-steps="1">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 25 / MoE optimization</p>
+            <h2>16K MoE 单层：算力不是主瓶颈，数据搬运才是</h2>
+          </div>
+          <p class="chapter-lead">先算理论下界，再决定优化对象。这里使用 GLM-5.2 的 MoE 配置，在 16-chip TPU v7x、EP=32 下，从单 device 视角比较 Compute、HBM 权重读取与 ICI token routing。</p>
+        </div>
+
+        <div class="stage moe-cost-stage">
+          <span class="stage-label">GLM-5.2 · T=16,384 · Top‑8 · 256 experts · H=6144 · I=2048</span>
+          <span class="stage-counter">per device · one MoE layer · ideal balanced routing</span>
+
+          <div class="moe-cost-population" aria-label="EP32 下单设备 token 与 expert 分布">
+            <span><strong>16,384 × 8 ÷ 32</strong>routed rows / device</span>
+            <b>→</b>
+            <span><strong>4,096 rows</strong>8 local routed experts</span>
+            <b>→</b>
+            <span><strong>512 rows / expert</strong>理想均匀路由</span>
+          </div>
+
+          <table class="moe-cost-table" aria-label="16K token 下单个 MoE layer 的理论时间下界">
+            <colgroup>
+              <col style="width: 25%">
+              <col style="width: 17%">
+              <col style="width: 17%">
+              <col style="width: 41%">
+            </colgroup>
+            <thead>
+              <tr>
+                <th>single-device estimate</th>
+                <th>BF16 baseline</th>
+                <th>FP8 scenario</th>
+                <th>cost model</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="compute-row">
+                <th>Compute<span>routed + shared expert</span></th>
+                <td class="value">0.536<small>ms</small></td>
+                <td class="value">0.268<small>ms</small></td>
+                <td class="formula">618.5 GFLOP ÷ per-device MXU peak</td>
+              </tr>
+              <tr class="hbm-row">
+                <th>HBM weights<span>8 local routed experts · read once</span></th>
+                <td class="value">0.164<small>ms</small></td>
+                <td class="value">0.082<small>ms</small></td>
+                <td class="formula">8 × 3 × H × I × dtype_bytes ÷ 3.69 TB/s</td>
+              </tr>
+              <tr class="ici-row">
+                <th>ICI routing<span>scatter + gather · average 2 hops</span></th>
+                <td class="value">1.007<small>ms</small></td>
+                <td class="value">0.503<small>ms</small></td>
+                <td class="formula">(4096 × H × dtype_bytes ÷ 200 GB/s) × 2 × 2</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="moe-cost-verdict">
+            <strong>BF16 · ICI <b>1.007 ms</b></strong>
+            <strong>FP8 · ICI <b>0.503 ms</b></strong>
+            <span><b>优化目标：让 ICI 持续满载。</b>分块流水化 scatter → expert compute → gather，避免 gather 等整批计算；同时把专家计算和 HBM 权重预取隐藏在通信窗口中。</span>
+          </div>
+
+          <span class="source-line">SOURCE · Internal “moe理论计算” · LMSYS MoE kernel cost model · TPU v7x specs</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter performance-chapter" id="chapter-26" data-title="Fused MoE: one scheduling domain for overlap" data-steps="1">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 26 / Fused MoE pipeline</p>
+            <h2>一个 Fused Kernel，按 Expert Wave 排跨引擎流水</h2>
+          </div>
+          <p class="chapter-lead">把 Scatter、Expert FFN、权重预取和 Gather 放进同一个调度域：当前 wave 在 MXU 上计算时，HBM DMA 预取下一组权重，ICI 与 VPU/VMEM 同时推进相邻 wave。</p>
+        </div>
+
+        <div class="stage fused-moe-stage">
+          <span class="stage-label">Inside one Pallas kernel · per-expert-wave schedule</span>
+          <span class="stage-counter">ICI · HBM DMA · MXU · VPU / VMEM</span>
+
+          <figure class="fused-moe-figure pipeline">
+            <img src="./assets/fused-moe-v2-pipeline.png" alt="Fused MoE V2 的 VMEM-resident overlap 流水：ICI scatter 和 gather、HBM 权重预取、MXU FFN1/FFN2、VPU activation 与 VMEM accumulator 按 expert wave 重叠">
+          </figure>
+
+          <div class="fused-moe-sequence" aria-label="Fused MoE 按 expert wave 执行的四个流水阶段">
+            <div class="fused-moe-step">
+              <b>01 · ICI</b>
+              <strong>提前启动 Scatter</strong>
+              <span>All-to-All 先把 routed tokens 发往对应 expert owner，后续 wave 持续进入通信。</span>
+            </div>
+            <div class="fused-moe-step">
+              <b>02 · HBM DMA</b>
+              <strong>双 Buffer 预取权重</strong>
+              <span>Buffer A 供当前 W<sub>e</sub> 计算；Buffer B 同时预取下一组 W<sub>e+1</sub>。</span>
+            </div>
+            <div class="fused-moe-step">
+              <b>03 · MXU + VPU</b>
+              <strong>计算当前 Expert Wave</strong>
+              <span>Tokens 与 W<sub>e</sub> 就绪后执行 FFN1 / FFN2；Act、scale 和 y_acc 留在 VPU / VMEM。</span>
+            </div>
+            <div class="fused-moe-step">
+              <b>04 · ICI</b>
+              <strong>结果就绪立即 Gather</strong>
+              <span>一个 wave 完成便开始回传，不等待所有 experts；与后续 wave 的预取和计算重叠。</span>
+            </div>
+          </div>
+
+          <span class="source-line">SOURCE · LMSYS · Fused MoE V2 · VMEM-resident overlap</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="chapter performance-chapter" id="chapter-27" data-title="Fused MoE: measured overlap on the critical path" data-steps="1">
+      <div class="chapter-shell">
+        <div class="chapter-heading">
+          <div>
+            <p class="eyebrow">Chapter 27 / Measured overlap</p>
+            <h2>重叠压缩了关键路径，但 ICI 仍是主要瓶颈</h2>
+          </div>
+          <p class="chapter-lead">Fused kernel 没有减少通信量，而是让通信、权重搬运和计算同时推进；图中仍然显露的 scatter lead 与 gather tail，指出下一步优化仍受 ICI 约束。</p>
+        </div>
+
+        <div class="stage fused-moe-stage">
+          <span class="stage-label">Measured critical path · Fused MoE V2</span>
+          <span class="stage-counter">visible lead · hidden communication · visible tail</span>
+
+          <figure class="fused-moe-figure measured">
+            <img src="./assets/fused-moe-measured-overlap.png" alt="Fused MoE V2 实测 overlap breakdown：大部分 scatter outbound 和 gather inbound 被 routed expert window 隐藏，只留下 visible scatter 与 gather tail">
+          </figure>
+
+          <div class="fused-moe-outcomes" aria-label="Fused MoE V2 的性能收益与当前瓶颈">
+            <div class="fused-moe-outcome">
+              <b>收益来自重叠</b>
+              <span><strong>V2 full：2.42 ms，较 V1 降低 53%。</strong>ICI、HBM DMA 与 MXU / VPU 并行工作，大部分通信被 routed expert window 覆盖。</span>
+            </div>
+            <div class="fused-moe-outcome bottleneck">
+              <b>当前瓶颈仍是 ICI</b>
+              <span><strong>Scatter lead 与 gather tail 仍暴露在 critical path。</strong>进一步降低延迟，仍受 ICI 可用带宽与通信延迟限制。</span>
+            </div>
+          </div>
+
+          <span class="source-line">SOURCE · LMSYS · Fused MoE V2 · measured overlap breakdown</span>
         </div>
       </div>
     </section>
@@ -7314,23 +9573,26 @@
           "<strong>Combined advantage</strong>：缓存更紧、核心读取更少、跨层索引复用、FFN 稀疏激活，共同提升长上下文效率。"
         ],
         [
-          "<strong>上下文持续累积</strong>：一条 agent trace 从需求、代码、工具结果一路走到当前 token，context 可能从 128K 延伸到 1M。",
-          "<strong>问题一 · Token</strong>：逐 token KV 状态随长度增长；怎样避免 decode 每一步都读取更长的历史？",
-          "<strong>问题二 · Depth</strong>：Residual 逐层累加，早期表示混进累计流；当前层怎样重新找到真正有用的信息？",
-          "<strong>问题三 · Channel</strong>：Dense 扩容会抬高每 token 成本；能否用 Router 只激活与当前 token 相关的少数专家？"
+          "<strong>先从 Scaling 代价出发</strong>：L 增长会放大 KV Cache 容量与读取；D 增长会造成 PreNorm hidden-state growth 与单层贡献稀释；Width 增长会抬高每 token 的计算、激活与通信。",
+          "<strong>再给答案</strong>：Hybrid Attention 扩展长上下文 token mixing；AttnRes 扩展 depth representation access；Stable LatentMoE 用 16 / 896 稀疏专家扩展 channel mixing。"
         ],
         [
-          "<strong>共同原则</strong>：K3 不让规模增长直接变成每个 token 的全量状态、全量读取和全量计算，而是先压缩，再按内容选择。",
-          "<strong>回答一 · Token</strong>：KDA 把历史压进固定尺寸 recurrent state；周期性的 Gated MLA 保留全局 token-to-token 交互和紧凑 latent KV。",
-          "<strong>回答二 · Depth</strong>：Block AttnRes 用 learned query 生成 α，从 embedding、前序 blocks 与当前 partial sum 中按内容重读。",
-          "<strong>回答三 · Channel</strong>：Router 从 full-width x 选择 experts；并行的数据分支把 payload 压成 latent z，再执行 dispatch、专家计算与聚合。"
+          "<strong>先看为什么不能预聚合</strong>：Softmax 权重同时依赖当前 qₜ 与每一个历史 kᵢ；qₜ 到来之前，不能把全部历史压成一个与 query 无关的最终答案。",
+          "<strong>再看 Linear Attention</strong>：把 similarity 改写成可分解 kernel 后，可以利用结合律先累计 Sₜ=Σφ(kᵢ)vᵢᵀ，再由 φ(qₜ) 读取。",
+          "<strong>核心不是删掉一个算子</strong>：Linear Attention 改变的是信息组织方式——从逐 token pairwise lookup 变成固定状态的递推读写。"
+        ],
+        [
+          "<strong>先拿到系统收益</strong>：标准 Attention 的逐 token KV 随 L 增长；Linear Attention / KDA 层只维护一个固定大小的 dₖ×dᵥ 状态。",
+          "<strong>朴素 Linear Attention</strong>：Sₜ=Sₜ₋₁+kₜvₜᵀ，只会继续叠加；过期或冲突关联会共同占用有限状态。",
+          "<strong>GLA 通过门控遗忘</strong>：data-dependent gate 根据当前输入，控制旧状态各部分的保留比例。",
+          "<strong>把问题交给 KDA</strong>：除了决定保留多少旧状态，还要检查当前 key 已经对应什么旧答案，再按新旧差值做定向修正。"
         ],
         [
           "<strong>先看整体</strong>：图里的 Sₜ₋₁ 与 Sₜ 形状相同。无论已经读了多少 token，KDA 都覆盖更新同一个 dₖ×dᵥ recurrent state。",
           "<strong>① Forget</strong>：公式按作用顺序从右向左读；Diag(αₜ) 先逐 key channel 缩放旧状态，α 越小遗忘越快。",
-          "<strong>② Correct</strong>：(I−βₜkₜkₜᵀ) 压低当前 key 方向上已经存在的关联，让状态可以修改旧内容，而不是持续相加。",
+          "<strong>② Correct</strong>：(I−βₜkₜkₜᵀ) 压低状态在当前 key 方向给出的旧响应，先移除会与新 value 冲突的部分。",
           "<strong>③ Write</strong>：βₜkₜvₜᵀ 把当前 token 的 key→value 关联写入；同一个 βₜ 将擦除幅度与写入幅度配对。",
-          "<strong>④ Read</strong>：oₜ=Sₜᵀqₜ。query 读取刚更新的固定状态，因此 KDA 层的历史状态量不随序列长度 T 增长。"
+          "<strong>④ Read + Delta view</strong>：oₜ=Sₜᵀqₜ；等价式 Sₜ=S̄ₜ+βₜkₜ(vₜ−S̄ₜᵀkₜ)ᵀ 表明，KDA 写入的是新 value 与旧预测之间的差值。"
         ],
         [
           "<strong>先读论文原图</strong>：Figure 2 右侧虚线框就是一个 Hybrid block；从下往上，先重复三组 KDA + Stable LatentMoE，再执行一组 Gated MLA + Stable LatentMoE。",
@@ -7338,28 +9600,27 @@
           "<strong>不要混淆红线</strong>：红色 α / w 连线表示 Block Attention Residuals，不是 Hybrid Attention 的路由；下一页单独解释。"
         ],
         [
-          "<strong>(a) Standard Residuals</strong>：所有子层输出都以固定单位权重加入同一条 residual stream。",
-          "<strong>(b) Full AttnRes</strong>：每层用 learned pseudo-query w 生成 α，从全部早期表示中做 depth attention。",
-          "<strong>(c) Block AttnRes</strong>：层内保留普通 residual，只在 block representations 之间做 attention，把状态量从 O(Ld) 降到 O(Nd)。"
+          "<strong>先把 residual 展开</strong>：hₗ=h₁+Σᵢfᵢ(hᵢ)。Embedding 与每个历史模块输出都以固定系数 1 加进同一个 hidden state；它们没有根据当前层的需求重新加权。",
+          "<strong>三个深度瓶颈</strong>：当前层无法选择来源；不同层输出混合后无法单独取回；累计状态随深度增长，新层贡献在总和中的相对占比会被稀释。",
+          "<strong>不要否定 residual</strong>：identity path 对梯度传播仍然重要。AttnRes 要替换的是固定的信息聚合方式，让当前模块获得 depth-wise selective access。"
         ],
         [
-          "<strong>先看瓶颈</strong>：Top-k 增大不仅增加专家 FLOPs；低延迟场景要从 HBM 读取更多专家权重，高吞吐 EP 场景还要 All-to-All 发送更多 d 维 token。",
-          "<strong>Router 不压缩</strong>：K3 的 score 是 Sigmoid(Wᵣx)，Router 直接读取 full-width x[d]。W↓ 与 Router 是从 x 分出的两条并行支路，不是先压缩再选路。",
-          "<strong>只压缩 routed path</strong>：W↓x=z[ℓ]；z 被 dispatch 给选中的 routed experts，聚合结果 u 仍在 ℓ 维，经过 RMSNorm 与 W↑ 后才回到 d 维。两个 shared experts 始终直接处理 x[d]。",
-          "<strong>Stable 是训练稳定层</strong>：RMSNorm 控制 W↑ 前的 aggregate 尺度，SiTU-GLU 抑制乘法激活爆炸；QB 是训练时更新 Router selection bias 的负载均衡方法，不改变 payload 路径。",
-          "<strong>真正收益</strong>：routed expert 的主要权重矩阵和 All-to-All payload 都由 d 缩为 ℓ，相关成本约降为原来的 ℓ/d；同等 Serving 预算可以换成更多 experts 与更高 Top-k。"
+          "<strong>先确定 V</strong>：对同一个 token，把 embedding 和此前模块输出按 depth 堆成 V∈Rᵐˣᵈ。AttnRes 不在这里混合不同 token。",
+          "<strong>Q 和 K 怎么来</strong>：当前模块直接学习一个 pseudo-query wₗ；K=RMSNorm(V)，没有标准 Attention 中的 WQ/WK/WV 三组投影。K wₗ 为每个 depth source 产生一个 score。",
+          "<strong>Softmax 后读取 V</strong>：α=softmax(Kwₗ)，hₗ=Vᵀα。示例权重只是为了说明当前模块可以强调某个早期表示，而不是继续等权累加。",
+          "<strong>为什么仍然 input-dependent</strong>：wₗ 对当前模块固定，但每个 token 在此前层产生的 K/V 不同，所以最终的 α 会随输入内容变化。"
         ],
         [
-          "<strong>先给结论</strong>：MoonViT-V2 相比前代的主要创新在训练方式，而不是发明另一套视觉推理路径。前代或常见 VLM 往往先训练视觉塔，再通过 projector / alignment 接入语言模型；K3 从预训练开始就联合优化三部分。",
-          "<strong>单一 next-token loss</strong>：视觉 token 和文字 token 一起构成条件上下文，K3 仍然预测下一个文本 token。预测错误只产生一份 loss，这份 loss 会同时塑造文本生成和视觉表示。",
-          "<strong>端到端联合训练</strong>：loss 的梯度经过 K3 backbone、MLP projector 回传到 MoonViT-V2；因此并不是冻结 text 模型后只训练 ViT 或 adapter，而是视觉与语言从一开始共同学习。",
-          "<strong>MoonViT-V2 从头训练</strong>：不使用 SigLIP 等对比学习视觉编码器作为初始化。论文观察到 from-scratch 的联合训练梯度更稳定，也让视觉表示直接服务 OCR、文字和细粒度结构理解。",
-          "<strong>推理路径仍然熟悉</strong>：图片或视频先由 MoonViT-V2 做视觉理解，MLP projector 把视觉特征转换成语言模型可接收的 embedding，再插入文本 embedding 序列，最后交给同一个 K3 backbone 继续自回归推理。"
+          "<strong>Block AttnRes</strong>：红色 w / α 路径跨 block 选择表示，黑线在 block 内维持普通 residual；K3 将 93 层划成 8 个 network blocks，完整 block 为 12 层。"
         ],
         [
-          "<strong>GLM-5.2</strong>：先用 MLA 压缩逐 token 历史，再由 DSA 选择核心 Attention 真正读取的位置。",
-          "<strong>Kimi K3</strong>：用 recurrent/global hybrid、depth attention 与 latent experts 改造三条信息通道。",
-          "<strong>Architecture → systems</strong>：下一步要把 state、selection、routing 和 communication 分别映射到 Prefill、Decode 与 TPU Roofline。"
+          "<strong>LatentMoE</strong>：Router 读取完整的 x[7168] 选择 Top‑16，routed experts 只处理 z[3584]；expert body 与 EP payload 减半，计入 W↓ / W↑ 后净计算量约下降 45%。"
+        ],
+        [
+          "<strong>Architecture → systems</strong>：GLM-5.2 用 MLA / DSA 压缩并选择历史，Kimi K3 沿 sequence / depth / width 改造信息流；下一步把这些机制映射到 Prefill、Decode 与 TPU Roofline。"
+        ],
+        [
+          "<strong>TPU v7x 单芯片基线</strong>：2 个 TensorCore、4 个 SparseCore；BF16 / FP8 峰值为 2307 / 4614 TFLOP/s，HBM 为 192 GiB / 7380 GB/s，ICI 双向峰值为 1200 GB/s。"
         ],
         [
           "<strong>Compute Time</strong> · FLOPs / Peak FLOP/s",
@@ -7391,6 +9652,15 @@
           "<strong>MTP Verify</strong> · 8 × 4 = 32 candidate tokens/forward",
           "<strong>Weight Reuse</strong> · ≈1× weight stream · AI≈16 → 64",
           "<strong>Efficiency</strong> · Fusion × KV reuse × acceptance length"
+        ],
+        [
+          "<strong>优化目标</strong>：ICI routing 是三项中最大的一项；用分块流水线让 scatter、expert compute 与 gather 持续推进，避免通信等待整批计算，并把专家计算和 HBM 权重预取隐藏在通信窗口中。"
+        ],
+        [
+          "<strong>按 Expert Wave 读图</strong>：先启动 routed-token Scatter，并用双 buffer 预取权重；tokens 与当前权重就绪后执行 FFN1/FFN2，一个 wave 的输出完成便立即 Gather，与相邻 wave 的通信、预取和计算持续重叠。"
+        ],
+        [
+          "<strong>实测重叠效果</strong>：ICI、HBM DMA 与计算重叠，使 V2 降至 2.42 ms、较 V1 降低 53%；但 scatter lead 与 gather tail 仍暴露在关键路径，当前主要瓶颈仍是 ICI 带宽与通信延迟。"
         ]
       ];
 
