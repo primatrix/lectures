@@ -20,9 +20,9 @@
 |---|---|---|
 | Attention 与 KV cache | Chapter 01–03 | 为什么长序列会把历史状态变成容量和带宽瓶颈？ |
 | GLM-5.2 | Chapter 04–08 | MLA、DSA、IndexShare 分别压缩什么？ |
-| Kimi K3 | Chapter 09–15 | K3 如何沿 token、depth、channel 三个方向扩展？ |
-| 系统分析入口 | Chapter 16 | 架构变化最终会落成哪些计算、访存与通信对象？ |
-| Prefill / Decode 性能 | Chapter 17–21 | Roofline、长上下文 KV、DSA 与 MTP 如何改变计算强度？ |
+| Kimi K3 | Chapter 09–17 | K3 如何沿 token、depth、channel 三个方向扩展？ |
+| 系统分析入口 | Chapter 18 | 架构变化最终会落成哪些计算、访存与通信对象？ |
+| TPU 与 Prefill / Decode 性能 | Chapter 19–27 | TPU v7x 的算力、HBM、ICI 基线是什么？Roofline、长上下文 KV、DSA、MTP 与 MoE 如何改变计算强度？ |
 
 ---
 
@@ -401,35 +401,37 @@ Chapter 08 用一张总图收束 GLM-5.2。讲到这里，观众应该能够从�
 
 ---
 
-# 第三部分：Kimi K3 沿三个方向重组信息流
+# 第三部分：Kimi K3 沿三个方向扩展信息流
 
-## 9. 为什么要同时讨论 token、depth 与 channel
+## 9. 模型变大时，信息流为什么也需要扩展
 
-想象一个持续运行的 agent。它读取需求、浏览代码、调用工具、观察画面、定位错误，再继续修改。上下文不断增加，模型也需要更深的推理和更大的知识容量。
+Kimi K3 对架构问题的定义不是“1M agent trace 会卡在哪里”，也不能从 KDA、AttnRes 和 LatentMoE 的实现反向拼出三个问题。应该先从 Scaling Laws 的视角观察标准 Transformer：当 sequence length、network depth 与 model width 分别增长时，什么状态、表示或计算代价会随之恶化？
 
-扩展会同时碰到三个问题：
+> 模型扩展时，information flow 也要能沿 sequence length、network depth 与 model width 三个互补维度扩展，但每个维度首先暴露的是不同的 scaling problem。
 
-| 方向 | 原始结构 | 扩展时的问题 |
+这三个维度的起点分别是：
+
+| 扩展维度 | 标准结构随 Scale 放大的问题 | K3 的机制 |
 |---|---|---|
-| Token | Self Attention | 历史状态和读取流量随上下文增长 |
-| Depth | Residual stream | 早期表示被混入累计状态，难以单独重读 |
-| Channel / capacity | Dense FFN 或普通 MoE | 容量扩大带来更多权重读取、激活和通信 |
+| Sequence length | 上下文长度 `L` 增长时，逐 token KV Cache 容量随 `L` 线性增长；Decode 每步读取的历史也更长，HBM 容量、带宽与延迟一起承压 | Hybrid Attention：每个 block 组合 3 层 KDA 与 1 层 Gated MLA |
+| Network depth | 层数 `D` 增长时，PreNorm residual 以固定单位权重累加所有层输出，造成 hidden-state magnitude 持续增长，并逐步稀释每一层的相对贡献 | Attention Residuals |
+| Model width | 模型宽度或容量增长时，如果仍然 Dense 激活，每个 token 的 FLOPs、activation、权重读取和跨卡通信都会同步增加 | Stable LatentMoE：每个 token 激活 16 / 896 routed experts |
 
-这里的 channel 不是“不同记忆通道拥有不同保留节奏”。它指同一个 token 在 feature / expert 维度上，可以进入不同的计算路径。
+这里的 channel 不是“不同记忆通道拥有不同保留节奏”。它指同一个 token 在 feature / expert 维度上的稀疏计算路径。
 
-K3 分别给出三类回答：
+因此，K3 的整体对应关系是：
 
 ```text
-Token   → KDA + 周期性 Gated MLA
-Depth   → Block Attention Residuals
-Channel → Stable LatentMoE
+Sequence length → Hybrid Attention（3 × KDA + 1 × Gated MLA）
+Network depth   → Attention Residuals
+Model width     → Stable LatentMoE
 ```
 
-三者共享同一种设计倾向：先把处处执行的完整 dense cost 变成状态、候选或路由，再按内容决定真正需要哪一部分。
+这三种机制互补，不能互相替代。Hybrid Attention 解决的是跨 token 的长上下文信息混合，AttnRes 扩展跨网络深度的 representation access，Stable LatentMoE 扩展跨专家通道的稀疏信息混合。它们共同组成 K3 backbone 的 information-flow 设计。
 
 ### 对应 PPT
 
-Chapter 09 只抛出三个扩展问题，Chapter 10 再给出三个架构答案。讲义从这里开始分别展开机制，不再重复 PPT 上的三行结论。
+Chapter 09 用同一页完成“问题 → 答案”：初始画面只呈现 sequence、depth、width 三个扩展问题；按一次右键，同时出现 Hybrid Attention、Attention Residuals 与 Stable LatentMoE。后续章节再分别展开三种机制。
 
 ---
 
@@ -620,200 +622,225 @@ Gated MLA：
 
 ### 对应 PPT
 
-Chapter 11 讲 KDA 状态更新，Chapter 12 用论文架构图说明 KDA 与 Gated MLA 的排布。两页应连在一起讲，不能把 KDA 描述成独立完整的 K3 序列模块。
+Chapter 10 先从 Softmax Attention 过渡到可递推状态，Chapter 11 解释固定状态为什么还需要遗忘与覆盖，Chapter 12 再拆解 KDA 公式。Chapter 13 用论文架构图说明 KDA 与 Gated MLA 的排布。这几页应连在一起讲，不能把 KDA 描述成独立完整的 K3 序列模块。
 
 ---
 
 ## 13. AttnRes：让当前层重新选择早期表示
 
-普通 residual block 可以简写为：
+普通 PreNorm residual 可以写成：
+
+$$
+h_l=h_{l-1}+f_{l-1}(h_{l-1}).
+$$
+
+把递推关系展开：
+
+$$
+h_l=h_1+\sum_{i=1}^{l-1}f_i(h_i).
+$$
+
+这说明 embedding 和此前模块输出都以固定系数 `1` 进入同一个累计状态。Residual 的 identity path 对梯度传播仍然重要；问题在于它同时承担了深度信息聚合：
+
+- 当前模块无法决定现在更需要 embedding、某个早期层，还是最近一层；
+- 不同来源相加以后，后续模块只拿到混合结果，不能再单独取回某个来源；
+- 随着网络加深，累计状态的 magnitude 可能继续增长，而单个新输出在总和中的相对贡献逐渐被稀释。
+
+因此 AttnRes 不是要否定 residual，而是把固定的深度聚合改成可选择的信息访问。
+
+### 13.1 AttnRes 的 Q、K、V 从哪里来
+
+对当前第 \(l\) 个模块和某一个 token，先收集此前的 depth representations：
+
+$$
+v_i=
+\begin{cases}
+h_1,&i=0,\\
+f_i(h_i),&1\le i<l.
+\end{cases}
+$$
+
+把它们按深度堆叠为：
+
+$$
+V=
+\begin{bmatrix}
+v_0^\top\\
+v_1^\top\\
+\vdots\\
+v_{l-1}^\top
+\end{bmatrix}
+\in\mathbb{R}^{l\times d}.
+$$
+
+AttnRes 没有使用普通 Self Attention 的 `W_Q x`、`W_K x`、`W_V x` 三组投影：
+
+- **Query**：当前模块直接学习一个 pseudo-query \(q_l=w_l\in\mathbb{R}^{d}\)；
+- **Value**：embedding 与此前模块的原始输出，即矩阵 \(V\)；
+- **Key**：复用同一批表示，打分前逐行执行 RMSNorm，\(K=\operatorname{RMSNorm}(V)\)。
+
+矩阵计算是：
+
+$$
+s=Kw_l,\qquad
+\alpha=\operatorname{softmax}(s),\qquad
+h_l=V^\top\alpha.
+$$
+
+RMSNorm 避免某个历史层仅仅因为输出 norm 更大就主导权重。Softmax 则把固定的单位系数换成总和为 1 的 depth weights。
+
+`w_l` 是当前模块学习到的固定参数，不是由当前 token 动态生成的；但是每个 token 在此前层产生的 \(K/V\) 不同，因此最终的 \(\alpha\) 仍然随输入内容变化。
+
+普通 Self Attention 沿 token positions 选择；AttnRes 沿 depth representations 选择。它不会在这里混合不同 token，也不会替代 token 轴上的 KDA 或 MLA。
+
+### 13.2 Full Attention Residuals
+
+Full 版本让 embedding 和每个历史层输出都成为独立 source，选择粒度最细。
+
+网络深度通常不到一百，因此 \(O(L^2d)\) 的额外算术并不是主要矛盾；真正的工程问题是必须让所有历史层输出保持存活，并在 Pipeline Parallel stages 之间传递，带来 \(O(Ld)\) 的 memory 与 communication。
+
+### 13.3 Block Attention Residuals
+
+Block 版本在 block 内保留普通 residual 累加，在 block 之间执行 depth attention：
 
 ```text
-h_l = h_(l-1) + F_l(h_(l-1))
+block 内：
+  module outputs → partial residual sum
+
+block 间：
+  embedding + completed block sums + current partial sum
+  → depth attention
+  → current module input
 ```
 
-每层输出继续进入同一条 residual stream。早期表示会被包含在累计结果中，但当前层无法把某个早期来源单独取出来重新组合。
+候选来源由每一层变为每个 block，状态开销从 \(O(Ld)\) 降到 \(O(Nd)\)。代价是失去 block 内逐层寻址的粒度。
 
-问题不是“后面层一定没有贡献”，也不是简单的数值加一。更准确的描述是：所有来源经过固定加法混在一条流里，来源之间缺少内容相关的选择。
-
-论文给出了 Standard、Full 和 Block Attention Residuals 的对比：
-
-![Standard、Full 与 Block Attention Residuals](./glm5.2-visualization/assets/attention-residuals-overview.png)
-
-### 13.1 Full Attention Residuals
-
-Full 版本保留 embedding 和此前各层的表示。当前 token 根据自身内容，对这些 depth sources 产生权重：
+Kimi K3 的具体配置是：
 
 ```text
-r_l = Σ α_(l,i)(current token) · z_i
+93 backbone layers
+= 7 × 12-layer blocks + 1 × 9-layer partial block
+
+8 network blocks + embedding source
+= 最多 9 个 depth sources
 ```
 
-这里的 `α` 不是训练完成后固定不变的“第几层重要性”。它随当前 token 的表示变化，因此不同 token 可以选择不同深度的来源。
-
-Self Attention 沿 token 轴选择历史位置；AttnRes 沿 depth 轴选择早期表示。两者形式相似，但候选集合所在的轴不同。
-
-### 13.2 Block Attention Residuals
-
-如果保存每一层输出，状态和读取成本会随深度增长。Block 版本在 block 内保留普通 residual，只在 block representations 之间做 depth attention。
-
-```text
-block 内：普通 residual
-block 间：Attention Residual
-```
-
-这样候选来源从逐层变成逐 block，保留了跨深度重读能力，同时控制需要保存和访问的中间表示数量。
-
-### 13.3 它解决的不是长序列 KV cache
-
-AttnRes 操作的是网络深度上的中间表示，不会替代 token 轴上的 KDA 或 MLA。
-
-它新增的系统对象也不同：需要保存的是 block representations，并在后续 block 中读取和加权，而不是保存更长的 token KV 列表。
+“12 layers 一个 block”是 K3 的工程选择，不是 AttnRes 算法的固定要求。论文的总体经验是大约 8 个 blocks 能保留大部分收益。
 
 ### 对应 PPT
 
-Chapter 13 应直接使用论文总图。讲解顺序是 Standard Residual → Full AttnRes → Block AttnRes，不必先把所有符号解释完。
+Chapter 14 先解释普通 residual 的固定等权聚合问题；Chapter 15 用矩阵图讲清 Q/K/V 与 softmax depth weights；Chapter 16 直接使用 K3 Figure 2 的主干架构，沿红色 `w / α` 路径解释跨 block 读取、沿黑线解释 block 内 residual，最后给出 `7 × 12 + 9` 的工程配置与 Full/Block 取舍。
 
 ---
 
-## 14. Stable LatentMoE：把专家 payload 放进更窄的空间
+## 14. LatentMoE：让 Top-16 的专家路径更便宜
 
-MoE 的基本价值是：模型可以拥有大量专家参数，但每个 token 只激活少量专家。
+K3 一层拥有 896 个 routed experts，但每个 token 只激活 16 个，激活比例是 `16 / 896 = 1 / 56`。这是很高的稀疏度；不过对单个 token 来说，Top-16 仍意味着同时执行 16 条专家路径。
 
-当模型继续扩容时，成本不只来自 Expert GEMM。Serving 还需要读取被激活专家的权重，并在 Expert Parallel 中把 token activation 发送到对应设备。
+普通 MoE 会把完整的 `d` 维 token representation 发给每个选中专家。Top-k 增大时，下面三项都会增长：
 
-普通 routed expert 接收 full-width hidden state。Top-K 增大时，专家权重读取和 All-to-All payload 都会增长。
+- 被激活 expert 的 GEMM；
+- Serving 时读取的 expert 权重；
+- Expert Parallel 中 dispatch / combine 的 All-to-All payload。
 
-LatentMoE 的切入点是：不要把整个模型 hidden size 变窄，只把 routed expert 的 payload 压到 latent space。
+LatentMoE 的做法不是缩窄整个模型，而是只缩窄 routed expert path。K3 的精确配置是：
+
+```text
+主干 hidden width d       = 7168
+LatentMoE routed width ℓ  = 3584 = 0.5 d
+Expert hidden width m     = 3072
+Routed experts / Top-k    = 896 / 16
+Shared experts            = 2
+```
 
 ![Kimi K3 Stable LatentMoE](./glm5.2-visualization/assets/kimi-k3-figure2-stable-latentmoe.png)
 
-### 14.1 Router 与压缩分支的正确顺序
+### 14.1 选路看完整表示，专家只接收半宽 payload
 
-Router 和下投影都直接读取 full-width `x`，两条分支并行：
-
-```text
-Router branch：
-x[d] → Router → Top-K expert indices + weights
-
-Routed payload branch：
-x[d] → W_down → z[latent] → dispatch → selected experts
-```
-
-因此不能画成：
+Router 与下投影都直接读取 full-width `x`，两条分支并行：
 
 ```text
-x → W_down → Router
+选择专家：
+x[7168] → Router → Top-16 indices + weights
+
+执行 routed experts：
+x[7168] → W_down → z[3584] → All-to-All → 16 routed experts
+         → weighted combine → W_up → routed output[7168]
+
+公共路径：
+x[7168] → 2 shared experts → shared output[7168]
 ```
 
-Router 需要完整表示来判断专家选择。被压缩的是发往 routed experts 的 activation，不是 Router 的观察范围。
+所以顺序不是 `x → W_down → Router`。Router 仍然用完整表示判断应该选择哪些专家；真正被压缩的是 dispatch 给 routed experts 的 activation，以及 routed expert 内部工作的输入输出宽度。
 
-### 14.2 Routed path 的完整数据流
+16 个 routed expert 的输出先在 3584 维 latent space 聚合，然后只做一次 `W_up` 回到 7168 维。两个 shared experts 则始终保持 full width。
+
+### 14.2 Routed expert 计算量减少多少
+
+K3 的 gated expert FFN 有 gate、up、down 三个主要矩阵。若一次 multiply-add 计作 2 FLOPs，则一个 selected expert 的矩阵计算约为：
 
 ```text
-x[d]
-  ↓ W_down
-z[latent]
-  ↓ dispatch by Top-K indices
-routed experts
-  ↓ weighted combine
-RMSNorm
-  ↓ W_up
-routed output[d]
+FLOPs per selected expert ≈ 6 × width × m
 ```
 
-跨设备传输并进入 routed experts 的主要 payload 是 `z[latent]`。专家主要权重矩阵也在 latent 维工作，因此能减少权重读取、激活计算和通信字节。
-
-省下来的预算可以用来增加专家组合，而不要求每个 token 搬运同样多的 full-width activation。
-
-### 14.3 Shared path 保持 full-width
-
-Shared experts 直接处理 `x[d]`，承担所有 token 都需要的公共变换：
+在相同 `Top-16`、相同 `m=3072` 的 full-width MoE 基线下：
 
 ```text
-x[d] → shared experts → shared output[d]
+full-width expert body
+= 6 × 16 × 7168 × 3072
+= 2.114 GFLOPs / token
+
+latent expert body
+= 6 × 16 × 3584 × 3072
+= 1.057 GFLOPs / token
 ```
 
-最后 routed output 与 shared output 在主干宽度上相加。
+因此 routed expert 本体的 FLOPs 和主要 expert 权重矩阵都严格减半。
 
-所以 LatentMoE 不是把所有 FFN 计算压缩。它只压缩稀疏 routed path，把公共能力和专家专长放在不同宽度上处理。
+LatentMoE 还需要每个 token 执行一次 `W_down` 和一次 `W_up`：
 
-### 14.4 “Stable” 解决什么
+```text
+down + up projections
+= 4 × 7168 × 3584
+= 0.103 GFLOPs / token
 
-专家数量和稀疏度继续增大后，训练会更容易暴露输出尺度和极端 activation 问题。
+latent routed path total
+= 1.057 + 0.103
+= 1.160 GFLOPs / token
+```
 
-K3 在 routed aggregate 后使用 RMSNorm 控制尺度，并使用更稳定的门控激活设计。它们服务于大规模稀疏训练，不改变 Router 与 latent payload 的先后关系。
+与同配置的 full-width routed expert 基线相比，计入上下投影后的净计算量减少约 `45.1%`，即约 `1.82×` 更少 FLOPs。这个数字只比较 routed path，不包含 Router、shared experts、归一化和逐元素激活。
 
-Quantile Balancing 是训练期间更新 Router selection bias 的负载均衡方法。它不属于推理数据流，也不保证任意一个推理 batch 都完全均匀，因此不作为本次架构主线展开。
+### 14.3 Expert Parallel 通信量减少多少
 
-### 三个边界
+每个 selected expert 收到的 activation 从 7168 个元素缩到 3584 个元素：
 
-- Router 看 full-width 输入，不能说“先压缩再路由”。
-- LatentMoE 省的是 routed path，不是把 shared path 一起缩窄。
-- MoE 稀疏不代表系统没有代价；routing、dispatch/combine、权重 streaming 与 All-to-All 仍需优化。
+```text
+payload ratio = 3584 / 7168 = 0.5
+```
+
+因此 routed EP All-to-All 的 dispatch 和 combine payload 都减少 `50%`。以 BF16、Top-16、单 token 的理想 activation payload 估算：
+
+```text
+单向 dispatch：
+16 × 7168 × 2 bytes = 224 KiB
+16 × 3584 × 2 bytes = 112 KiB
+
+dispatch + combine：
+448 KiB → 224 KiB
+```
+
+这不包含 routing metadata、capacity padding 或通信协议开销，但清楚说明了架构层面的收益：每条 routed path 的 activation 宽度减半。
 
 ### 对应 PPT
 
-Chapter 14 应沿着 Router、Routed、Shared 三条线讲。观众只要能说清 Router 在压缩前读取什么、真正跨设备传输什么，就掌握了核心。
-
----
-
-## 15. Native Vision：创新主要发生在训练方式
-
-推理时，K3 的视觉数据流仍与常见 VLM 相似：
-
-```text
-图片 / 视频
-    ↓
-MoonViT-V2
-    ↓
-MLP projector
-    ↓
-visual embeddings
-    ↓
-插入 text embedding sequence
-    ↓
-K3 backbone 自回归推理
-```
-
-Vision encoder 负责把像素变成视觉特征，projector 将特征映射到语言模型能接受的表示空间。视觉表示随后与文本 embedding 一起进入 K3 backbone。
-
-![Kimi K3 Native Vision 路径](./glm5.2-visualization/assets/kimi-k3-figure2-vision-path.png)
-
-K3 的“Native”重点不在推理接口，而在预训练方式。
-
-### 15.1 单一 next-token loss
-
-视觉和文字共同构成上下文，模型仍预测下一个文本 token。训练只有一份 next-token loss，而不是给视觉模块单独设计另一套主目标。
-
-这份 loss 会同时约束语言输出和生成这些输出所依赖的视觉表示。
-
-### 15.2 端到端联合训练
-
-Loss 的梯度会经过 K3 backbone、MLP projector，继续回传到 MoonViT-V2。
-
-这不是冻结 text model 后只训练 ViT 或 adapter。视觉编码器、projector 和文本 backbone 从预训练阶段共同适配同一个生成目标。
-
-### 15.3 MoonViT-V2 从头训练
-
-MoonViT-V2 不依赖一个预先完成对比学习的视觉编码器再接入语言模型，而是在联合训练中从头形成适合 OCR、文字和细粒度结构理解的视觉表示。
-
-因此，Native Vision 与传统“先训练视觉塔，再冻结或局部微调接入 LLM”的主要区别，是优化目标和训练边界，而不是推理时突然取消 ViT。
-
-### 需要保留的边界
-
-- 图像输入仍有独立的 vision encoder 和 projector；
-- “统一”指联合目标与语言主干，不代表图片 patch 和文本 token 在输入端完全相同；
-- Native Vision 不会改变自回归输出仍是 next-token prediction 的事实。
-
-### 对应 PPT
-
-Chapter 15 应把“单一 next-token loss、端到端、从头训练”作为三个完整中文结论，再用下方路径图区分训练创新与推理流程。
+Chapter 17 只保留三件事：先说明 `896 / Top-16` 为什么仍会放大单 token 的专家成本；再沿 Figure 2 说明 Router 看 7168 维、routed experts 处理 3584 维；最后给出 expert body `-50%`、计入上下投影后净 FLOPs `-45%`、EP payload `-50%` 三个量化结果。
 
 ---
 
 # 第四部分：从架构图走向系统分析
 
-## 16. 架构没有消灭成本，而是重新安排成本
+## 15. 架构没有消灭成本，而是重新安排成本
 
 GLM-5.2 与 Kimi K3 都没有让成本凭空消失。它们把完整 dense cost 重组为更明确的状态、选择与路由对象。
 
@@ -825,19 +852,17 @@ GLM-5.2 与 Kimi K3 都没有让成本凭空消失。它们把完整 dense cost 
 | Kimi K3 | KDA | recurrent state update 与 chunk scan |
 | Kimi K3 | AttnRes | block representation 保存与读取 |
 | Kimi K3 | LatentMoE | routing、latent dispatch、Expert GEMM、All-to-All |
-| Kimi K3 | Native Vision | 视觉 token、projector 与统一 backbone |
 
-### 16.1 Prefill 要问什么
+### 15.1 Prefill 要问什么
 
 Prefill 处理长输入，首先要问：
 
 - 长序列计算能否组织成足够大的矩阵任务；
 - KDA 的 chunk scan 怎样跨 chunk 传播状态；
 - DSA 的 Indexer、Top-K 与 Gather 使用多少临时状态；
-- 视觉 token 会把有效序列长度增加多少；
 - MoE dispatch 后每个 expert 的 token shape 是否适合高效 GEMM。
 
-### 16.2 Decode 要问什么
+### 15.2 Decode 要问什么
 
 Decode 每步并行度较低，首先要问：
 
@@ -847,7 +872,7 @@ Decode 每步并行度较低，首先要问：
 - All-to-All payload 与同步延迟是多少；
 - 小 shape kernel 的 launch 与调度成本是否占主导。
 
-### 16.3 Roofline 不能只放一个 FLOPs 数字
+### 15.3 Roofline 不能只放一个 FLOPs 数字
 
 硬件 Roofline 分析至少需要区分三类流量：
 
@@ -865,7 +890,110 @@ HBM：KV/state、权重、临时 buffer
 
 ### 对应 PPT
 
-Chapter 16 只负责从架构过渡到 Prefill/Decode、TPU Roofline 与 MoE 优化。这里列出的系统对象，就是后续分享需要逐项测量的清单。
+Chapter 18 只负责从架构过渡到 Prefill/Decode、TPU Roofline 与 MoE 优化。这里列出的系统对象，就是后续分享需要逐项测量的清单。
+
+## 16. TPU v7x：先建立 Roofline 的硬件基线
+
+在进入 Roofline 之前，先把单芯片的三个上限放在同一张图里：TensorCore 提供计算上限，HBM 为权重和模型状态供数，ICI 负责跨芯片 collective 与 MoE token routing。
+
+![TPU v7x Ironwood 官方芯片架构图](./glm5.2-visualization/assets/tpu7x-ironwood-architecture.png)
+
+| 单个 TPU v7x 芯片 | 官方峰值 |
+|---|---:|
+| 芯片结构 | 2 TensorCore，4 SparseCore |
+| BF16 矩阵算力 | 2307 TFLOP/s |
+| FP8 矩阵算力 | 4614 TFLOP/s |
+| HBM | 192 GiB，7380 GB/s |
+| ICI | 1200 GB/s 双向 |
+
+一个 TPU v7x 芯片由两个 logic chiplet 组成；每个 chiplet 有 1 个 TensorCore、2 个 SparseCore 和 96 GiB HBM。JAX 会把两个 chiplet 暴露为两个 device，但本讲义后续的 Roofline 数字统一按**单芯片**口径计算，避免把 per-device 与 per-chip 混在一起。
+
+把峰值算力除以 HBM 带宽，就得到下一页 Roofline 使用的 Machine Balance：
+
+```text
+BF16: 2307 TFLOP/s ÷ 7.38 TB/s ≈ 313 FLOP/B
+FP8: 4614 TFLOP/s ÷ 7.38 TB/s ≈ 625 FLOP/B
+```
+
+Arithmetic Intensity 低于这条边界时，理想模型会判断算子更可能受 HBM 限制；高于边界时，才更可能受 TensorCore 算力限制。ICI 的 1200 GB/s 是单芯片双向峰值，不能直接视为任意 collective 的有效带宽：实际 MoE All-to-All 还取决于 3D torus 拓扑、hop、拥塞与并行映射。
+
+### 对应 PPT
+
+Chapter 19 用官方架构图和四行规格建立硬件坐标系；Chapter 20 再正式引入 Roofline。
+
+## 17. 16K MoE 单层：先算 Compute、HBM 与 ICI
+
+使用 GLM-5.2 的 `H=6144`、MoE intermediate size `I=2048`、256 routed experts、Top-8 配置。在 16-chip TPU v7x 上取 `ep=32`，单个 device 拥有 8 个 routed experts。16,384 个输入 token 在理想均匀路由下对应：
+
+```text
+routed rows / device = 16384 × 8 ÷ 32 = 4096
+rows / local expert  = 4096 ÷ 8 = 512
+```
+
+按单个 MoE layer、单 device 估算。HBM 按 8 个本地 routed expert 的权重各完整读取一次，ICI scatter/gather 的平均路径按 2 hops 计算：
+
+| 理论下界 | BF16 | FP8 |
+|---|---:|---:|
+| Compute：routed + shared expert | 0.536 ms | 0.268 ms |
+| HBM：8 个本地 routed experts，读取一次 | 0.164 ms | 0.082 ms |
+| ICI：scatter + gather，平均 2 hops | 1.007 ms | 0.503 ms |
+
+三项估算中，ICI routing 的时间最大：BF16 约为 `1.007 ms`，FP8 约为 `0.503 ms`。因此优化目标是让 ICI 持续满载：把 routed tokens 切成流水块，依次执行 `scatter → expert compute → gather`，避免 gather 等待整批专家计算完成；同时让专家计算和 HBM 权重预取尽量隐藏在通信窗口中。
+
+### 对应 PPT
+
+Chapter 25 用同一张表展示单 device 的 Compute、HBM 与 ICI 下界，为后续“怎样通过融合、预取、量化与 overlap 接近下界”建立优化目标。
+
+## 18. 一个 Fused Kernel，提供跨引擎流水的调度空间
+
+上一页的 cost model 表明，16K MoE 的 ICI routing 时间高于理想 Compute 和单次 HBM 权重读取。优化的关键不是继续削减 FFN FLOPs，而是让 ICI、HBM DMA、MXU 和 VPU/VMEM 同时工作。
+
+如果 scatter、expert FFN、weight prefetch 和 gather 分散在多个 JAX op 或 collective 中，这些边界会形成同步点。Gather 只能等待专家结果整体就绪，编译器也难以稳定安排跨 op 的细粒度 overlap。
+
+Fused MoE V2 把这些阶段放进一个 Pallas kernel：
+
+![Fused MoE V2 的 VMEM-resident overlap 流水](./glm5.2-visualization/assets/fused-moe-v2-pipeline.png)
+
+按一个 expert wave 来看，这条流水依次发生四件事：
+
+1. 提前启动 ICI All-to-All scatter，把 routed tokens 发往对应的 expert owner；
+2. 使用两组 weight buffer：一组向当前 expert 提供权重，另一组通过 HBM DMA 预取下一组权重；
+3. Tokens 与当前权重就绪后，MXU 执行 FFN1 / FFN2，VPU 处理 activation 和 scale，output accumulator 尽量留在 VMEM；
+4. 一个 wave 的输出就绪后立即启动 gather，不等待所有 experts 全部完成，并与后续 wave 的 scatter、预取和计算重叠。
+
+实测 critical path 可以看到，routed expert window 覆盖了大部分 scatter outbound 和 gather inbound：
+
+![Fused MoE V2 实测 overlap breakdown](./glm5.2-visualization/assets/fused-moe-measured-overlap.png)
+
+最终只有 scatter 的开头和 gather 的尾部仍然显露在 critical path 上。LMSYS 报告中，V2 完整 kernel 为 `2.42 ms`，相对 V1 的 `5.16 ms` 降低约 `53%`。这里的收益并不是 FFN FLOPs 变少，而是同一调度域让 ICI 通信、HBM DMA、MXU 与 VPU/VMEM 计算更充分地重叠。
+
+但 overlap 只是把通信隐藏起来，并没有降低 All-to-All 的通信量。图中仍然可见的 scatter lead 与 gather tail 表明，当前实现的主要瓶颈仍在 ICI：进一步降低端到端延迟，主要取决于可用通信带宽、每跳通信延迟，以及能否继续缩短关键路径上暴露的通信头尾。
+
+### 对应 PPT
+
+Chapter 26 单独放大 VMEM-resident pipeline，说明如何按 expert wave 排流水；Chapter 27 单独放大 measured overlap breakdown，同时说明性能收益来自跨引擎重叠，而当前瓶颈仍是 ICI 通信带宽与延迟。
+
+### Chapter 26 简单讲稿
+
+“上一页我们算出来，16K MoE 最长的一项是 ICI 通信。问题是 scatter、expert compute 和 gather 之间存在依赖，如果分成多个 op，阶段边界会让 ICI、HBM DMA 和 MXU 轮流等待。
+
+所以我们把整个 routed MoE 路径写进一个 fused Pallas kernel。看这张图，首先提前启动 scatter，通过 All-to-All 把 routed tokens 发到对应的 expert owner。
+
+Expert 权重也不会等到计算开始才读取。我们准备两组 weight buffer：当前 buffer 给 MXU 提供 W_e，另一组 buffer 同时从 HBM 预取下一组 W_e+1；下一 wave 开始时两组 buffer 交换。
+
+当当前 wave 的 tokens 和权重都准备好后，MXU 执行 FFN1 和 FFN2，VPU 处理 activation 与 scale，output accumulator 尽量留在 VMEM。一个 wave 的结果一旦完成，就立即开始 gather，不需要等待所有 experts 全部结束。
+
+因此图上不是四个串行阶段，而是相邻 expert waves 的通信、权重预取、计算和回传交错推进。Fused 的价值不是少几个 op，而是获得一个统一的跨引擎调度空间。”
+
+### Chapter 27 简单讲稿
+
+“这一页看实际 critical path。最上面是真正决定总延迟的路径：metadata 之后先露出一段 scatter，然后进入 routed experts，最后只剩一段 gather tail。
+
+下面的斜线部分表示通信仍然发生，但已经被 routed expert window 覆盖。Shared expert 也被安排在 visible scatter 下面。也就是说，我们没有消灭通信，而是尽可能不让它单独暴露在关键路径上。
+
+最终 V2 做到 2.42 ms，相比 V1 的 5.16 ms 下降 53%。这个收益来自 ICI、HBM DMA、MXU 和 VPU/VMEM 更长时间同时保持忙碌。
+
+不过需要强调，overlap 只是隐藏通信，没有让 All-to-All 的通信量消失。现在 critical path 上仍然能看到 scatter 的开头和 gather 的尾部，所以当前主要瓶颈还是 ICI 的可用带宽和通信延迟。后续要继续优化，就是要让 ICI 更接近持续满载，并进一步压缩这两段可见通信。”
 
 ---
 
@@ -877,7 +1005,7 @@ GLM-5.2 的主线是：
 
 Kimi K3 的主线是：
 
-> KDA 与 Gated MLA 共同处理长序列，AttnRes 让当前层沿网络深度选择表示，LatentMoE 把 routed expert payload 放进低维空间，Native Vision 用统一生成目标联合训练视觉与文本。
+> KDA 与 Gated MLA 共同处理长序列，AttnRes 让当前层沿网络深度选择表示，LatentMoE 把 routed expert payload 放进低维空间。
 
 两条路线共同提醒我们：模型架构的价值不只在参数和复杂度符号，而在它怎样安排状态、读取、选择和通信。
 
