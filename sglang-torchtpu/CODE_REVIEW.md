@@ -4,12 +4,14 @@
 
 ## 本轮内容调整
 
+- 正文与讲者备注删除 DTensor 旁注；其源码核查仅保留在本附件。其余说明改为直接陈述实现，保留影响调用正确性的条件。
+
 - 并行章节聚焦运行时并行入口、归约交接、Attention-DP 编译契约与 Pallas 算子桥接。
 - 删除 DTensor 词汇映射、局部求和教学、DP 名词比较、padding 滑块与设备分组切换。
 - 删除“预热要覆盖真实调用的完整签名”“用解析后的 ParallelContext 驱动模型层”“CP 的使用方式落实到 backend 与 KV 接口”三页，不保留它们的正文、备注或页面源码索引。
 - 末页只对照服务、模型、编译与 kernel 的代码组织；原支持范围、总结和资料页已删除，来源从每页底部查看。
 
-## DTensor 使用范围的复核
+## DTensor 使用范围的核查附件（已从讲义移除）
 
 当前 TPU 常用模型推理路径以 rank-local `torch.Tensor`、并行层权重切分、显式 group 通信与 layer boundary 为主；没有证据支持“DTensor 已被广泛使用”。这不等于仓库中没有 DTensor。
 
@@ -99,7 +101,7 @@ TOML 示例由 `[entry-points."..."]` 修正为实际的 `[project.entry-points.
 | 9 | 从启动到第一轮请求 | [TPU worker 初始化](https://github.com/sgl-project/sglang-torchtpu/blob/44705a09565b36ddf4ab6ac7244847ec5887c42c/python/sglang/srt/utils/patch_torch.py#L195) |
 | 10 | 三条编译前端 | [Dynamo 与 direct 选择](https://github.com/sgl-project/sglang-torchtpu/blob/44705a09565b36ddf4ab6ac7244847ec5887c42c/sglang_tpu/compilation/decoder_compile_policy.py#L785) |
 | 11 | KV 状态如何跨编译边界 | [JAX 状态拆分](https://github.com/sgl-project/sglang-jax/blob/b3e3e16b2d3f0281a9e23f547cd4382f4a166eb6/python/sgl_jax/srt/model_executor/model_runner.py#L275) |
-| 12 | TorchTPU 的并行入口 | [模型 opt-in 后才应用 PyTorch TP](https://github.com/sgl-project/sglang-torchtpu/blob/44705a09565b36ddf4ab6ac7244847ec5887c42c/python/sglang/srt/model_executor/model_runner.py#L798) |
+| 12 | TorchTPU 的并行入口 | [显式通信 API](https://github.com/sgl-project/sglang-torchtpu/blob/44705a09565b36ddf4ab6ac7244847ec5887c42c/python/sglang/srt/distributed/communication_op.py#L120) |
 | 13 | 归约由谁完成 | [Qwen3-MoE 归约交接](https://github.com/sgl-project/sglang-torchtpu/blob/44705a09565b36ddf4ab6ac7244847ec5887c42c/python/sglang/srt/models/qwen3_moe.py#L967) |
 | 14 | Attention-DP 的编译契约 | [CPU 元数据对齐](https://github.com/sgl-project/sglang-torchtpu/blob/44705a09565b36ddf4ab6ac7244847ec5887c42c/python/sglang/srt/managers/scheduler_components/dp_attn.py#L531) |
 | 15 | Pallas 分布式算子接入 | [实际 jax_op 注册与局部 shape 契约](https://github.com/sgl-project/sglang-torchtpu/blob/44705a09565b36ddf4ab6ac7244847ec5887c42c/sglang_tpu/moe/pallas/fused_moe_rs_op.py#L181) |
@@ -110,7 +112,7 @@ TOML 示例由 `[entry-points."..."]` 修正为实际的 `[project.entry-points.
 
 ## 验证范围
 
-页面每页均有固定 commit 的源码链接，共 63 个；已核查本地快照的文件和行号。浏览器回归覆盖七种桌面 / 移动尺寸、页面导航、剩余交互、源码弹窗、备注、阅读与打印模式；详细结果见 `audit-results.json`。
+页面每页均有固定 commit 的源码链接，共 61 个；已核查本地快照的文件和行号。浏览器回归覆盖七种桌面 / 移动尺寸、页面导航、剩余交互、源码弹窗、备注、阅读与打印模式；详细结果见 `audit-results.json`。
 
 没有运行 TPU 推理、精度、性能或跨 main 版本兼容测试。静态源码中的入口与测试注册不能作为设备测试已通过的证据。
 

@@ -63,12 +63,12 @@
   },
   "tpu_execution_tested": false,
   "joint_version_compatibility_tested": false,
-  "source_anchors_verified_locally": 63,
+  "source_anchors_verified_locally": 61,
   "presentation_revision": {
     "slide_count": 19,
     "scope": "面向熟悉 SGLang-JAX 的开发者，聚焦实现接口；删除预热签名、参数解析和 CP 参数页",
-    "dtensor": "Opt-in TorchNativeLlama path and weight synchronization utilities; not broadly used in the TPU inference main path",
-    "removed_slide_content_verified": true
+    "removed_slide_content_verified": true,
+    "wording": "移除 DTensor 旁注，正文与讲者备注直接陈述实现和必要条件"
   },
   "browser_checks": {
     "layouts": [
