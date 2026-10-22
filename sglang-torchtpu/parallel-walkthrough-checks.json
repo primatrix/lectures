@@ -1,0 +1,52 @@
+{
+  "errors": [],
+  "viewports": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "slides": 20,
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "slides": 20,
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "slides": 20,
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "slides": 20,
+      "failures": []
+    }
+  ],
+  "interactions": [
+    "rank weight slices",
+    "four MLP stages",
+    "source dialog and speaker notes",
+    "20-page overview and navigation",
+    "collective APIs and full MLP code visible without interaction"
+  ],
+  "checked_at": "2026-10-22",
+  "scope": "Browser behavior and illustrative content only; no TPU numerical or performance execution.",
+  "source_validation": {
+    "source_files_verified": 48,
+    "errors": []
+  },
+  "html_sha256": "2b63675ec56c8ed31d8b8eed3fd6366b134819c9e8023481a34014f8fade8bcb",
+  "method": "Headless Chrome via Playwright: 20-slide layouts, interactive states, always-visible collective APIs, source dialog and navigation; source commit/path/line verification."
+}
