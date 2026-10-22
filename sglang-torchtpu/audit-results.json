@@ -1,0 +1,121 @@
+{
+  "checked_on": "2026-10-22",
+  "method": "git fetch origin main; git archive origin/main; static source review",
+  "worktrees_modified": false,
+  "commits": {
+    "sglang-torchtpu": "44705a09565b36ddf4ab6ac7244847ec5887c42c",
+    "sglang-jax": "b3e3e16b2d3f0281a9e23f547cd4382f4a166eb6",
+    "torch_tpu": "9041e2b81bcc2385edc668e6e563fa09f1eca8b0"
+  },
+  "scoreboard": {
+    "exit_code": 0,
+    "counts": {
+      "is_tpu references in core": 395,
+      "core files with is_tpu": 85,
+      "sglang_tpu imports in core": 107,
+      "core files importing sglang_tpu": 54,
+      "TPU-named modules in core": 17,
+      "is_out_of_tree() gates": 27,
+      "hooks": 35,
+      "runtime patches": 19,
+      "core attributes patched": 36,
+      "re-export shim files": 186
+    }
+  },
+  "support_matrix": {
+    "exit_code": 2,
+    "summary": {
+      "disabled": 10,
+      "infra": 3,
+      "parse_failures": 0,
+      "placed": 105,
+      "registrations": 230,
+      "unit": 115,
+      "with_problems": 8
+    },
+    "diagnostics": [
+      "problem: test/registered/tpu/e2e/test_tpu_deepseek_v4_flash_singlehost_gsm8k.py: labels not in vocabulary: ['deepseek-v4-flash']",
+      "problem: test/registered/tpu/e2e/test_tpu_gpt_oss_120b_pd_singlehost_prefix_cache_kv_offload_spec_mxint8.py: labels not in vocabulary: ['mxint8', 'long-context', 'multi-turn']",
+      "problem: test/registered/tpu/e2e/test_tpu_gpt_oss_120b_singlehost_spec_experimental.py: labels not in vocabulary: ['experimental-spec']",
+      "problem: test/registered/tpu/e2e/test_tpu_gpt_oss_20b_singlehost_spec_experimental.py: labels not in vocabulary: ['experimental-spec']",
+      "problem: test/registered/tpu/kernels/test_batched_rpa_dcp.py: no model label; no topology label (inferred singlehost)",
+      "problem: test/registered/tpu/unit/test_distributed_top_k_sampling.py: no model label; no topology label (inferred singlehost)",
+      "problem: test/registered/tpu/unit/test_gmm_v2_kernel.py: no model label; no topology label (inferred singlehost)",
+      "problem: test/registered/tpu/unit/test_mla_sparse_kv_cache_scatter.py: no model label; no topology label (inferred singlehost)",
+      "--strict: 8 registrations with problems, 0 parse failures"
+    ]
+  },
+  "debt_check": {
+    "exit_code": 0,
+    "diagnostics": [
+      "improved: python/sglang/srt/layers/quantization/fp8.py: 14 -> 11",
+      "improved: python/sglang/srt/mem_cache/kv_cache_builder.py: 2 -> 1",
+      "improved: python/sglang/srt/models/deepseek_v4.py: 6 -> 3",
+      "improved: python/sglang/srt/models/kimi_k3.py: 21 -> 19",
+      "improved: python/sglang/srt/managers/scheduler.py: 10 -> 9 plugin import(s)",
+      "improved: python/sglang/srt/models/kimi_k3.py: 6 -> 2 plugin import(s)",
+      "improved: python/sglang/srt/layers/attention/hybrid_linear_attn_backend.py: 3 -> 0",
+      "",
+      "TPU debt went down. Run `python tools/plugin/check_tpu_branches.py --write-baseline` to lock the gain in.",
+      "",
+      "TPU debt check passed (shared core)."
+    ]
+  },
+  "tpu_execution_tested": false,
+  "joint_version_compatibility_tested": false,
+  "source_anchors_verified_locally": 63,
+  "presentation_revision": {
+    "slide_count": 19,
+    "scope": "面向熟悉 SGLang-JAX 的开发者，聚焦实现接口；删除预热签名、参数解析和 CP 参数页",
+    "dtensor": "Opt-in TorchNativeLlama path and weight synchronization utilities; not broadly used in the TPU inference main path",
+    "removed_slide_content_verified": true
+  },
+  "browser_checks": {
+    "layouts": [
+      {
+        "width": 1920,
+        "height": 1080,
+        "reading": false,
+        "issues": []
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "reading": false,
+        "issues": []
+      },
+      {
+        "width": 1280,
+        "height": 720,
+        "reading": false,
+        "issues": []
+      },
+      {
+        "width": 1024,
+        "height": 768,
+        "reading": false,
+        "issues": []
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "reading": true,
+        "issues": []
+      },
+      {
+        "width": 375,
+        "height": 667,
+        "reading": true,
+        "issues": []
+      },
+      {
+        "width": 667,
+        "height": 375,
+        "reading": true,
+        "issues": []
+      }
+    ],
+    "errors": [],
+    "interactions": "passed"
+  }
+}
