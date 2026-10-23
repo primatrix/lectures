@@ -66,7 +66,7 @@
 
 第 13 页展示通过配置选择的 Dynamo / direct 成图路径，并保留 JAX jit 对照；第 14 页用代码比较 JAX 返回 KV 状态与 TorchTPU mutation / alias 接口，direct 写回细节在备注中。
 
-删除基础服务、tile 流水与独立 Pallas 页；`fused_moe_rs` 的 kernel 写法并入第 15 页「kernel 都是用 JAX / Pallas 写的」。后续页码、目录与源码索引同步调整。上一轮浏览器检查见 [接入与状态检查结果](feedback-checks.json)，当前版本见 [模型与组批检查结果](modeling-checks.json)。
+删除基础服务、tile 流水与独立 Pallas 页；`fused_moe_rs` 的 kernel 写法并入第 15 页「kernel 都是用 JAX / Pallas」。后续页码、目录与源码索引同步调整。上一轮浏览器检查见 [接入与状态检查结果](feedback-checks.json)，当前版本见 [模型与组批检查结果](modeling-checks.json)。
 
 ## 设计与维护
 
