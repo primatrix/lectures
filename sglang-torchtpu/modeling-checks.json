@@ -1,0 +1,51 @@
+{
+  "checked_at": "2026-10-23",
+  "slides": 24,
+  "scope": "HTML layout, navigation, interactions, notes and source indices",
+  "errors": [],
+  "viewports": [
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 820,
+        "height": 1180
+      },
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "failures": []
+    }
+  ],
+  "html_sha256": "5ef51dbf57ac93cc043b298d94da506cc48cc0c8c1c04c3917dca77cbe91f55c"
+}

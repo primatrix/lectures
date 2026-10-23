@@ -1,0 +1,49 @@
+{
+  "checked_at": "2026-10-23",
+  "scope": "24-page HTML; ecosystem slides 20–23; browser layout and navigation only, no hardware validation",
+  "errors": [],
+  "viewports": [
+    {
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 820,
+        "height": 1180
+      },
+      "failures": []
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "failures": []
+    }
+  ]
+}

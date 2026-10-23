@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'site/**'
+      - 'sglang-torchtpu/**'
       - 'kimi&glm/architecture/glm5.2-visualization/**'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
@@ -38,6 +39,8 @@ jobs:
           mkdir -p '_site/kimi-glm/architecture'
           cp 'site/index.html' '_site/index.html'
           cp -R 'kimi&glm/architecture/glm5.2-visualization/.' '_site/kimi-glm/architecture/'
+          mkdir -p '_site/sglang-torchtpu'
+          cp 'sglang-torchtpu/index.html' '_site/sglang-torchtpu/index.html'
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
