@@ -95,7 +95,8 @@ main{margin:65px 0 76px var(--rail)}.slide{display:none;min-height:calc(100dvh -
 .replace-table th:nth-child(2),.replace-table td:nth-child(2){width:9%;white-space:nowrap;text-align:center}
 .table-wrap.compact th,.table-wrap.compact td{padding:6px 12px;font-size:13px}.table-wrap.compact td:first-child{width:12%}
 @media(min-width:801px) and (max-height:820px){.table-wrap.dense th,.table-wrap.dense td{padding:6px 11px;font-size:13px}.table-wrap.compact th,.table-wrap.compact td{padding:5px 10px;font-size:12px}}
-.architecture-grid{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:26px}
+.architecture-grid{display:grid;grid-template-columns:1fr 72px 1fr 72px 1.1fr;gap:18px;align-items:start}
+.arch-link{position:relative;align-self:stretch;display:flex;flex-direction:column;justify-content:space-between;padding:52px 0 34px;text-align:center;color:var(--muted);font-size:10.5px;line-height:1.35}.arch-link:before{content:"";position:absolute;left:50%;top:34%;bottom:34%;border-left:1px dashed var(--line)}.arch-link span{position:relative;white-space:nowrap}
 .architecture-lane{min-width:0;border-top:3px solid #6590b6;padding:17px 0 0;display:grid;gap:5px}
 .architecture-lane:nth-child(2){border-color:#588c7d}.architecture-lane:nth-child(3){border-color:#b36b49}
 .architecture-lane h3{font-size:21px}
@@ -106,8 +107,8 @@ main{margin:65px 0 76px var(--rail)}.slide{display:none;min-height:calc(100dvh -
 .backend-band{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;border-block:1px solid #a8c5bc;padding:14px 0;color:#12675e}
 .backend-band span{font-size:14px}
 .figure-row{display:flex;justify-content:space-between;gap:20px;align-items:center}
-@media(max-width:1100px){.architecture-grid{gap:16px}.architecture-lane h3{font-size:19px}.architecture-lane>div{font-size:14px;padding:9px}}
-@media(max-width:800px){.architecture-grid{grid-template-columns:1fr;gap:24px}.architecture-lane>div{font-size:15px}}
+@media(max-width:1100px){.architecture-grid{grid-template-columns:1fr 56px 1fr 56px 1.1fr;gap:10px}.arch-link{font-size:9.5px}.architecture-lane h3{font-size:19px}.architecture-lane>div{font-size:14px;padding:9px}}
+@media(max-width:800px){.architecture-grid{grid-template-columns:1fr;gap:24px}.arch-link{display:none}.architecture-lane>div{font-size:15px}}
 @media print{.architecture-lane>div{font-size:12px;padding:7px}}
 </style>
 </head>
@@ -129,13 +130,15 @@ main{margin:65px 0 76px var(--rail)}.slide{display:none;min-height:calc(100dvh -
 </section>
 <section id="s4" class="slide" data-key="architecture" data-title="SGLang-TorchTPU 架构" data-chapter="整体架构" data-source="1" data-note="原图来自用户的 PPT 文档。三列表示逻辑模块，不代表三个独立进程。上半部画出 In-tree 请求主链，下面补充 OOT 的组件选择边界。HTTP、调度策略、前缀缓存复用的是当前 fork 的公共主体，不能由此推导任意 stock upstream 版本均可直接使用。">
 <div class="slide-header"><div class="eyebrow">服务与调度主体 + TPU 执行组件</div><h2>主流程沿用 SGLang，设备实现由后端接入</h2></div>
-<div class="architecture-grid" role="img" aria-label="Server 接收请求，经 Scheduler 组批，交给 Worker 和 ModelRunner 执行，模型通过 TPU 后端完成计算，结果返回 Scheduler 和服务端">
+<div class="architecture-grid" role="img" aria-label="Server 接收请求并交给 Scheduler 组批，Scheduler 派发到 Model execution 执行，结果沿原路返回 Scheduler 与 Server">
 <div class="architecture-lane"><h3>Server</h3><p class="lane-role">公共服务流程</p><div>HTTP / OpenAI API</div><i>↓</i><div>TokenizerManager</div><i>↓</i><div>请求与响应通道</div><i>↑</i><div>DetokenizerManager</div></div>
+<div class="arch-link"><span>请求 →</span><span>← 结果</span></div>
 <div class="architecture-lane"><h3>Scheduler</h3><p class="lane-role">调度策略与逻辑状态</p><div>请求接收与排队</div><i>↓</i><div>Prefill / Decode 选批</div><i>↓</i><div>run_batch → Worker</div><i>↑</i><div>结果提交与 KV 回收</div></div>
+<div class="arch-link"><span>run_batch →</span><span>← 结果</span></div>
 <div class="architecture-lane"><h3>Model execution</h3><p class="lane-role">公共模型 + TPU 组件</p><div>TpModelWorker / ModelRunner</div><i>↓</i><div>Model forward</div><i>↓</i><div class="tpu-node">Attention / MoE / KV pool</div><i>↓</i><div class="tpu-node">TorchTPU / XLA / Pallas</div></div>
 </div>
 <div class="backend-band"><b>OOT 接入边界</b><span>SRTPlatform / registry / factory / hooks</span><span>KV pool · Attention · MoE · Graph runner · KV 传输</span></div>
-<div class="figure-row"><p class="small">三列是逻辑模块；请求由左到右进入执行，结果返回调度与服务端。</p></div>
+<div class="figure-row"><p class="small">三列是逻辑模块，不是三个进程：Server 把请求交给 Scheduler，Scheduler 用 run_batch 派发到 Model execution，结果沿原路返回。中间两列箭头标的是这两个交接点上的方向。</p></div>
 </section>
 <section id="s5" class="slide" data-title="Fork、hook、platform" data-chapter="接入上游" data-source="1" data-note="点击三个选项，用同一个 KV pool 需求说明差异。Fork 是源码维护方式，hook 与 platform 是行为接入机制，它们可以共存。这里的 Hook 指 HookRegistry 管理的 monkey patch。">
 <div class="slide-header"><div class="eyebrow">同一个需求：换成 TPU KV pool</div><h2>三种修改方式，三种维护契约</h2></div><div class="interactive"><div class="interaction-title"><div class="segmented" id="integrationModes" aria-label="接入方式"><button data-mode="fork" aria-pressed="true">Fork</button><button data-mode="hook" aria-pressed="false">Hook</button><button data-mode="platform" aria-pressed="false">Platform</button></div><span class="tag">点击切换代码与调用关系</span></div><div class="two"><pre><code id="integrationCode"></code></pre><div class="stack"><h3 id="integrationTitle"></h3><p id="integrationDescription"></p><div class="callout caution" id="integrationCost"></div></div></div><div class="flow" id="integrationFlow"></div></div><div class="table-wrap compact"><table><thead><tr><th>方式</th><th>改在哪里</th><th>影响面</th><th>同步上游的成本</th></tr></thead><tbody><tr><td>Fork</td><td>宿主源码里的选择逻辑</td><td>整份源码，随分支扩散</td><td>解冲突，并检查新逻辑有没有被遗漏</td></tr><tr><td>Hook</td><td>进程内的函数 / 方法绑定</td><td>单个调用点，但依赖导入时机</td><td>依赖内部对象与调用顺序，上游改动易失效</td></tr><tr><td>Platform</td><td>平台契约的实现</td><td>一组组件，接口稳定</td><td>随接口演进；缺入口时要先推动 seam 进上游</td></tr></tbody></table></div><p class="small">代码均为机制示意，省略实际参数；三者可以存在于同一份 fork 中。</p>
