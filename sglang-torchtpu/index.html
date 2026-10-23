@@ -252,7 +252,7 @@ def attention_op(...):
 <section id="s15" class="slide api-slide" data-title="从全局数组到局部程序" data-chapter="多卡并行" data-source="3" data-note="范围：普通 TP=2、dense MLP，先不含 PP / DP / CP / SP。比较的是熟悉的 JAX 全局数组自动分片路径与当前仓库的普通局部 Tensor 路径；JAX shard_map / Pallas 内也可显式通信。单设备 tiling 仍由 XLA 或 kernel 实现。">
 <div class="slide-header"><div class="eyebrow">从 JAX 到 Torch · 分片与通信的表达方式</div><h2>从全局数组，走到每个 rank 的局部程序</h2></div>
 <div class="two"><div class="panel jax"><h3>熟悉的 JAX 全局数组路径</h3><div class="stack"><div class="node jax">全局 Array + mesh / sharding</div><div class="node jax">描述全局运算与目标布局</div><div class="node">编译器推导局部计算与所需通信</div></div></div><div class="panel torch"><h3>当前 SGLang-TorchTPU 主路径</h3><div class="stack"><div class="node torch">每个 rank 持有局部 torch.Tensor</div><div class="node torch">并行层定义局部计算与 collective</div><div class="node">TorchTPU / XLA 编译这些操作</div></div></div></div>
-<div class="kernel-band"><div class="kernel-copy"><b>两边最后都落到 JAX / Pallas kernel</b><p>JAX 侧直接写；TorchTPU 侧通过 <code>jax_op</code> 包一层再调，kernel 体内仍是同一套 JAX / Pallas API。</p></div><pre><code>@pl.pallas_call(out_shape=…, grid=(…),
+<div class="kernel-band"><div class="kernel-copy"><b>kernel 都是用 JAX / Pallas 写的</b><p>JAX 侧直接写；TorchTPU 侧通过 <code>jax_op</code> 包一层再调，kernel 体是同一套 JAX / Pallas API。</p></div><pre><code>@pl.pallas_call(out_shape=…, grid=(…),
                 in_specs=…, out_specs=…)
 def kernel(x_ref, w_ref, o_ref):
     o_ref[...] = jnp.dot(x_ref[...], w_ref[...])</code></pre></div>
